@@ -132,11 +132,11 @@ else:
 version = get_version()
 
 setup(
-    name='diamond',
+    name='diamond-next',
     version=version,
-    url='https://github.com/python-diamond/Diamond',
-    author='The Diamond Team',
-    author_email='diamond@librelist.com',
+    url='https://github.com/diamond-next/diamond-next',
+    author='The Diamond (Next) Team',
+    author_email='krzysztof@warunek.net',
     license='MIT License',
     description='Smart data producer for graphite graphing package',
     package_dir={'': 'src'},
