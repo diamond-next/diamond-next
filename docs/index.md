@@ -1,3 +1,7 @@
+# Status
+
+Currently `master` branch is under audit, the latest stable version is 4.0.515 same as the last known release of Diamond.
+
 # Diamond-next
 
 Diamond is a python daemon that collects system metrics and publishes them to [Graphite](handlers/GraphiteHandler.md) (and others).
