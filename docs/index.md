@@ -1,11 +1,12 @@
-# Diamond
-
-[![Join the chat at https://gitter.im/python-diamond/Diamond](https://badges.gitter.im/python-diamond/Diamond.svg)](https://gitter.im/python-diamond/Diamond?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/python-diamond/Diamond.svg?branch=master)](https://travis-ci.org/python-diamond/Diamond)
+# Diamond-next
 
 Diamond is a python daemon that collects system metrics and publishes them to [Graphite](handlers/GraphiteHandler.md) (and others).
 It is capable of collecting cpu, memory, network, i/o, load and disk metrics.
 Additionally, it features an API for implementing custom collectors for gathering metrics from almost any source.
+
+## Huh, -next ?
+
+This is fork of [python-diamond/Diamond](https://github.com/python-diamond/Diamond). Unfortunately development of Diamond is stuck, let's face it - project is abandoned. Diamond-next is an effort to continue the work.
 
 ## Getting Started
 
