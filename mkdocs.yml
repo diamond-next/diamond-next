@@ -1,4 +1,4 @@
-site_name: Diamond
+site_name: diamond-next
 repo_name: GitHub
-repo_url: https://github.com/python-diamond/diamond
+repo_url: https://github.com/diamond-next/diamond-next
 theme: readthedocs

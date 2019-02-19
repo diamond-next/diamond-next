@@ -20,8 +20,8 @@
 
 ```sh
 $ yum install make rpm-build python-configobj python-setuptools
-$ git clone https://github.com/python-diamond/Diamond
-$ cd Diamond
+$ git clone https://github.com/diamond-next/diamond-next.git
+$ cd diamond-next
 $ make buildrpm
 ```
 
@@ -39,8 +39,8 @@ $ $EDITOR /etc/diamond/diamond.conf
 ```sh
 $ apt-get update
 $ apt-get install make pbuilder python-mock python-configobj python-support cdbs devscripts build-essential
-$ git clone https://github.com/python-diamond/Diamond
-$ cd Diamond
+$ git clone https://github.com/diamond-next/diamond-next.git
+$ cd diamond-next
 $ make builddeb
 ```
 

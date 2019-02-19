@@ -2,6 +2,20 @@
 
 Currently `master` branch is under audit, the latest stable version is 4.0.515 same as the last known release of Diamond.
 
+# Short-term roadmap
+
+  1. Phase I (till 2019-02-26)
+    - audit current `master`,
+    - setup CI and CD - build, docs,
+    - setup communication channels (irc, slack, mailing list)
+  2. Phase II (till 2019-03-31)
+    - review, fix, merge bugfixes from python-diamond/Diamond
+    - review small enhancements
+    - release beta
+  3. Phase III (till 2019-04-30)
+    - prioritize rest of PR
+    - discuss/publish long-term roadmap
+  
 # Diamond-next
 
 Diamond is a python daemon that collects system metrics and publishes them to [Graphite](handlers/GraphiteHandler.md) (and others).
@@ -10,14 +24,14 @@ Additionally, it features an API for implementing custom collectors for gatherin
 
 ## Huh, -next ?
 
-This is fork of [python-diamond/Diamond](https://github.com/python-diamond/Diamond). Unfortunately development of Diamond is stuck, let's face it - project is abandoned. Diamond-next is an effort to continue the work.
+This is fork of [python-diamond/Diamond](https://github.com/python-diamond/Diamond). Unfortunately development of Diamond is stuck, let's face it - project is abandoned. Diamond-next is an effort to continue the work. Besides the name of the package, under the hood, from user perspective, everything will be the same.
 
 ## Getting Started
 
 Steps to getting started:
 
   * Read the [documentation](http://diamond.readthedocs.org)
-  * Install via `pip install diamond`.
+  * Install via `pip install diamond-next`.
     The releases on GitHub are not recommended for use.
     Use `pypi-install diamond` on Debian/Ubuntu systems with python-stdeb installed to build packages.
   * Copy the `diamond.conf.example` file to `diamond.conf`.
@@ -31,17 +45,14 @@ Steps to getting started:
  * Diamond is deployed on [Fabric's](https://get.fabric.io/) infrastructure, polling hundreds of metric sources and pushing millions of points per minute.
  * **Have a story? Please share!**
 
-## Repos
+## History
 
-Historically Diamond was a brightcove project and hosted at [BrightcoveOS](https://github.com/brightcoveos/Diamond).
+Diamond was a brightcove project and hosted at [BrightcoveOS](https://github.com/brightcoveos/Diamond).
 However none of the active developers are brightcove employees and so the development
 has moved to [python-diamond](https://github.com/python-diamond/Diamond). We request
 that any new pull requests and issues be cut against python-diamond. We will keep
-BrightcoveOS updated and still honor issues/tickets cut on that repo.
+BrightcoveOS updated and still honor issues/tickets cut on that repo. Unfortunately development of Diamond is stuck,
+let's face it - project is abandoned. Diamond-next is an effort to continue development.
 
 ## Diamond Related Projects
  * [Related Projects](Related-Projects.md)
-
-## Contact
- * IRC [#python-diamond](irc://chat.freenode.net:6667/%23python-diamond) on [freenode](http://www.freenode.net). [Webchat](http://webchat.freenode.net/?channels=python-diamond)
- * Mailing List [diamond@librelist.com](mailto:diamond@librelist.com) - Email the list and you will automatically subscribe. [Archive](http://librelist.com/browser/diamond/)
