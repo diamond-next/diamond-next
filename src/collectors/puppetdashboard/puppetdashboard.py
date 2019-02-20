@@ -43,7 +43,7 @@ class PuppetDashboardCollector(diamond.collector.Collector):
             response = urllib2.urlopen("http://%s:%s/" % (
                 self.config['host'], int(self.config['port'])))
         except Exception as e:
-            self.log.error('Couldnt connect to puppet-dashboard: %s', e)
+            self.log.error('Could not connect to puppet-dashboard: %s', e)
             return {}
 
         for line in response.readlines():
@@ -60,4 +60,4 @@ class PuppetDashboardCollector(diamond.collector.Collector):
 
                 self.publish(results['key'], results['count'])
             except Exception as e:
-                self.log.error('Couldnt parse the output: %s', e)
+                self.log.error('Could not parse the output: %s', e)
