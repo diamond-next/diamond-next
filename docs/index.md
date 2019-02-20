@@ -5,14 +5,19 @@ Currently `master` branch is under audit, the latest stable version is 4.0.515 s
 # Short-term roadmap
 
   1. Phase I (till 2019-02-26)
+  
     - audit current `master`,
     - setup CI and CD - build, docs,
     - setup communication channels (irc, slack, mailing list)
+    
   2. Phase II (till 2019-03-31)
+  
     - review, fix, merge bugfixes from python-diamond/Diamond
     - review small enhancements
     - release beta
+    
   3. Phase III (till 2019-04-30)
+  
     - prioritize rest of PR
     - discuss/publish long-term roadmap
   
@@ -56,3 +61,9 @@ let's face it - project is abandoned. Diamond-next is an effort to continue deve
 
 ## Diamond Related Projects
  * [Related Projects](Related-Projects.md)
+
+
+## License
+
+Code: MIT
+Logo: Vector Designed By Darwisgraphic from   [pngtree.com](https://pngtree.com/freepng/diamond-logo-template-vector-icon-illustration-design_3626181.html)
