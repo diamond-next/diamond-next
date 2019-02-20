@@ -24,35 +24,33 @@ except ImportError:
 
 class LibvirtKVMCollector(diamond.collector.Collector):
     blockStats = {
-        'read_reqs':   0,
-        'read_bytes':  1,
-        'write_reqs':  2,
+        'read_reqs': 0,
+        'read_bytes': 1,
+        'write_reqs': 2,
         'write_bytes': 3
     }
 
     vifStats = {
-        'rx_bytes':   0,
+        'rx_bytes': 0,
         'rx_packets': 1,
-        'rx_errors':  2,
-        'rx_drops':   3,
-        'tx_bytes':   4,
+        'rx_errors': 2,
+        'rx_drops': 3,
+        'tx_bytes': 4,
         'tx_packets': 5,
-        'tx_errors':  6,
-        'tx_drops':   7
+        'tx_errors': 6,
+        'tx_drops': 7
     }
 
     def get_default_config_help(self):
         config_help = super(LibvirtKVMCollector,
                             self).get_default_config_help()
         config_help.update({
-            'uri': """The libvirt connection URI. By default it's
-'qemu:///system'. One decent option is
-'qemu+unix:///system?socket=/var/run/libvirt/libvit-sock-ro'.""",
-            'sort_by_uuid': """Use the <uuid> of the instance instead of the
- default <name>, useful in Openstack deploments where <name> is only
-specific to the compute node""",
-            'cpu_absolute': """CPU stats reported as percentage by default, or
-as cummulative nanoseconds since VM creation if this is True."""
+            'uri': "The libvirt connection URI. By default it's 'qemu:///system'. "
+                   "One decent option is 'qemu+unix:///system?socket=/var/run/libvirt/libvit-sock-ro'.",
+            'sort_by_uuid': "Use the <uuid> of the instance instead of the default <name>, "
+                            "useful in Openstack deploments where <name> is onlyspecific to the compute node",
+            'cpu_absolute': "CPU stats reported as percentage by default, or as cummulative nanoseconds "
+                            "since VM creation if this is True."
         })
         return config_help
 
@@ -62,9 +60,9 @@ as cummulative nanoseconds since VM creation if this is True."""
         """
         config = super(LibvirtKVMCollector, self).get_default_config()
         config.update({
-            'path':     'libvirt-kvm',
+            'path': 'libvirt-kvm',
             'sort_by_uuid': False,
-            'uri':      'qemu:///system',
+            'uri': 'qemu:///system',
             'cpu_absolute': False
         })
         return config

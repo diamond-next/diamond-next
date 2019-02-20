@@ -202,7 +202,7 @@ def main():
             try:
                 if gid != -1 and uid != -1:
                     # Manually set the groups since they aren't set by default
-                    os.initgroups(user, gid)
+                    os.initgroups(pwd.getpwuid(uid).pw_name, gid)
 
                 if gid != -1 and os.getgid() != gid:
                     # Set GID
@@ -327,6 +327,7 @@ def main():
         log.error("Unhandled exception: %s" % str(e))
         log.error("traceback: %s" % traceback.format_exc())
         sys.exit(1)
+
 
 if __name__ == "__main__":
     if setproctitle:
