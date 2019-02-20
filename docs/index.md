@@ -56,3 +56,9 @@ let's face it - project is abandoned. Diamond-next is an effort to continue deve
 
 ## Diamond Related Projects
  * [Related Projects](Related-Projects.md)
+
+
+## License
+
+Code: MIT
+Logo: Vector Designed By Darwisgraphic from   [pngtree.com](https://pngtree.com/freepng/diamond-logo-template-vector-icon-illustration-design_3626181.html)
