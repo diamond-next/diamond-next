@@ -71,7 +71,6 @@ class TestNfsdCollector(CollectorTestCase):
             'threads.80-90-pct': 2654.0,
             'threads.fullcnt': 1324492.0,
             'threads.threads': 8.0,
-            'v2.unknown': 18.0,
             'v3.access': 136921.0,
             'v3.commit': 635.0,
             'v3.create': 1655.0,
@@ -84,7 +83,6 @@ class TestNfsdCollector(CollectorTestCase):
             'v3.readdir': 11295.0,
             'v3.readdirplus': 132298.0,
             'v3.remove': 1488.0,
-            'v3.unknown': 22.0,
             'v3.write': 67937.0,
             'v4.compound': 4476320.0,
             'v4.null': 18.0,
@@ -107,9 +105,7 @@ class TestNfsdCollector(CollectorTestCase):
             'v4.ops.setattr': 7870.0,
             'v4.ops.setcltid': 6226.0,
             'v4.ops.setcltidconf': 6227.0,
-            'v4.ops.unknown': 40.0,
             'v4.ops.write': 76562.0,
-            'v4.unknown': 2.0
         }
 
         self.setDocExample(collector=self.collector.__class__.__name__,
