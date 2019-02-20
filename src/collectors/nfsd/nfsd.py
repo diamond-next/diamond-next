@@ -96,6 +96,7 @@ class NfsdCollector(diamond.collector.Collector):
                     results['rpc.badauth'] = line[3]
                     results['rpc.badclnt'] = line[4]
                 elif line[0] == 'proc2':
+                    line.pop(1)
                     results['v2.unknown'] = line[1]
                     results['v2.null'] = line[2]
                     results['v2.getattr'] = line[3]
@@ -116,6 +117,7 @@ class NfsdCollector(diamond.collector.Collector):
                     results['v2.readdir'] = line[18]
                     results['v2.fsstat'] = line[19]
                 elif line[0] == 'proc3':
+                    line.pop(1)
                     results['v3.unknown'] = line[1]
                     results['v3.null'] = line[2]
                     results['v3.getattr'] = line[3]
@@ -140,10 +142,12 @@ class NfsdCollector(diamond.collector.Collector):
                     results['v3.pathconf'] = line[22]
                     results['v3.commit'] = line[23]
                 elif line[0] == 'proc4':
+                    line.pop(1)
                     results['v4.unknown'] = line[1]
                     results['v4.null'] = line[2]
                     results['v4.compound'] = line[3]
                 elif line[0] == 'proc4ops':
+                    line.pop(1)
                     results['v4.ops.unknown'] = line[1]
                     results['v4.ops.op0-unused'] = line[2]
                     results['v4.ops.op1-unused'] = line[3]
