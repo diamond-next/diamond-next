@@ -76,13 +76,13 @@ class PhpFpmCollector(diamond.collector.Collector):
                 self.config['host'], int(self.config['port']),
                 self.config['uri']))
         except Exception as e:
-            self.log.error('Couldnt connect to php-fpm status page: %s', e)
+            self.log.error('Could not connect to php-fpm status page: %s', e)
             return {}
 
         try:
             j = json.loads(response.read())
         except Exception as e:
-            self.log.error('Couldnt parse json: %s', e)
+            self.log.error('Could not parse json: %s', e)
             return {}
 
         valid_metrics = [

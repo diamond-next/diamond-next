@@ -45,13 +45,13 @@ class SidekiqWebCollector(diamond.collector.Collector):
             response = urllib2.urlopen("http://%s:%s/dashboard/stats" % (
                 self.config['host'], int(self.config['port'])))
         except Exception as e:
-            self.log.error('Couldnt connect to sidekiq-web: %s', e)
+            self.log.error('Could not connect to sidekiq-web: %s', e)
             return {}
 
         try:
             j = json.loads(response.read())
         except Exception as e:
-            self.log.error('Couldnt parse json: %s', e)
+            self.log.error('Could not parse json: %s', e)
             return {}
 
         for k in j:

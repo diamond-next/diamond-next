@@ -38,7 +38,7 @@ class ResqueWebCollector(diamond.collector.Collector):
             response = urllib2.urlopen("http://%s:%s/stats.txt" % (
                 self.config['host'], int(self.config['port'])))
         except Exception as e:
-            self.log.error('Couldnt connect to resque-web: %s', e)
+            self.log.error('Could not connect to resque-web: %s', e)
             return {}
 
         for data in response.read().split("\n"):
@@ -60,4 +60,4 @@ class ResqueWebCollector(diamond.collector.Collector):
                     self.publish("queue.%s.current" % queue, count)
 
             except Exception as e:
-                self.log.error('Couldnt parse the queue: %s', e)
+                self.log.error('Could not parse the queue: %s', e)

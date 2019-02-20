@@ -126,7 +126,7 @@ class TokuMXCollector(diamond.collector.Collector):
                         read_preference=ReadPreference.SECONDARY,
                     )
             except Exception as e:
-                self.log.error('Couldnt connect to mongodb: %s', e)
+                self.log.error('Could not connect to mongodb: %s', e)
                 continue
 
             # try auth

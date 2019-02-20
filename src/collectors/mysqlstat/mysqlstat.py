@@ -350,7 +350,7 @@ class MySQLCollector(diamond.collector.Collector):
                         except:
                             pass
             except:
-                self.log.error('MySQLCollector: Couldnt get master status')
+                self.log.error('MySQLCollector: Could not get master status')
                 pass
 
         if self.config['slave']:
@@ -366,7 +366,7 @@ class MySQLCollector(diamond.collector.Collector):
                         except:
                             pass
             except:
-                self.log.error('MySQLCollector: Couldnt get slave status')
+                self.log.error('MySQLCollector: Could not get slave status')
                 pass
 
         if self.config['innodb']:
@@ -404,7 +404,7 @@ class MySQLCollector(diamond.collector.Collector):
                     self.log.debug("MySQLCollector: %s regexp not matched " +
                                    "in innodb status", key)
             except Exception as innodb_status_error:
-                self.log.error('MySQLCollector: Couldnt get engine innodb ' +
+                self.log.error('MySQLCollector: Could not get engine innodb ' +
                                'status, check user permissions: %s',
                                innodb_status_error)
             Innodb_status_process_time = time.time() - innodb_status_timer
