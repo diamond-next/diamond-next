@@ -44,7 +44,7 @@ class HttpdCollector(diamond.collector.Collector):
             'urls': "Urls to server-status in auto format, comma seperated," +
                     " Format 'nickname http://host:port/server-status?auto, " +
                     ", nickname http://host:port/server-status?auto, etc'",
-            'redirects': "The maximum number of redirect requests to follow.",
+            'max_redirects': "The maximum number of redirect requests to follow.",
         })
         return config_help
 
@@ -56,7 +56,7 @@ class HttpdCollector(diamond.collector.Collector):
         config.update({
             'path': 'httpd',
             'urls': ['localhost http://localhost:8080/server-status?auto'],
-            'redirects': 5,
+            'max_redirects': 5,
         })
         return config
 
@@ -92,7 +92,7 @@ class HttpdCollector(diamond.collector.Collector):
                     connection.close()
 
                     redirects += 1
-                    if redirects > self.config['redirects']:
+                    if redirects > self.config['max_redirects']:
                         raise Exception("Too many redirects!")
 
             except Exception as e:
