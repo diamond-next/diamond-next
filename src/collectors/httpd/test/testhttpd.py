@@ -332,6 +332,90 @@ class TestHttpdCollector(CollectorTestCase):
 
         self.assertEqual(self.collector.urls, expected_urls)
 
+    @patch.object(Collector, 'publish')
+    def test_should_respect_max_redirect_limit_and_skip_url(self, publish_mock):
+        self.setUp(config={
+            'urls': [
+                'nickname1 http://localhost:8080/server-status?auto',
+                'nickname2 http://localhost:8080/server-status?auto',
+            ],
+        })
+
+        patch_read = patch.object(
+            TestHTTPResponse,
+            'read',
+            Mock(return_value=self.getFixture(
+                'server-status-live-1').getvalue()))
+
+        mock_getheaders = Mock()
+        mock_getheaders.side_effect = [
+            {'location': 'http://localhost:8080/1'},
+            {'location': 'http://localhost:8080/2'},
+            {'location': 'http://localhost:8080/3'},
+            {'location': 'http://localhost:8080/4'},
+            {'location': 'http://localhost:8080/5'},
+            {}
+        ]
+        patch_headers = patch.object(
+            TestHTTPResponse,
+            'getheaders',
+            mock_getheaders)
+
+        patch_headers.start()
+        patch_read.start()
+        self.collector.collect()
+        patch_read.stop()
+
+        self.assertPublishedMany(publish_mock, {})
+
+        patch_read = patch.object(
+            TestHTTPResponse,
+            'read',
+            Mock(return_value=self.getFixture(
+                'server-status-live-2').getvalue()))
+
+        patch_read.start()
+        self.collector.collect()
+        patch_read.stop()
+        patch_headers.stop()
+
+        metrics = {
+            'nickname1.TotalAccesses': 8314,
+            'nickname1.ReqPerSec': 0,
+            'nickname1.BytesPerSec': 165,
+            'nickname1.BytesPerReq': 5418.55,
+            'nickname1.BusyWorkers': 9,
+            'nickname1.IdleWorkers': 0,
+            'nickname1.WritingWorkers': 1,
+            'nickname1.KeepaliveWorkers': 7,
+            'nickname1.ReadingWorkers': 1,
+            'nickname1.DnsWorkers': 0,
+            'nickname1.ClosingWorkers': 0,
+            'nickname1.LoggingWorkers': 0,
+            'nickname1.FinishingWorkers': 0,
+            'nickname1.CleanupWorkers': 0,
+
+            'nickname2.TotalAccesses': 8314,
+            'nickname2.ReqPerSec': 0,
+            'nickname2.BytesPerSec': 165,
+            'nickname2.BytesPerReq': 5418.55,
+            'nickname2.BusyWorkers': 9,
+            'nickname2.IdleWorkers': 0,
+            'nickname2.WritingWorkers': 1,
+            'nickname2.KeepaliveWorkers': 7,
+            'nickname2.ReadingWorkers': 1,
+            'nickname2.DnsWorkers': 0,
+            'nickname2.ClosingWorkers': 0,
+            'nickname2.LoggingWorkers': 0,
+            'nickname2.FinishingWorkers': 0,
+            'nickname2.CleanupWorkers': 0,
+        }
+
+        self.setDocExample(collector=self.collector.__class__.__name__,
+                           metrics=metrics,
+                           defaultpath=self.collector.config['path'])
+        self.assertPublishedMany(publish_mock, metrics)
+
 ##########################################################################
 if __name__ == "__main__":
     unittest.main()
