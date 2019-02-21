@@ -23,6 +23,7 @@ measure_collector_time | False | Collect the collector run time in ms | bool
 metrics_blacklist | None | Regex to match metrics to block. Mutually exclusive with metrics_whitelist | NoneType
 metrics_whitelist | None | Regex to match metrics to transmit. Mutually exclusive with metrics_blacklist | NoneType
 urls | localhost http://localhost:8080/server-status?auto, | Urls to server-status in auto format, comma seperated, Format 'nickname http://host:port/server-status?auto, , nickname http://host:port/server-status?auto, etc' | list
+max_redirects | 5 | The maximum number of redirect requests to follow | int
 
 #### Example Output
 
