@@ -228,6 +228,41 @@ class TestDiskUsageCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
+    @patch('os.access', Mock(return_value=True))
+    @patch.object(Collector, 'publish')
+    def test_verify_supporting_cciss(self, publish_mock):
+        patch_open = patch(
+            '__builtin__.open',
+            Mock(
+                return_value=self.getFixture(
+                    'proc_diskstats_1_cciss')))
+        patch_time = patch('time.time', Mock(return_value=10))
+
+        patch_open.start()
+        patch_time.start()
+        self.collector.collect()
+        patch_open.stop()
+        patch_time.stop()
+
+        self.assertPublishedMany(publish_mock, {})
+
+        patch_open = patch(
+            '__builtin__.open',
+            Mock(
+                return_value=self.getFixture(
+                    'proc_diskstats_2_cciss')))
+        patch_time = patch('time.time', Mock(return_value=20))
+
+        patch_open.start()
+        patch_time.start()
+        self.collector.collect()
+        patch_open.stop()
+        patch_time.stop()
+
+        metrics = self.getPickledResults('test_verify_supporting_cciss.pkl')
+
+        self.assertPublishedMany(publish_mock, metrics)
+
 
 ##########################################################################
 if __name__ == "__main__":
