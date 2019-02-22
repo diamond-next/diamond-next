@@ -13,6 +13,7 @@ Currently `master` branch is under audit, the latest stable version is 4.0.515 s
   2. Phase II (till 2019-03-31)
   
     - review, fix, merge bugfixes from python-diamond/Diamond
+      Progress - [https://github.com/diamond-next/diamond-next/projects/1](https://github.com/diamond-next/diamond-next/projects/1)
     - review small enhancements
     - release beta
     
