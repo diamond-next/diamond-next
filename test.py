@@ -61,7 +61,7 @@ class CollectorTestCase(unittest.TestCase):
             return False
 
         filePath = os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                'docs', 'collectors',  collector + '.md')
+                                'docs', 'collectors', collector + '.md')
 
         if not os.path.exists(filePath):
             return False
@@ -220,19 +220,17 @@ class CollectorTestCase(unittest.TestCase):
 
         mock.reset_mock()
 
+
 collectorTests = {}
 
 
-def getCollectorTests(path):
+def getCollectorTests(path, verbose=True):
     for f in os.listdir(path):
-        cPath = os.path.abspath(os.path.join(path, f))
+        fn = os.path.abspath(os.path.join(path, f))
 
-        if ((os.path.isfile(cPath) and
-             len(f) > 3 and
-             f[-3:] == '.py' and
-             f[0:4] == 'test')):
-            sys.path.append(os.path.dirname(cPath))
-            sys.path.append(os.path.dirname(os.path.dirname(cPath)))
+        if (os.path.isfile(fn) and f.startwith('test') and f.endswith('.py')):
+            sys.path.append(os.path.dirname(fn))
+            sys.path.append(os.path.dirname(os.path.dirname(fn)))
             modname = f[:-3]
             try:
                 # Import the module
@@ -241,16 +239,15 @@ def getCollectorTests(path):
                                                      locals(),
                                                      ['*'])
             except Exception:
-                print("Failed to import module: %s. %s" % (
-                    modname, traceback.format_exc()))
+                print("Failed to import module: %s." % (modname, ))
+                print("Traceback: %s" % (traceback.format_exc(), ))
                 continue
 
     for f in os.listdir(path):
-        cPath = os.path.abspath(os.path.join(path, f))
-        if os.path.isdir(cPath):
-            getCollectorTests(cPath)
+        fn = os.path.abspath(os.path.join(path, f))
+        if os.path.isdir(fn):
+            getCollectorTests(fn)
 
-###############################################################################
 
 if __name__ == "__main__":
     if setproctitle:
@@ -287,7 +284,7 @@ if __name__ == "__main__":
                                          'src',
                                          'diamond'))
 
-    getCollectorTests(cPath)
+    getCollectorTests(cPath, options.verbose)
 
     if not options.collector:
         # Only pull in diamond tests when a specific collector
