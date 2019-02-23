@@ -228,7 +228,7 @@ def getCollectorTests(path, verbose=True):
     for f in os.listdir(path):
         fn = os.path.abspath(os.path.join(path, f))
 
-        if (os.path.isfile(fn) and f.startwith('test') and f.endswith('.py')):
+        if (os.path.isfile(fn) and f.startswith('test') and f.endswith('.py')):
             sys.path.append(os.path.dirname(fn))
             sys.path.append(os.path.dirname(os.path.dirname(fn)))
             modname = f[:-3]
