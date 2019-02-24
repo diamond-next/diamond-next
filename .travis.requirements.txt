@@ -1,4 +1,3 @@
-MySQL-python
 PyYAML
 beanstalkc
 riemann-client
