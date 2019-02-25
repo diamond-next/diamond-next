@@ -16,10 +16,10 @@ all:
 	@echo "make pypi     - Update PyPI package"
 	@echo "make install  - Install on local system"
 	@echo "make develop  - Install on local system in development mode"
-	#@echo "make rpm      - Generate a rpm package"
-	#@echo "make deb      - Generate a deb package"
+	@echo "make rpm      - Generate a rpm package"
+	@echo "make deb      - Generate a deb package"
 	@echo "make sdeb     - Generate a deb source package"
-	#@echo "make ebuild   - Generate a ebuild package"
+	@echo "make ebuild   - Generate a ebuild package"
 	@echo "make tar      - Generate a tar ball"
 	@echo "make clean    - Get rid of scratch and byte files"
 
@@ -54,41 +54,41 @@ install: version
 develop: version
 	USE_SETUPTOOLS=1 ./setup.py develop
 
-#rpm: buildrpm
+rpm: buildrpm
 
-#buildrpm: sdist
-	#./setup.py bdist_rpm \
-		#--release=`ls dist/*.noarch.rpm | wc -l` \
-		#--build-requires='python, python-configobj, python-setuptools' \
-		#--requires='python, python-configobj, python-setuptools'
+buildrpm: sdist
+	./setup.py bdist_rpm \
+		--release=`ls dist/*.noarch.rpm | wc -l` \
+		--build-requires='python, python-configobj, python-setuptools' \
+		--requires='python, python-configobj, python-setuptools'
 
-#deb: builddeb
+deb: builddeb
 
-#sdeb: buildsourcedeb
+sdeb: buildsourcedeb
 
-#builddeb: version
-	#dch --newversion $(VERSION) --distribution unstable --force-distribution -b "Last Commit: $(shell git log -1 --pretty=format:'(%ai) %H %cn <%ce>')"
-	#dch --release  "new upstream"
-	#./setup.py sdist --prune
-	#mkdir -p build
-	#tar -C build -zxf dist/$(PROJECT)-$(VERSION).tar.gz
-	#(cd build/$(PROJECT)-$(VERSION) && debuild -us -uc -v$(VERSION))
-	#@echo "Package is at build/$(PROJECT)_$(VERSION)_all.deb"
+builddeb: version
+	dch --newversion $(VERSION) --distribution unstable --force-distribution -b "Last Commit: $(shell git log -1 --pretty=format:'(%ai) %H %cn <%ce>')"
+	dch --release  "new upstream"
+	./setup.py sdist --prune
+	mkdir -p build
+	tar -C build -zxf dist/$(PROJECT)-$(VERSION).tar.gz
+	(cd build/$(PROJECT)-$(VERSION) && debuild -us -uc -v$(VERSION))
+	@echo "Package is at build/$(PROJECT)_$(VERSION)_all.deb"
 
-#buildsourcedeb: version
-	#dch --newversion $(VERSION)~$(DISTRO) --distribution $(DISTRO) --force-distribution -b "Last Commit: $(shell git log -1 --pretty=format:'(%ai) %H %cn <%ce>')"
-	#dch --release  "new upstream"
-	#./setup.py sdist --prune
-	#mkdir -p build
-	#tar -C build -zxf dist/$(PROJECT)-$(VERSION).tar.gz
-	#(cd build/$(PROJECT)-$(VERSION) && debuild -S -sa -v$(VERSION))
-	#@echo "Source package is at build/$(PROJECT)_$(VERSION)~$(DISTRO)_source.changes"
+buildsourcedeb: version
+	dch --newversion $(VERSION)~$(DISTRO) --distribution $(DISTRO) --force-distribution -b "Last Commit: $(shell git log -1 --pretty=format:'(%ai) %H %cn <%ce>')"
+	dch --release  "new upstream"
+	./setup.py sdist --prune
+	mkdir -p build
+	tar -C build -zxf dist/$(PROJECT)-$(VERSION).tar.gz
+	(cd build/$(PROJECT)-$(VERSION) && debuild -S -sa -v$(VERSION))
+	@echo "Source package is at build/$(PROJECT)_$(VERSION)~$(DISTRO)_source.changes"
 
-#ebuild: buildebuild
+ebuild: buildebuild
 
-#buildebuild: version
-	#cat gentoo/diamond.ebuild | sed "s/GIT_HASH/${HASH}/" >> gentoo/diamond-$(VERSION).ebuild
-	#@echo "ebuild is at gentoo/diamond-$(VERSION).ebuild"
+buildebuild: version
+	cat contrib/gentoo/diamond.ebuild | sed "s/GIT_HASH/${HASH}/" >> contrib/gentoo/diamond-$(VERSION).ebuild
+	@echo "ebuild is at contrib/gentoo/diamond-$(VERSION).ebuild"
 
 tar: sdist
 
