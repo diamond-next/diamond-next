@@ -45,7 +45,6 @@ else:
 
     distro_name = distro.linux_distribution()[2]
     distro_major_version = distro.linux_distribution()[1].split('.')[0]
-
     if not distro_name:
         if 'amzn' in platform.uname()[2]:
             distro_name = 'centos'
