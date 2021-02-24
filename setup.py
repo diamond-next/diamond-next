@@ -113,7 +113,7 @@ def get_version():
     return version
 
 
-def pkg_path(root, path, rpath="/"):
+def pkgPath(root, path, rpath="/"):
     """
         Package up a path recursively
     """
@@ -130,14 +130,13 @@ def pkg_path(root, path, rpath="/"):
         if os.path.isfile(subpath):
             files.append(subpath)
         if os.path.isdir(subpath):
-            pkg_path(root, subpath, spath)
+            pkgPath(root, subpath, spath)
     data_files.append((root + rpath, files))
 
-
 if os.name == 'nt':
-    pkg_path(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
+    pkgPath(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
 else:
-    pkg_path('share/diamond/collectors', 'src/collectors')
+    pkgPath('share/diamond/collectors', 'src/collectors')
 
 version = get_version()
 
