@@ -4,7 +4,7 @@
 ### Core
 
 - CentOS or Ubuntu
-- Python 2.7
+- Python 3.6
 - python-configobj
 - python-setuptools
 - make
@@ -38,7 +38,7 @@ $ $EDITOR /etc/diamond/diamond.conf
 
 ```sh
 $ apt-get update
-$ apt-get install make pbuilder python-mock python-configobj python-support cdbs devscripts build-essential
+$ apt-get install make pbuilder python-mock python3-configobj cdbs devscripts build-essential
 $ git clone https://github.com/diamond-next/diamond-next.git
 $ cd diamond-next
 $ make builddeb

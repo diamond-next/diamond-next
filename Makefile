@@ -1,9 +1,9 @@
 DESTDIR=/
-PROJECT=diamond
+PROJECT=diamond-next
 VERSION :=$(shell bash version.sh )
 RELEASE :=$(shell ls -1 dist/*.noarch.rpm 2>/dev/null | wc -l )
 HASH	:=$(shell git rev-parse HEAD )
-DISTRO=precise
+DISTRO=focal
 
 all:
 	@echo "make run      - Run Diamond from this directory"
@@ -72,7 +72,7 @@ builddeb: version
 	./setup.py sdist --prune
 	mkdir -p build
 	tar -C build -zxf dist/$(PROJECT)-$(VERSION).tar.gz
-	(cd build/$(PROJECT)-$(VERSION) && debuild -us -uc -v$(VERSION))
+	(cd build/$(PROJECT)-$(VERSION) && debuild -I -us -uc -v$(VERSION))
 	@echo "Package is at build/$(PROJECT)_$(VERSION)_all.deb"
 
 buildsourcedeb: version
@@ -81,14 +81,14 @@ buildsourcedeb: version
 	./setup.py sdist --prune
 	mkdir -p build
 	tar -C build -zxf dist/$(PROJECT)-$(VERSION).tar.gz
-	(cd build/$(PROJECT)-$(VERSION) && debuild -S -sa -v$(VERSION))
+	(cd build/$(PROJECT)-$(VERSION) && debuild -I -S -sa -v$(VERSION))
 	@echo "Source package is at build/$(PROJECT)_$(VERSION)~$(DISTRO)_source.changes"
 
 ebuild: buildebuild
 
 buildebuild: version
-	cat contrib/gentoo/diamond.ebuild | sed "s/GIT_HASH/${HASH}/" >> contrib/gentoo/diamond-$(VERSION).ebuild
-	@echo "ebuild is at contrib/gentoo/diamond-$(VERSION).ebuild"
+	cat gentoo/diamond.ebuild | sed "s/GIT_HASH/${HASH}/" >> gentoo/diamond-$(VERSION).ebuild
+	@echo "ebuild is at gentoo/diamond-$(VERSION).ebuild"
 
 tar: sdist
 

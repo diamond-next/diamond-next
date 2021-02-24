@@ -5,6 +5,7 @@ import sys
 import os
 from glob import glob
 import platform
+import distro
 
 
 def running_under_virtualenv():
@@ -42,11 +43,12 @@ else:
         ('share/diamond/user_scripts', []),
     ]
 
-    distro = platform.dist()[0]
-    distro_major_version = platform.dist()[1].split('.')[0]
-    if not distro:
+    distro_name = distro.linux_distribution()[2]
+    distro_major_version = distro.linux_distribution()[1].split('.')[0]
+
+    if not distro_name:
         if 'amzn' in platform.uname()[2]:
-            distro = 'centos'
+            distro_name = 'centos'
 
     if running_under_virtualenv():
         data_files.append(('etc/diamond',
@@ -65,20 +67,20 @@ else:
         data_files.append(('/var/log/diamond',
                            ['.keep']))
 
-        if distro == 'Ubuntu':
+        if distro_name == 'Ubuntu':
             if distro_major_version >= 16:
                 data_files.append(('/usr/lib/systemd/system',
                                    ['rpm/systemd/diamond.service']))
             else:
                 data_files.append(('/etc/init',
                                    ['debian/diamond.upstart']))
-        if distro in ['centos', 'redhat', 'debian', 'fedora', 'oracle']:
+        if distro_name in ['centos', 'redhat', 'debian', 'fedora', 'oracle']:
             data_files.append(('/etc/init.d',
                                ['bin/init.d/diamond']))
-            if distro_major_version >= 7 and not distro == 'debian':
+            if distro_major_version >= 7 and not distro_name == 'debian':
                 data_files.append(('/usr/lib/systemd/system',
                                    ['rpm/systemd/diamond.service']))
-            elif distro_major_version >= 6 and not distro == 'debian':
+            elif distro_major_version >= 6 and not distro_name == 'debian':
                 data_files.append(('/etc/init',
                                    ['rpm/upstart/diamond.conf']))
 
@@ -88,8 +90,8 @@ else:
     if running_under_virtualenv():
         install_requires = ['configobj', 'psutil', ]
     else:
-        if distro in ['debian', 'Ubuntu']:
-            install_requires = ['python-configobj', 'python-psutil', ]
+        if distro_name in ['debian', 'Ubuntu']:
+            install_requires = ['python3-configobj', 'python-psutil', ]
         # Default back to pip style requires
         else:
             install_requires = ['configobj', 'psutil', ]
@@ -111,7 +113,7 @@ def get_version():
     return version
 
 
-def pkgPath(root, path, rpath="/"):
+def pkg_path(root, path, rpath="/"):
     """
         Package up a path recursively
     """
@@ -128,13 +130,14 @@ def pkgPath(root, path, rpath="/"):
         if os.path.isfile(subpath):
             files.append(subpath)
         if os.path.isdir(subpath):
-            pkgPath(root, subpath, spath)
+            pkg_path(root, subpath, spath)
     data_files.append((root + rpath, files))
 
+
 if os.name == 'nt':
-    pkgPath(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
+    pkg_path(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
 else:
-    pkgPath('share/diamond/collectors', 'src/collectors')
+    pkg_path('share/diamond/collectors', 'src/collectors')
 
 version = get_version()
 
@@ -150,11 +153,11 @@ setup(
     packages=['diamond', 'diamond.handler', 'diamond.utils'],
     scripts=['bin/diamond', 'bin/diamond-setup'],
     data_files=data_files,
-    python_requires='~=2.7',
+    python_requires='>=3.6',
     install_requires=install_requires,
     classifiers=[
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
     ],
     ** setup_kwargs
 )
