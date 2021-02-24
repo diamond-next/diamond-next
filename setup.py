@@ -5,7 +5,7 @@ import sys
 import os
 from glob import glob
 import platform
-import distro
+from distro import linux_distribution
 
 
 def running_under_virtualenv():
@@ -43,8 +43,8 @@ else:
         ('share/diamond/user_scripts', []),
     ]
 
-    distro_name = distro.linux_distribution()[2]
-    distro_major_version = distro.linux_distribution()[1].split('.')[0]
+    distro_name = linux_distribution()[0]
+    distro_major_version = int(linux_distribution()[1].split('.')[0])
     if not distro_name:
         if 'amzn' in platform.uname()[2]:
             distro_name = 'centos'
