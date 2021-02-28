@@ -35,8 +35,6 @@ if os.name == 'nt':
         (os.path.join(base_files, 'collectors'), glob('conf/collectors/*')),
         (os.path.join(base_files, 'handlers'), glob('conf/handlers/*')),
     ]
-    install_requires = ['configobj', 'psutil', ],
-
 else:
     data_files = [
         ('share/diamond', ['LICENSE', 'version.txt']),
@@ -82,18 +80,6 @@ else:
             elif distro_major_version >= 6 and not distro_name == 'debian':
                 data_files.append(('/etc/init',
                                    ['rpm/upstart/diamond.conf']))
-
-    # Support packages being called differently on different distros
-
-    # Are we in a virtenv?
-    if running_under_virtualenv():
-        install_requires = ['configobj', 'psutil', ]
-    else:
-        if distro_name in ['debian', 'Ubuntu']:
-            install_requires = ['python3-configobj', 'python-psutil', ]
-        # Default back to pip style requires
-        else:
-            install_requires = ['configobj', 'psutil', ]
 
 
 def get_version():
@@ -151,8 +137,8 @@ setup(
     packages=['diamond', 'diamond.handler', 'diamond.utils'],
     scripts=['bin/diamond', 'bin/diamond-setup'],
     data_files=data_files,
-    python_requires='>=3.6',
-    install_requires=install_requires,
+    python_requires='>=3.8',
+    install_requires=['configobj', 'psutil'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
