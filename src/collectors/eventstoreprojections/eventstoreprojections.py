@@ -64,7 +64,7 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
                 for k, v in self._json_to_flat_metrics(
                         "%s.%s" % (prefix, key), value):
                     yield k, v
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 if value == "Running":
                     value = 1
                     yield ("%s.%s" % (prefix, key), value)

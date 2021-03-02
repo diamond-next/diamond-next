@@ -143,7 +143,7 @@ def str_to_bool(value):
     Converts string truthy/falsey strings to a bool
     Empty strings are false
     """
-    if isinstance(value, basestring):
+    if isinstance(value, str):
         value = value.strip().lower()
         if value in ['true', 't', 'yes', 'y']:
             return True
@@ -217,7 +217,7 @@ class Collector(object):
         event
         """
         if 'byte_unit' in self.config:
-            if isinstance(self.config['byte_unit'], basestring):
+            if isinstance(self.config['byte_unit'], str):
                 self.config['byte_unit'] = self.config['byte_unit'].split()
 
         if 'enabled' in self.config:
