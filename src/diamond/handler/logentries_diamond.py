@@ -5,11 +5,11 @@ Send Diamond stats to your Logentries Account where you can monitor and alert
 based on data in real time.
 """
 
-from Handler import Handler
+import json
 import logging
 import urllib2
-import json
 from collections import deque
+from diamond.handler.Handler import Handler
 
 
 class LogentriesDiamondHandler(Handler):

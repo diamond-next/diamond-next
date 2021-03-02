@@ -18,8 +18,8 @@ It has these options:
 
 """
 
-from Handler import Handler
 import logging
+from diamond.handler.Handler import Handler
 
 try:
     from riemann_client.transport import TCPTransport, UDPTransport

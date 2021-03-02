@@ -77,15 +77,15 @@ high.
 
 """
 
-from Handler import Handler
-from diamond.metric import Metric
-import urllib2
 import StringIO
-import gzip
 import base64
+import contextlib
+import gzip
 import json
 import re
-import contextlib
+import urllib2
+from diamond.handler.Handler import Handler
+from diamond.metric import Metric
 
 
 class TSDBHandler(Handler):

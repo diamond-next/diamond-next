@@ -5,8 +5,8 @@
 Send metrics to a http endpoint via POST
 """
 
-from Handler import Handler
 import urllib2
+from diamond.handler.Handler import Handler
 
 
 class HttpPostHandler(Handler):

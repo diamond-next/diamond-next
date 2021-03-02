@@ -4,12 +4,11 @@
 Save stats in RRD files using rrdtool.
 """
 
+import Queue
 import os
 import re
 import subprocess
-import Queue
-
-from Handler import Handler
+from diamond.handler.Handler import Handler
 
 #
 # Constants for RRD file creation.

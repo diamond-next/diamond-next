@@ -10,9 +10,9 @@ by their apps, tools and services into actionable insight.
 
 """
 
-from Handler import Handler
 import logging
 from collections import deque
+from diamond.handler.Handler import Handler
 
 try:
     import dogapi

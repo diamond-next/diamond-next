@@ -27,8 +27,9 @@ of this handler.
 
 """
 
-from Handler import Handler
 import logging
+from diamond.handler.Handler import Handler
+
 try:
     import statsd
 except ImportError:

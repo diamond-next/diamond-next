@@ -22,13 +22,13 @@ Enable this handler
      metrics
 """
 
-from Handler import Handler
-from diamond.util import get_diamond_version
 import json
 import logging
+import re
 import time
 import urllib2
-import re
+from diamond.handler.Handler import Handler
+from diamond.util import get_diamond_version
 
 
 class SignalfxHandler(Handler):

@@ -4,8 +4,8 @@
 Output the collected values to RabitMQ pub/sub channel
 """
 
-from Handler import Handler
 import time
+from diamond.handler.Handler import Handler
 
 try:
     import pika

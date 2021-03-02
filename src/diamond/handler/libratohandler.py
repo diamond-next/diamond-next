@@ -12,10 +12,10 @@ operations more fun and efficient.
 
 """
 
-from Handler import Handler
 import logging
-import time
 import re
+import time
+from diamond.handler.Handler import Handler
 
 try:
     import librato

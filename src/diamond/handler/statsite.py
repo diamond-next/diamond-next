@@ -52,8 +52,8 @@ store only a fraction of the samples.
 
 """
 
-from Handler import Handler
 import socket
+from diamond.handler.Handler import Handler
 
 
 class StatsiteHandler(Handler):

@@ -4,8 +4,8 @@
 Insert the collected values into a mysql table
 """
 
-from Handler import Handler
 import MySQLdb
+from diamond.handler.Handler import Handler
 
 
 class MySQLHandler(Handler):

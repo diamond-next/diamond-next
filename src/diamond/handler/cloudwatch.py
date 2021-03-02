@@ -38,11 +38,10 @@ namespace = MachineLoad
 unit = None
 """
 
-import sys
 import datetime
-
-from Handler import Handler
+import sys
 from configobj import Section
+from diamond.handler.Handler import Handler
 
 try:
     import boto

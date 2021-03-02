@@ -6,9 +6,9 @@ interface. Unlike GraphitePickleHandler, this one supports multiple graphite
 servers. Specify them as a list of hosts divided by comma.
 """
 
-from Handler import Handler
-from graphitepickle import GraphitePickleHandler
 from copy import deepcopy
+from diamond.handler.Handler import Handler
+from diamond.handler.graphitepickle import GraphitePickleHandler
 
 
 class MultiGraphitePickleHandler(Handler):

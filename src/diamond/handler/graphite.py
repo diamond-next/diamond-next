@@ -16,9 +16,9 @@ use it.
 
 """
 
-from Handler import Handler
 import socket
 import time
+from diamond.handler.Handler import Handler
 
 
 class GraphiteHandler(Handler):

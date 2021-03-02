@@ -59,10 +59,12 @@ which subscribes to an MQTT broker and sends metrics off to Graphite.
 
 """
 
-from Handler import Handler
-from diamond.collector import get_hostname
 import os
+from diamond.collector import get_hostname
+from diamond.handler.Handler import Handler
+
 HAVE_SSL = True
+
 try:
     import ssl
 except ImportError:
