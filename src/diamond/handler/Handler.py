@@ -2,9 +2,9 @@
 
 import logging
 import threading
+import time
 import traceback
 from configobj import ConfigObj
-import time
 
 
 class Handler(object):

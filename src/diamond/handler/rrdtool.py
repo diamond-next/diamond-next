@@ -4,11 +4,11 @@
 Save stats in RRD files using rrdtool.
 """
 
-import Queue
 import os
 import re
 import subprocess
 from diamond.handler.Handler import Handler
+from queue import Empty, Queue
 
 #
 # Constants for RRD file creation.
@@ -159,11 +159,13 @@ class RRDHandler(Handler):
 
     def _queue(self, filename, timestamp, value):
         if filename not in self._queues:
-            queue = Queue.Queue()
+            queue = Queue()
             self._queues[filename] = queue
         else:
             queue = self._queues[filename]
+
         queue.put((timestamp, value))
+
         return queue.qsize()
 
     def flush(self):
@@ -189,8 +191,7 @@ class RRDHandler(Handler):
                 if last_update >= timestamp:
                     # Yikes. RRDtool won't let us do this.
                     # We need to drop this update and log a warning.
-                    self.log.warning(
-                        "Dropping update to %s. Too frequent!" % filename)
+                    self.log.warning("Dropping update to %s. Too frequent!" % filename)
                     continue
                 max_timestamp = max(timestamp, max_timestamp)
 
@@ -198,7 +199,7 @@ class RRDHandler(Handler):
                 if timestamp not in updates:
                     updates[timestamp] = []
                 updates[timestamp].append(value)
-            except Queue.Empty:
+            except Empty:
                 break
 
         # Save the last update time.

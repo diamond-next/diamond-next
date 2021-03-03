@@ -22,21 +22,17 @@ See https://github.com/emicklei/jcollectd for an up-to-date jcollect fork.
 
 """
 
-
-import threading
-import re
-import Queue
-
-import diamond.collector
+import diamond.collectors.jcollectd.collectd_network
 import diamond.metric
-
-import collectd_network
-
+import re
+import threading
+from diamond.collector import Collector
+from queue import Empty, Full, Queue
 
 ALIVE = True
 
 
-class JCollectdCollector(diamond.collector.Collector):
+class JCollectdCollector(Collector):
 
     def __init__(self, *args, **kwargs):
         super(JCollectdCollector, self).__init__(*args, **kwargs)
@@ -63,14 +59,12 @@ class JCollectdCollector(diamond.collector.Collector):
             try:
                 dp = q.get(False)
                 metric = self.make_metric(dp)
-            except Queue.Empty:
+            except Empty:
                 break
             self.publish_metric(metric)
 
     def start_listener(self):
-        self.listener_thread = ListenerThread(self.config['listener_host'],
-                                              self.config['listener_port'],
-                                              self.log)
+        self.listener_thread = ListenerThread(self.config['listener_host'], self.config['listener_port'], self.log)
         self.listener_thread.start()
 
     def stop_listener(self):
@@ -118,11 +112,10 @@ class ListenerThread(threading.Thread):
         self.log = log
         self.poll_interval = poll_interval
 
-        self.queue = Queue.Queue()
+        self.queue = Queue()
 
     def run(self):
-        self.log.info('ListenerThread started on {}:{}(udp)'.format(
-            self.host, self.port))
+        self.log.info('ListenerThread started on {}:{}(udp)'.format(self.host, self.port))
 
         rdr = collectd_network.Reader(self.host, self.port)
 
@@ -134,8 +127,7 @@ class ListenerThread(threading.Thread):
                 except ValueError as e:
                     self.log.warn('Dropping bad packet: {}'.format(e))
         except Exception as e:
-            self.log.error('caught exception: type={}, exc={}'.format(
-                type(e), e))
+            self.log.error('caught exception: type={}, exc={}'.format(type(e), e))
 
         self.log.info('ListenerThread - stop')
 
@@ -147,17 +139,15 @@ class ListenerThread(threading.Thread):
             try:
                 metric = self.transform(item)
                 self.queue.put(metric)
-            except Queue.Full:
+            except Full:
                 self.log.error('Queue to collector is FULL')
             except Exception as e:
-                self.log.error('B00M! type={}, exception={}'.format(
-                    type(e), e))
+                self.log.error('B00M! type={}, exception={}'.format(type(e), e))
 
     def transform(self, item):
-
         parts = []
-
         path = item.plugininstance
+
         # extract jvm name from 'logstash-MemoryPool Eden Space'
         if '-' in path:
             (jvm, tail) = path.split('-', 1)
