@@ -4,7 +4,7 @@
 ### Core
 
 - CentOS or Ubuntu
-- Python 3.6
+- Python 3.8
 - python-configobj
 - python-setuptools
 - make
