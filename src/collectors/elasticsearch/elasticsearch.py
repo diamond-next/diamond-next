@@ -13,9 +13,9 @@ parameter the instance alias will be appended to the
 
 """
 
-import urllib2
 import base64
 import re
+from urllib.request import Request, urlopen
 from diamond.collector import str_to_bool
 
 try:
@@ -111,12 +111,12 @@ class ElasticSearchCollector(diamond.collector.Collector):
         """
         url = '%s://%s:%i/%s' % (scheme, host, port, path)
         try:
-            request = urllib2.Request(url)
+            request = Request(url)
             if self.config['user'] and self.config['password']:
                 base64string = base64.standard_b64encode(
                     '%s:%s' % (self.config['user'], self.config['password']))
                 request.add_header("Authorization", "Basic %s" % base64string)
-            response = urllib2.urlopen(request)
+            response = urlopen(request)
         except Exception as err:
             self.log.error("%s: %s" % (url, err))
             return False

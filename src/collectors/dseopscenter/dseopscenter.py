@@ -4,15 +4,14 @@
 Collect the DataStax OpsCenter metrics
 """
 
-import urllib2
 import datetime
+from urllib.request import urlopen
+import diamond.collector
 
 try:
     import json
 except ImportError:
     import simplejson as json
-
-import diamond.collector
 
 
 class DseOpsCenterCollector(diamond.collector.Collector):
@@ -119,7 +118,7 @@ class DseOpsCenterCollector(diamond.collector.Collector):
                                              int(self.config['port']),
                                              self.config['cluster_id'])
         try:
-            response = urllib2.urlopen(url)
+            response = urlopen(url)
         except Exception as err:
             self.log.error('%s: %s', url, err)
             return False
@@ -157,7 +156,7 @@ class DseOpsCenterCollector(diamond.collector.Collector):
             self.config['default_tail_opts'])
 
         try:
-            response = urllib2.urlopen(url)
+            response = urlopen(url)
         except Exception as err:
             self.log.error('%s: %s', url, err)
             return False
