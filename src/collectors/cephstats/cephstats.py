@@ -4,14 +4,13 @@
 Get ceph status from one node
 """
 
-import subprocess
-import re
 import os
+import re
+import subprocess
 import sys
-from ceph import CephCollector
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                'ceph'))
+from collectors.ceph.ceph import CephCollector
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ceph'))
 
 patternchk = re.compile(r'\bclient io .*')
 numberchk = re.compile(r'\d+')

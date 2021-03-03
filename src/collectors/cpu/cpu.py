@@ -9,9 +9,9 @@ The CPUCollector collects CPU utilization metric using /proc/stat.
 
 """
 
-import diamond.collector
 import os
 import time
+import diamond.collector
 from diamond.collector import str_to_bool
 
 try:
@@ -156,12 +156,12 @@ class CPUCollector(diamond.collector.Collector):
                          ncpus > 0)):
                         metrics[metric_name] = self.derivative(
                             metric_name,
-                            long(stats[s]),
+                            int(stats[s]),
                             self.MAX_VALUES[s]) / ncpus
                     else:
                         metrics[metric_name] = self.derivative(
                             metric_name,
-                            long(stats[s]),
+                            int(stats[s]),
                             self.MAX_VALUES[s])
 
             # Check for a bug in xen where the idle time is doubled for guest

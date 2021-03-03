@@ -10,8 +10,8 @@ kernel module.
 
 """
 
-import diamond.collector
 import os
+import diamond.collector
 
 
 class ConnTrackCollector(diamond.collector.Collector):

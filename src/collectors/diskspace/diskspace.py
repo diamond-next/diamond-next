@@ -20,10 +20,10 @@ Uses /proc/mounts and os.statvfs() to get disk space usage
 
 """
 
-import diamond.collector
-import diamond.convertor
 import os
 import re
+import diamond.collector
+import diamond.convertor
 
 try:
     import psutil

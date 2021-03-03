@@ -14,11 +14,11 @@ before graphite will generate the metrics.
 
 """
 
-import diamond.collector
-import diamond.convertor
-import time
 import os
 import re
+import time
+import diamond.collector
+import diamond.convertor
 
 try:
     import psutil

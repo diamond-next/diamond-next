@@ -14,8 +14,8 @@ import subprocess
 import diamond.collector
 import diamond.convertor
 from diamond.collector import str_to_bool
-LINE_PATTERN = re.compile(
-    '^(?P<source>\S+).*\s+(?P<offset>[+-]\d+)(?P<unit>\w+)\s+')
+
+LINE_PATTERN = re.compile('^(?P<source>\S+).*\s+(?P<offset>[+-]\d+)(?P<unit>\w+)\s+')
 IP_PATTERN = re.compile('^\d+\.\d+\.\d+\.\d+$')
 
 
@@ -59,8 +59,7 @@ class ChronydCollector(diamond.collector.Collector):
             if str_to_bool(self.config['use_sudo']):
                 command.insert(0, self.config['sudo_cmd'])
 
-            return subprocess.Popen(command,
-                                    stdout=subprocess.PIPE).communicate()[0]
+            return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
         except OSError:
             return ""
 

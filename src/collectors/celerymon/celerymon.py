@@ -17,9 +17,10 @@ port=16379
 
 """
 
-import diamond.collector
-import urllib2
 import time
+from urllib.request import urlopen
+
+import diamond.collector
 
 try:
     import json
@@ -58,17 +59,16 @@ class CelerymonCollector(diamond.collector.Collector):
         """
 
         # Handle collection time intervals correctly
-        CollectTime = int(time.time())
+        collect_time = int(time.time())
         time_delta = float(self.config['interval'])
         if not self.LastCollectTime:
-            self.LastCollectTime = CollectTime - time_delta
+            self.LastCollectTime = collect_time - time_delta
 
         host = self.config['host']
         port = self.config['port']
 
-        celerymon_url = "http://%s:%s/api/task/?since=%i" % (
-            host, port, self.LastCollectTime)
-        response = urllib2.urlopen(celerymon_url)
+        celerymon_url = "http://%s:%s/api/task/?since=%i" % (host, port, self.LastCollectTime)
+        response = urlopen(celerymon_url)
         body = response.read()
         celery_data = json.loads(body)
 
@@ -93,4 +93,4 @@ class CelerymonCollector(diamond.collector.Collector):
                 metric_name = "%s.%s" % (result, state)
                 self.publish(metric_name, metric_value)
 
-        self.LastCollectTime = CollectTime
+        self.LastCollectTime = collect_time

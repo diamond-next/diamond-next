@@ -1,6 +1,5 @@
 import diamond.collector
-
-import urllib2
+from urllib.request import urlopen
 
 
 class AuroraCollector(diamond.collector.Collector):
@@ -28,11 +27,9 @@ class AuroraCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        url = "%s://%s:%s/vars" % (self.config['scheme'],
-                                   self.config['host'],
-                                   self.config['port'])
+        url = "%s://%s:%s/vars" % (self.config['scheme'], self.config['host'], self.config['port'])
 
-        response = urllib2.urlopen(url)
+        response = urlopen(url)
 
         for line in response.readlines():
             properties = line.split()

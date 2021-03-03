@@ -6,8 +6,8 @@ DRBD metric collector
   Read and publish metrics from all available resources in /proc/drbd
 """
 
-import diamond.collector
 import re
+import diamond.collector
 
 
 class DRBDCollector(diamond.collector.Collector):
