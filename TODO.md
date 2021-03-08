@@ -7,3 +7,5 @@
 - "from StringIO import StringIO" > "from io import StringIO"
 - unicode > ( https://stackoverflow.com/questions/19877306/nameerror-global-name-unicode-is-not-defined-in-python-3 )
 - xrange > ?
+- "from mock import patch" > "from unittest.mock import patch"
+- "from bind import BindCollector"

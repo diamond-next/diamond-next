@@ -5,7 +5,7 @@ Collects data from sidekiq web
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json (or simeplejson)
 
 """

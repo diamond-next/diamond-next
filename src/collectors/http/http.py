@@ -5,7 +5,7 @@ Collect statistics from a HTTP or HTTPS connexion
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 #### Usage
 Add the collector config as :
@@ -56,7 +56,7 @@ class HttpCollector(diamond.collector.Collector):
         return default_config
 
     def collect(self):
-        # create urllib2 vars
+        # create urllib vars
         if self.config['req_vhost'] != "":
             self.config['headers']['Host'] = self.config['req_vhost']
 

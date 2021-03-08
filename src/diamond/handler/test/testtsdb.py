@@ -2,27 +2,29 @@
 # coding=utf-8
 ##########################################################################
 
-from test import unittest
-from mock import patch
-from diamond.metric import Metric
-import urllib2
-import configobj
-import StringIO
-import gzip
 import contextlib
+import gzip
+import urllib
+import urllib.error
+from io import StringIO
+from unittest import TestCase
+from unittest.mock import patch
+
+import configobj
 
 from diamond.handler.tsdb import TSDBHandler
+from diamond.metric import Metric
 
 
-@patch('diamond.handler.tsdb.urllib2.urlopen')
-@patch('diamond.handler.tsdb.urllib2.Request')
-class TestTSDBdHandler(unittest.TestCase):
+@patch('diamond.handler.tsdb.urllib.request.urlopen')
+@patch('diamond.handler.tsdb.urllib.request.Request')
+class TestTSDBdHandler(TestCase):
 
     def setUp(self):
         self.url = 'http://127.0.0.1:4242/api/put'
 
     def decompress(self, input):
-        infile = StringIO.StringIO()
+        infile = StringIO()
         infile.write(input)
         with contextlib.closing(gzip.GzipFile(fileobj=infile, mode="r")) as f:
             f.rewind()
@@ -38,8 +40,7 @@ class TestTSDBdHandler(unittest.TestCase):
                         host='myhostname', metric_type='GAUGE')
         handler = TSDBHandler(config)
         header = {'Content-Type': 'application/json'}
-        exception = urllib2.HTTPError(url=self.url, code=404, msg="Error",
-                                      hdrs=header, fp=None)
+        exception = urllib.error.HTTPError(url=self.url, code=404, msg="Error", hdrs=header, fp=None)
         handler.side_effect = exception
         handler.process(metric)
 

@@ -1,12 +1,10 @@
-import diamond.collector
+from diamond.collector import Collector
 from urllib.request import urlopen
 
 
-class AuroraCollector(diamond.collector.Collector):
-
+class AuroraCollector(Collector):
     def get_default_config_help(self):
-        config_help = super(AuroraCollector,
-                            self).get_default_config_help()
+        config_help = super(AuroraCollector, self).get_default_config_help()
 
         config_help.update({
             'host': 'Scheduler Hostname',

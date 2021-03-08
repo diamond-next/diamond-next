@@ -1,23 +1,18 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 from __future__ import print_function
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import MagicMock, Mock, mock_open
-from mock import patch
 
+import unittest
+from unittest.mock import MagicMock, Mock, mock_open, patch
+
+from collectors.mesos_cgroup.mesos_cgroup import MesosCGroupCollector
 from diamond.collector import Collector
-
-from mesos_cgroup import MesosCGroupCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMesosCGroupCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MesosCGroupCollector', {})
 
@@ -91,11 +86,10 @@ class TestMesosCGroupCollector(CollectorTestCase):
                 patch_open.start()
                 return o
 
-        patch_urlopen = patch('urllib2.urlopen', Mock(side_effect=urlopen_se))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(side_effect=urlopen_se))
         patch_listdir = patch('os.listdir', Mock(side_effect=listdir_se))
         patch_isdir = patch('os.path.isdir', Mock(side_effect=isdir_se))
-        patch_open = patch('__builtin__.open', MagicMock(spec=file,
-                                                         side_effect=open_se))
+        patch_open = patch('__builtin__.open', MagicMock(spec=file, side_effect=open_se))
 
         patch_urlopen.start()
         patch_listdir.start()
@@ -153,6 +147,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             'ENVIRONMENT.ROLE.TASK.0.memory.total_unevictable': '0'
         }
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

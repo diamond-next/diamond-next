@@ -15,11 +15,11 @@ import re
 import xml.etree.cElementTree as ElementTree
 from io import StringIO
 from urllib.request import urlopen
-import diamond.collector
+
+from diamond.collector import Collector
 
 
-class EndecaDgraphCollector(diamond.collector.Collector):
-
+class EndecaDgraphCollector(Collector):
     # ignore these elements, because they are of no use
     IGNORE_ELEMENTS = [
         'most_expensive_queries',
@@ -49,8 +49,7 @@ class EndecaDgraphCollector(diamond.collector.Collector):
     XML_NS = '{http://xmlns.endeca.com/ene/dgraph}'
 
     def get_default_config_help(self):
-        config_help = super(EndecaDgraphCollector,
-                            self).get_default_config_help()
+        config_help = super(EndecaDgraphCollector, self).get_default_config_help()
         config_help.update({
             'host': "Hostname of Endeca Dgraph instance",
             'port': "Port of the Dgraph API listener",

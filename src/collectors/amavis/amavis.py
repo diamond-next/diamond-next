@@ -10,15 +10,13 @@ Collector that reports amavis metrics as reported by amavisd-agent
 """
 
 import os
-import subprocess
 import re
+import subprocess
 
-import diamond.collector
-import diamond.convertor
-from diamond.collector import str_to_bool
+from diamond.collector import Collector, str_to_bool
 
 
-class AmavisCollector(diamond.collector.Collector):
+class AmavisCollector(Collector):
     # From the source of amavisd-agent and it seems like the three interesting
     # formats are these:  ("x y/h", "xMB yMB/h", "x s y s/msg"),
     # so this, ugly as it is to hardcode it this way, it should be right.
@@ -94,9 +92,7 @@ class AmavisCollector(diamond.collector.Collector):
                                          precision=precision)
 
         except OSError as err:
-            self.log.error("Could not run %s: %s",
-                           self.config['amavisd_exe'],
-                           err)
+            self.log.error("Could not run %s: %s", self.config['amavisd_exe'], err)
             return None
 
         return True

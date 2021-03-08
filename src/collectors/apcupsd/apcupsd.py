@@ -13,14 +13,15 @@ apcuspd in NIS mode.
 
 """
 
-import diamond.collector
-import socket
-from struct import pack
 import re
+import socket
 import time
+from struct import pack
+
+from diamond.collector import Collector
 
 
-class ApcupsdCollector(diamond.collector.Collector):
+class ApcupsdCollector(Collector):
 
     def get_default_config_help(self):
         config_help = super(ApcupsdCollector, self).get_default_config_help()

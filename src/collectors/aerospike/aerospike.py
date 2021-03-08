@@ -8,17 +8,17 @@ Collect statistics from Aerospike
  * socket
  * telnetlib
  * re
-
-
 """
+
+import re
 import socket
 import telnetlib
-import re
-import diamond.collector
 from distutils.version import LooseVersion
 
+from diamond.collector import Collector
 
-class AerospikeCollector(diamond.collector.Collector):
+
+class AerospikeCollector(Collector):
     def get_default_config_help(self):
         config_help = super(AerospikeCollector, self).get_default_config_help()
         config_help.update({
@@ -159,7 +159,6 @@ class AerospikeCollector(diamond.collector.Collector):
                     self.publish_gauge('latency.%s.%s' % (op_type, metric), metrics[metric])
 
     def collect_statistics(self, data):
-
         # Only gather whitelisted metrics
         gather_stats = self.config['statistics_whitelist']
 
@@ -217,7 +216,6 @@ class AerospikeCollector(diamond.collector.Collector):
                 self.publish_gauge('namespace.%s.%s' % (namespace, stat), value)
 
     def collect(self):
-
         self.log.debug('Connecting to %s:%s' % (self.config['req_host'], self.config['req_port']))
         t = telnetlib.Telnet(self.config['req_host'], self.config['req_port'])
 

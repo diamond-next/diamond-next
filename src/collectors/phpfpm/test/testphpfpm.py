@@ -1,25 +1,18 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.phpfpm.phpfpm import PhpFpmCollector
 from diamond.collector import Collector
-from phpfpm import PhpFpmCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestPhpFpmCollector(CollectorTestCase):
-
     def setUp(self):
-        config = get_collector_config('PhpFpmCollector', {
-            'interval': 10
-        })
+        config = get_collector_config('PhpFpmCollector', {'interval': 10})
 
         self.collector = PhpFpmCollector(config, None)
 
@@ -28,8 +21,7 @@ class TestPhpFpmCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('stats')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -52,8 +44,7 @@ class TestPhpFpmCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('stats_blank')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats_blank')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -61,6 +52,6 @@ class TestPhpFpmCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

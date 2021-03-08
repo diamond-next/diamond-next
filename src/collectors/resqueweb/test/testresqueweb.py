@@ -1,25 +1,18 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.resqueweb.resqueweb import ResqueWebCollector
 from diamond.collector import Collector
-from resqueweb import ResqueWebCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestResqueWebCollector(CollectorTestCase):
-
     def setUp(self):
-        config = get_collector_config('ResqueWebCollector', {
-            'interval': 10
-        })
+        config = get_collector_config('ResqueWebCollector', {'interval': 10})
 
         self.collector = ResqueWebCollector(config, None)
 
@@ -28,8 +21,7 @@ class TestResqueWebCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('stats.txt')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats.txt')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -47,15 +39,12 @@ class TestResqueWebCollector(CollectorTestCase):
             'queue.normal.current': 1,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('stats_blank.txt')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats_blank.txt')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -63,6 +52,6 @@ class TestResqueWebCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

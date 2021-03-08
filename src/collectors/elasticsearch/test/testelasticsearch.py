@@ -1,22 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.elasticsearch.elasticsearch import ElasticSearchCollector
 from diamond.collector import Collector
-
-from elasticsearch import ElasticSearchCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestElasticSearchCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('ElasticSearchCollector', {})
 
@@ -63,8 +57,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('cluster_stats'),
             self.getFixture('indices_stats'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         self.collector.config['cluster'] = True
 
@@ -131,8 +124,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('cluster_stats_v2'),
             self.getFixture('indices_stats'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         self.collector.config['cluster'] = True
 
@@ -199,8 +191,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('stats'),
             self.getFixture('logstash_indices_stats'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         self.collector.config['logstash_mode'] = True
 
@@ -271,8 +262,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('stats'),
             self.getFixture('logstash_hourly_indices_stats'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         self.collector.config['logstash_mode'] = True
 
@@ -343,7 +333,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('stats0.90'),
             self.getFixture('indices_stats'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
+        urlopen_mock = patch('urllib.request.urlopen', Mock(
             side_effect=lambda *args: returns.pop(0)))
 
         urlopen_mock.start()
@@ -369,8 +359,7 @@ class TestElasticSearchCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-                             return_value=self.getFixture('stats_blank')))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats_blank')))
 
         urlopen_mock.start()
         self.collector.collect()
@@ -394,8 +383,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('stats2'),
             self.getFixture('indices_stats2'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         urlopen_mock.start()
         self.collector.collect()
@@ -429,8 +417,7 @@ class TestElasticSearchCollector(CollectorTestCase):
             self.getFixture('stats1.7'),
             self.getFixture('indices_stats'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         urlopen_mock.start()
         self.collector.collect()
@@ -449,11 +436,9 @@ class TestElasticSearchCollector(CollectorTestCase):
             'segments.fixed_bit_set.mem.size': 0
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

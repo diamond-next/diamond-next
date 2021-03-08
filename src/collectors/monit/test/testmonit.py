@@ -1,25 +1,18 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.monit.monit import MonitCollector
 from diamond.collector import Collector
-
-from monit import MonitCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMonitCollector(CollectorTestCase):
-
     def setUp(self):
-        config = get_collector_config('MonitCollector',
-                                      {'byte_unit': 'kilobyte', })
+        config = get_collector_config('MonitCollector', {'byte_unit': 'kilobyte'})
 
         self.collector = MonitCollector(config, None)
 
@@ -28,8 +21,7 @@ class TestMonitCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('status.xml')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('status.xml')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -58,18 +50,12 @@ class TestMonitCollector(CollectorTestCase):
             'cron.memory.kilobyte_usage': 1036,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch(
-            'urllib2.urlopen',
-            Mock(
-                return_value=self.getFixture(
-                    'status_blank.xml')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('status_blank.xml')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -77,6 +63,6 @@ class TestMonitCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

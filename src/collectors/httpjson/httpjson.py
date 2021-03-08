@@ -5,7 +5,7 @@ Simple collector which get JSON and parse it into flat metrics
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 """
 
@@ -48,7 +48,7 @@ class HTTPJSONCollector(diamond.collector.Collector):
                 except ValueError:
                     value = None
                 finally:
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
 
     def collect(self):
         url = self.config['url']

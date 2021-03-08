@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.haproxy.haproxy import HAProxyCollector
 from diamond.collector import Collector
-from haproxy import HAProxyCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestHAProxyCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('HAProxyCollector', {
             'interval': 10,
@@ -30,8 +25,7 @@ class TestHAProxyCollector(CollectorTestCase):
     def test_should_work_with_real_data(self, publish_mock):
         self.collector.config['ignore_servers'] = False
 
-        patch_urlopen = patch('urllib2.urlopen',
-                              Mock(return_value=self.getFixture('stats.csv')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats.csv')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -84,8 +78,7 @@ class TestHAProxyCollector(CollectorTestCase):
     def test_should_work_with_real_data_and_ignore_servers(self, publish_mock):
         self.collector.config['ignore_servers'] = True
 
-        patch_urlopen = patch('urllib2.urlopen',
-                              Mock(return_value=self.getFixture('stats.csv')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats.csv')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -95,6 +88,6 @@ class TestHAProxyCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()
