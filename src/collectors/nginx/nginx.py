@@ -5,7 +5,7 @@ Collect statistics from Nginx and Nginx+
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json
 
 #### Usage
@@ -56,13 +56,14 @@ For commercial nginx+:
 
 """
 
-import urllib2
-import re
-import diamond.collector
 import json
+import re
+from urllib.request import Request, urlopen
+
+from diamond.collector import Collector
 
 
-class NginxCollector(diamond.collector.Collector):
+class NginxCollector(Collector):
 
     def get_default_config_help(self):
         config_help = super(NginxCollector, self).get_default_config_help()
@@ -217,9 +218,10 @@ class NginxCollector(diamond.collector.Collector):
                                 int(self.config['req_port']),
                                 self.config['req_path'])
 
-        req = urllib2.Request(url=url, headers=headers)
+        req = Request(url=url, headers=headers)
+
         try:
-            handle = urllib2.urlopen(req)
+            handle = urlopen(req)
 
             # Test for json payload; indicates nginx+
             if handle.info().gettype() == 'application/json':

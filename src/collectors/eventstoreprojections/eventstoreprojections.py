@@ -13,17 +13,17 @@ This collector is based upon the HTTPJSONCollector.
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 """
 
-import urllib2
 import json
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 import diamond.collector
 
 
 class EventstoreProjectionsCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(
             EventstoreProjectionsCollector, self).get_default_config_help(
@@ -58,11 +58,9 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
         return default_config
 
     def _json_to_flat_metrics(self, prefix, data):
-
         for key, value in data.items():
             if isinstance(value, dict):
-                for k, v in self._json_to_flat_metrics(
-                        "%s.%s" % (prefix, key), value):
+                for k, v in self._json_to_flat_metrics("%s.%s" % (prefix, key), value):
                     yield k, v
             elif isinstance(value, str):
                 if value == "Running":
@@ -91,26 +89,24 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
             self.config['route']
         )
 
-        req = urllib2.Request(eventstore_host, headers=self.config['headers'])
+        req = Request(eventstore_host, headers=self.config['headers'])
         req.add_header('Content-type', 'application/json')
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.URLError as e:
+            resp = urlopen(req)
+        except URLError as e:
             self.log.error("Can't open url %s. %s", eventstore_host, e)
         else:
             content = resp.read()
+
             try:
                 json_dict = json.loads(content)
                 projections = json_dict['projections']
-
                 data = {}
+
                 for projection in projections:
                     if self.config['replace_dollarsign']:
-                        name = projection["name"].replace(
-                            '$',
-                            self.config['replace_dollarsign']
-                        )
+                        name = projection['name'].replace('$', self.config['replace_dollarsign'])
                     else:
                         name = projection["name"]
                     data[name] = projection
@@ -118,6 +114,5 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
                 self.log.error("failed parsing JSON Object \
                                 from %s. %s", eventstore_host, e)
             else:
-                for metric_name, metric_value in self._json_to_flat_metrics(
-                        "projections", data):
+                for metric_name, metric_value in self._json_to_flat_metrics("projections", data):
                     self.publish(metric_name, metric_value)

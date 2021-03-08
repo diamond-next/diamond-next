@@ -9,16 +9,16 @@ Collect the monit stats and report on cpu/memory for monitored processes
 
 """
 
-import urllib2
 import base64
-
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 from xml.dom.minidom import parseString
 
-import diamond.collector
-from diamond.collector import str_to_bool
+from diamond.collector import Collector, str_to_bool
+from diamond.convertor import binary
 
 
-class MonitCollector(diamond.collector.Collector):
+class MonitCollector(Collector):
 
     def get_default_config_help(self):
         config_help = super(MonitCollector, self).get_default_config_help()
@@ -44,18 +44,16 @@ class MonitCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        url = 'http://%s:%i/_status?format=xml' % (self.config['host'],
-                                                   int(self.config['port']))
-        try:
-            request = urllib2.Request(url)
+        url = 'http://%s:%i/_status?format=xml' % (self.config['host'], int(self.config['port']))
 
-            #
+        try:
+            request = Request(url)
+
             # shouldn't need to check this
-            base64string = base64.encodestring('%s:%s' % (
-                self.config['user'], self.config['passwd'])).replace('\n', '')
+            base64string = base64.encodestring('%s:%s' % (self.config['user'], self.config['passwd'])).replace('\n', '')
             request.add_header("Authorization", "Basic %s" % base64string)
-            response = urllib2.urlopen(request)
-        except urllib2.HTTPError as err:
+            response = urlopen(request)
+        except HTTPError as err:
             self.log.error("%s: %s", err, url)
             return
 
@@ -94,7 +92,7 @@ class MonitCollector(diamond.collector.Collector):
                             'kilobyte')[0].firstChild.data)
                         for unit in self.config['byte_unit']:
                             metrics["%s.memory.%s_usage" % (name, unit)] = (
-                                diamond.convertor.binary.convert(
+                                binary.convert(
                                     value=mem,
                                     oldUnit='kilobyte',
                                     newUnit=unit))
@@ -106,7 +104,7 @@ class MonitCollector(diamond.collector.Collector):
                             for unit in self.config['byte_unit']:
                                 metrics["%s.memory_total.%s_usage" % (
                                     name, unit)] = (
-                                    diamond.convertor.binary.convert(
+                                    binary.convert(
                                         value=mem_total,
                                         oldUnit='kilobyte',
                                         newUnit=unit))

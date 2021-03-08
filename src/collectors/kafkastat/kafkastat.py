@@ -5,12 +5,13 @@ Collect stats via MX4J from Kafka
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * xml.etree
 """
-import urllib2
 
-from urllib import urlencode
+from urllib.error import URLError
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 try:
     from xml.etree import ElementTree
@@ -31,7 +32,6 @@ class KafkaCollector(diamond.collector.Collector):
         'float': float,
         'int': int,
         'java.lang.Object': float,
-        'long': long,
     }
 
     def get_default_config_help(self):
@@ -63,13 +63,11 @@ class KafkaCollector(diamond.collector.Collector):
         if query_args:
             qargs.update(query_args)
 
-        url = 'http://%s:%i%s?%s' % (
-            self.config['host'], int(self.config['port']),
-            path, urlencode(qargs))
+        url = 'http://%s:%i%s?%s' % (self.config['host'], int(self.config['port']), path, urlencode(qargs))
 
         try:
-            response = urllib2.urlopen(url)
-        except urllib2.URLError as err:
+            response = urlopen(url)
+        except URLError as err:
             self.log.error("%s: %s", url, err)
             return None
 
@@ -83,6 +81,7 @@ class KafkaCollector(diamond.collector.Collector):
         query_args = {'querynames': pattern}
 
         mbeans = self._get('/serverbydomain', query_args)
+
         if mbeans is None:
             return
 
@@ -105,6 +104,7 @@ class KafkaCollector(diamond.collector.Collector):
         }
 
         attributes = self._get('/mbean', query_args)
+
         if attributes is None:
             return
 
@@ -114,18 +114,23 @@ class KafkaCollector(diamond.collector.Collector):
             # "kafka.controller":type="ControllerStats",
             # name="LeaderElectionRateAndTimeMs"
             split_num = objectname.count('=')
+
             for i in range(split_num):
                 if i == 0:
                     key_prefix = objectname.split('=')[1]
+
                     if '"' in key_prefix:
                         key_prefix = key_prefix.split('"')[1]
+
                     if "," in key_prefix:
                         key_prefix = key_prefix.split(',')[0]
                 elif i > 0:
                     key = objectname.split('=')[i + 1]
+
                     if key:
                         if '"' in key:
                             key = key.split('"')[1]
+
                         key_prefix = key_prefix + '.' + key
                         key_prefix = key_prefix.replace(",", ".")
 
@@ -135,18 +140,20 @@ class KafkaCollector(diamond.collector.Collector):
             atype = attrib.get('type')
 
             ptype = self.ATTRIBUTE_TYPES.get(atype)
+
             if not ptype:
                 continue
+
             try:
                 value = ptype(attrib.get('value'))
             except ValueError:
                 # It will be too busy, so not logging it every time
-                self.log.debug('Unable to parse the value for ' +
-                               atype + " in " + objectname)
+                self.log.debug('Unable to parse the value for ' + atype + " in " + objectname)
                 continue
+
             name = '.'.join([key_prefix, attrib.get('name')])
-            # Some prefixes and attributes could have spaces, thus we must
-            # sanitize them
+
+            # Some prefixes and attributes could have spaces, thus we must sanitize them
             name = name.replace(' ', '')
 
             metrics[name] = value
@@ -165,6 +172,7 @@ class KafkaCollector(diamond.collector.Collector):
             'java.lang:type=Threading'
         ]
         mbeans = set()
+
         for pattern in query_list:
             match = self.get_mbeans(pattern)
             mbeans.update(match)
@@ -175,9 +183,12 @@ class KafkaCollector(diamond.collector.Collector):
         for mbean in mbeans:
             if mbean is None:
                 continue
+
             stats = self.query_mbean(mbean)
+
             if stats is None:
                 self.log.error('Failed to get stats for' + mbean)
+
             metrics.update(stats)
 
         # Publish stats

@@ -26,7 +26,7 @@ uri = fpm-status
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json (or simeplejson)
 
 

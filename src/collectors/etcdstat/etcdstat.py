@@ -14,7 +14,8 @@ Collects metrics from an Etcd instance.
 
 import diamond.collector
 import json
-import urllib2
+from urllib.error import HTTPError
+from urllib.request import urlopen
 
 METRICS_KEYS = ['sendPkgRate',
                 'recvPkgRate',
@@ -91,17 +92,17 @@ class EtcdCollector(diamond.collector.Collector):
             opts = {
                 'timeout': int(self.config['timeout']),
             }
+
             if self.config['use_tls']:
                 protocol = "https"
                 opts['cafile'] = self.config['ca_file']
             else:
                 protocol = "http"
 
-            url = "%s://%s:%s/v2/stats/%s" % (protocol, self.config['host'],
-                                              self.config['port'], category)
+            url = "%s://%s:%s/v2/stats/%s" % (protocol, self.config['host'], self.config['port'], category)
 
-            return json.load(urllib2.urlopen(url, **opts))
-        except (urllib2.HTTPError, ValueError) as err:
+            return json.load(urlopen(url, **opts))
+        except (HTTPError, ValueError) as err:
             self.log.error('Unable to read JSON response: %s' % err)
             return {}
 

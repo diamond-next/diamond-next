@@ -16,7 +16,7 @@ This collector is based upon the HTTPJSONCollector.
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 
 #### Options

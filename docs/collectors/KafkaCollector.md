@@ -8,7 +8,7 @@ Collect stats via MX4J from Kafka
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * xml.etree
 
 #### Options

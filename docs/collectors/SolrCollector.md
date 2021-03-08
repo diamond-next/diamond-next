@@ -9,7 +9,7 @@ Collect the solr stats for the local node
 #### Dependencies
 
  * posixpath
- * urllib2
+ * urllib
  * json
 
 

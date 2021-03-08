@@ -14,21 +14,18 @@ port = 5050
 ```
 
 #### Dependencies
- * urlib2
+ * urlib
 """
 
 import copy
-import diamond.collector
 import json
-import urllib2
-from urlparse import urlparse
+from urllib.parse import urlparse
+from urllib.request import urlopen
 
-import diamond.collector
-
-from diamond.collector import str_to_bool
+from diamond.collector import Collector, str_to_bool
 
 
-class MesosCollector(diamond.collector.Collector):
+class MesosCollector(Collector):
     def __init__(self, config=None, handlers=[], name=None, configfile=None):
         self.known_frameworks = {}
         self.executors_prev_read = {}
@@ -39,11 +36,9 @@ class MesosCollector(diamond.collector.Collector):
         self.master = str_to_bool(self.config['master'])
 
     def get_default_config_help(self):
-        config_help = super(MesosCollector,
-                            self).get_default_config_help()
+        config_help = super(MesosCollector, self).get_default_config_help()
         config_help.update({
-            'host': 'Hostname, using http scheme by default. For https pass '
-                    'e.g. "https://localhost"',
+            'host': 'Hostname, using http scheme by default. For https pass e.g. "https://localhost"',
             'port': 'Port (default is 5050; set to 5051 for mesos-agent)',
             'master': 'True if host is master (default is True).'
         })
@@ -196,8 +191,9 @@ class MesosCollector(diamond.collector.Collector):
         Execute a Mesos API call.
         """
         url = self._get_url(path)
+
         try:
-            response = urllib2.urlopen(url)
+            response = urlopen(url)
         except Exception as err:
             self.log.error("%s: %s", url, err)
             return False

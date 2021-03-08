@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 ###############################################################################
-import urllib2
-from urlparse import urlparse, parse_qs
+
+import urllib
 
 try:
     from xml.etree import ElementTree
@@ -16,7 +16,7 @@ from test import unittest
 from mock import patch
 
 from diamond.collector import Collector
-from kafkastat import KafkaCollector
+from collectors.kafkastat.kafkastat import KafkaCollector
 
 ##########
 
@@ -50,7 +50,7 @@ class TestKafkaCollector(CollectorTestCase):
         self.assertTrue(KafkaCollector)
 
     @run_only_if_ElementTree_is_available
-    @patch('urllib2.urlopen')
+    @patch('urllib.request.urlopen')
     def test_get(self, urlopen_mock):
         urlopen_mock.return_value = self.getFixture('empty.xml')
 
@@ -60,16 +60,16 @@ class TestKafkaCollector(CollectorTestCase):
         self.assertEqual(result_string, '<Server />')
 
     @run_only_if_ElementTree_is_available
-    @patch('urllib2.urlopen')
+    @patch('urllib.request.urlopen')
     def test_get_httperror(self, urlopen_mock):
-        urlopen_mock.side_effect = urllib2.URLError('BOOM')
+        urlopen_mock.side_effect = urllib.error.URLError('BOOM')
 
         result = self.collector._get('/path')
 
         self.assertFalse(result)
 
     @run_only_if_ElementTree_is_available
-    @patch('urllib2.urlopen')
+    @patch('urllib.request.urlopen')
     def test_get_bad_xml(self, urlopen_mock):
         urlopen_mock.return_value = self.getFixture('bad.xml')
 
@@ -161,8 +161,8 @@ class TestKafkaCollector(CollectorTestCase):
         self.assertEqual(metrics, None)
 
     def getKafkaFixture(self, url):
-        url_object = urlparse(url)
-        query_string = parse_qs(url_object.query)
+        url_object = urllib.parse.urlparse(url)
+        query_string = urllib.parse.parse_qs(url_object.query)
         querynames = query_string.get('querynames', [])
         objectnames = query_string.get('objectname', [])
 
@@ -194,7 +194,7 @@ class TestKafkaCollector(CollectorTestCase):
             return ''
 
     @run_only_if_ElementTree_is_available
-    @patch('urllib2.urlopen')
+    @patch('urllib.request.urlopen')
     @patch.object(Collector, 'publish')
     def test(self, publish_mock, urlopen_mock):
         urlopen_mock.side_effect = self.getKafkaFixture

@@ -6,15 +6,16 @@ Collect HAProxy Stats
 #### Dependencies
 
  * urlparse
- * urllib2
+ * urllib
 
 """
 
-import re
-import urllib2
 import base64
 import csv
+import re
 import socket
+from urllib.request import Request, urlopen
+
 import diamond.collector
 
 
@@ -64,9 +65,10 @@ class HAProxyCollector(diamond.collector.Collector):
         Request stats from HAProxy Server
         """
         metrics = []
-        req = urllib2.Request(self._get_config_value(section, 'url'))
+        req = Request(self._get_config_value(section, 'url'))
+
         try:
-            handle = urllib2.urlopen(req)
+            handle = urlopen(req)
             return handle.readlines()
         except Exception as e:
             if not hasattr(e, 'code') or e.code != 401:
@@ -100,8 +102,9 @@ class HAProxyCollector(diamond.collector.Collector):
                        self._get_config_value(section, 'pass')))[:-1]
         authheader = 'Basic %s' % base64string
         req.add_header("Authorization", authheader)
+
         try:
-            handle = urllib2.urlopen(req)
+            handle = urlopen(req)
             metrics = handle.readlines()
             return metrics
         except IOError as e:

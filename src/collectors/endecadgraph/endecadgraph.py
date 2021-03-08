@@ -11,11 +11,11 @@ Renzo Toma <rtoma@bol.com>
 
 """
 
-import diamond.collector
-import urllib2
-from StringIO import StringIO
 import re
 import xml.etree.cElementTree as ElementTree
+from io import StringIO
+from urllib.request import urlopen
+import diamond.collector
 
 
 class EndecaDgraphCollector(diamond.collector.Collector):
@@ -108,10 +108,10 @@ class EndecaDgraphCollector(diamond.collector.Collector):
             except Exception as e:
                 self.log.error('Something went wrong: %s', e)
 
-        url = 'http://%s:%d/admin?op=stats' % (self.config['host'],
-                                               self.config['port'])
+        url = 'http://%s:%d/admin?op=stats' % (self.config['host'], self.config['port'])
+
         try:
-            xml = urllib2.urlopen(url, timeout=self.config['timeout']).read()
+            xml = urlopen(url, timeout=self.config['timeout']).read()
         except Exception as e:
             self.log.error('Could not connect to endeca on %s: %s' % (url, e))
             return {}

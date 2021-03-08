@@ -27,9 +27,10 @@ Metrics are collected as :
        http:__www_site_com_admin_page_html
 """
 
-import urllib2
-import diamond.collector
 import datetime
+from urllib.request import Request, urlopen
+
+import diamond.collector
 
 
 class HttpCollector(diamond.collector.Collector):
@@ -63,9 +64,10 @@ class HttpCollector(diamond.collector.Collector):
         for url in self.config['req_url']:
             self.log.debug("collecting %s", str(url))
             req_start = datetime.datetime.now()
-            req = urllib2.Request(url, headers=self.config['headers'])
+            req = Request(url, headers=self.config['headers'])
+
             try:
-                handle = urllib2.urlopen(req)
+                handle = urlopen(req)
                 the_page = handle.read()
                 req_end = datetime.datetime.now()
                 req_time = req_end - req_start

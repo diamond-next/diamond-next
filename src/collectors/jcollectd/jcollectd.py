@@ -22,7 +22,7 @@ See https://github.com/emicklei/jcollectd for an up-to-date jcollect fork.
 
 """
 
-import diamond.collectors.jcollectd.collectd_network
+import collectors.jcollectd.collectd_network
 import diamond.metric
 import re
 import threading

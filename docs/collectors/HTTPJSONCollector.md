@@ -8,7 +8,7 @@ Simple collector which get JSON and parse it into flat metrics
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 
 #### Options

@@ -1,0 +1,6 @@
+- long > int
+- base64.encodestring
+- urllib2 > urllib
+- urlparse > urlparse
+- *.getiterator()
+- *.iteritems()
