@@ -4,3 +4,4 @@
 - urlparse > urlparse
 - *.getiterator()
 - *.iteritems()
+- "from StringIO import StringIO" > "from io import StringIO"
