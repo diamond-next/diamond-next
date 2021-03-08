@@ -1,7 +1,7 @@
 - long > int
-- base64.encodestring
+- base64.encodestring > ?
 - urllib2 > urllib
-- urlparse > urlparse
+- urlparse > urllib.parse
 - *.getiterator()
 - *.iteritems()
 - "from StringIO import StringIO" > "from io import StringIO"
