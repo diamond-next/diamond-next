@@ -4,6 +4,7 @@ import logging
 import threading
 import time
 import traceback
+
 from configobj import ConfigObj
 
 
@@ -11,7 +12,6 @@ class Handler(object):
     """
     Handlers process metrics that are collected by Collectors.
     """
-
     def __init__(self, config=None, log=None):
         """
         Create a new instance of the Handler class

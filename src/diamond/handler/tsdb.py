@@ -77,13 +77,15 @@ high.
 
 """
 
-import StringIO
 import base64
 import contextlib
 import gzip
 import json
 import re
-import urllib2
+from io import StringIO
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
 from diamond.handler.Handler import Handler
 from diamond.metric import Metric
 
@@ -105,32 +107,39 @@ class TSDBHandler(Handler):
         self.host = str(self.config['host'])
         self.port = int(self.config['port'])
         self.timeout = int(self.config['timeout'])
+
         # Authorization
         self.user = str(self.config['user'])
         self.password = str(self.config['password'])
+
         # data
         self.batch = int(self.config['batch'])
         self.compression = int(self.config['compression'])
+
         # prefix
         if self.config['prefix'] != "":
-            self.prefix = str(self.config['prefix'])+'.'
+            self.prefix = str(self.config['prefix']) + '.'
         else:
             self.prefix = ""
+
         # tags
         self.tags = []
         pattern = re.compile(r'([a-zA-Z0-9]+)=([a-zA-Z0-9]+)')
+
         for (key, value) in re.findall(pattern, str(self.config['tags'])):
             self.tags.append([key, value])
 
         # headers
         self.httpheader = {"Content-Type": "application/json"}
+
         # Authorization
         if self.user != "":
-            self.httpheader["Authorization"] = "Basic " +\
-                base64.encodestring('%s:%s' % (self.user, self.password))[:-1]
+            self.httpheader["Authorization"] = "Basic " + base64.encodestring('%s:%s' % (self.user, self.password))[:-1]
+
         # compression
         if self.compression >= 1:
             self.httpheader["Content-Encoding"] = "gzip"
+
         self.entrys = []
 
         self.skipAggregates = self.config['skipAggregates']
@@ -190,19 +199,19 @@ class TSDBHandler(Handler):
         """
         Process a metric by sending it to TSDB
         """
-        entry = {'timestamp': metric.timestamp, 'value': metric.value,
-                 "tags": {}}
+        entry = {'timestamp': metric.timestamp, 'value': metric.value, "tags": {}}
         entry["tags"]["hostname"] = metric.host
 
         if self.cleanMetrics:
             metric = MetricWrapper(metric, self.log)
+
             if self.skipAggregates and metric.isAggregate():
                 return
+
             for tagKey in metric.getTags():
                 entry["tags"][tagKey] = metric.getTags()[tagKey]
 
-        entry['metric'] = (self.prefix + metric.getCollectorPath() +
-                           '.' + metric.getMetricPath())
+        entry['metric'] = (self.prefix + metric.getCollectorPath() + '.' + metric.getMetricPath())
 
         for [key, value] in self.tags:
             entry["tags"][key] = value
@@ -213,11 +222,11 @@ class TSDBHandler(Handler):
         if (len(self.entrys) >= self.batch):
             # Compress data
             if self.compression >= 1:
-                data = StringIO.StringIO()
-                with contextlib.closing(gzip.GzipFile(fileobj=data,
-                                        compresslevel=self.compression,
-                                        mode="w")) as f:
+                data = StringIO()
+
+                with contextlib.closing(gzip.GzipFile(fileobj=data, compresslevel=self.compression, mode="w")) as f:
                     f.write(json.dumps(self.entrys))
+
                 self._send(data.getvalue())
             else:
                 # no compression
@@ -230,25 +239,28 @@ class TSDBHandler(Handler):
         """
         retry = 0
         success = False
+
         while retry < 3 and success is False:
             self.log.debug(content)
+
             try:
-                request = urllib2.Request("http://"+self.host+":" +
-                                          str(self.port)+"/api/put",
-                                          content, self.httpheader)
-                response = urllib2.urlopen(url=request, timeout=self.timeout)
+                request = Request("http://" + self.host + ":" + str(self.port) + "/api/put", content, self.httpheader)
+                response = urlopen(url=request, timeout=self.timeout)
+
                 if response.getcode() < 301:
                     self.log.debug(response.read())
+
                     # Transaction should be finished
                     self.log.debug(response.getcode())
                     success = True
-            except urllib2.HTTPError as e:
-                self.log.error("HTTP Error Code: "+str(e.code))
-                self.log.error("Message : "+str(e.reason))
-            except urllib2.URLError as e:
-                self.log.error("Connection Error: "+str(e.reason))
+            except HTTPError as e:
+                self.log.error("HTTP Error Code: " + str(e.code))
+                self.log.error("Message : " + str(e.reason))
+            except URLError as e:
+                self.log.error("Connection Error: " + str(e.reason))
             finally:
                 retry += 1
+
         self.entrys = []
 
 
@@ -258,7 +270,6 @@ This class wraps a metric and applies the additonal OpenTSDB tagging logic.
 
 
 class MetricWrapper(Metric):
-
     def isAggregate(self):
         return self.aggregate
 
@@ -268,6 +279,7 @@ class MetricWrapper(Metric):
     """
     This method does nothing and therefore keeps the existing metric unchanged.
     """
+
     def processDefaultMetric(self):
         self.tags = {}
         self.aggregate = False
@@ -277,18 +289,21 @@ class MetricWrapper(Metric):
     marks all metrics with 'total' as aggregates, so they can be skipped if
     the skipAggregates feature is active.
     """
+
     def processCpuMetric(self):
         if len(self.getMetricPath().split('.')) > 1:
             self.aggregate = self.getMetricPath().split('.')[0] == 'total'
 
             cpuId = self.delegate.getMetricPath().split('.')[0]
             self.tags["cpuId"] = cpuId
-            self.path = self.path.replace("."+cpuId+".", ".")
+            self.path = self.path.replace("." + cpuId + ".", ".")
+
     """
     Processes metrics of the HaProxyCollector. It stores the backend and the
     server to which the backends send as tags. Counters with 'backend' as
     backend name are considered aggregates.
     """
+
     def processHaProxyMetric(self):
         if len(self.getMetricPath().split('.')) == 3:
             self.aggregate = self.getMetricPath().split('.')[1] == 'backend'
@@ -297,13 +312,14 @@ class MetricWrapper(Metric):
             server = self.delegate.getMetricPath().split('.')[1]
             self.tags["backend"] = backend
             self.tags["server"] = server
-            self.path = self.path.replace("."+server+".", ".")
-            self.path = self.path.replace("."+backend+".", ".")
+            self.path = self.path.replace("." + server + ".", ".")
+            self.path = self.path.replace("." + backend + ".", ".")
 
     """
     Processes metrics of the DiskspaceCollector. It stores the mountpoint as a
     tag. There are no aggregates in this collector.
     """
+
     def processDiskspaceMetric(self):
         if len(self.getMetricPath().split('.')) == 2:
 
@@ -316,38 +332,41 @@ class MetricWrapper(Metric):
     Processes metrics of the DiskusageCollector. It stores the device as a
     tag. There are no aggregates in this collector.
     """
+
     def processDiskusageMetric(self):
         if len(self.getMetricPath().split('.')) == 2:
-
             device = self.delegate.getMetricPath().split('.')[0]
 
             self.tags["device"] = device
-            self.path = self.path.replace("."+device+".", ".")
+            self.path = self.path.replace("." + device + ".", ".")
 
     """
     Processes metrics of the NetworkCollector. It stores the interface as a
     tag. There are no aggregates in this collector.
     """
+
     def processNetworkMetric(self):
         if len(self.getMetricPath().split('.')) == 2:
-
             interface = self.delegate.getMetricPath().split('.')[0]
 
             self.tags["interface"] = interface
-            self.path = self.path.replace("."+interface+".", ".")
+            self.path = self.path.replace("." + interface + ".", ".")
 
     def processMattermostMetric(self):
         split = self.getMetricPath().split('.')
+
         if len(split) > 2:
             if split[0] == 'teamdetails' or split[0] == 'channeldetails':
                 team = split[1]
                 self.tags["team"] = team
-                self.path = self.path.replace("."+team+".", ".")
+                self.path = self.path.replace("." + team + ".", ".")
                 # fall through for channeldetails
+
             if split[0] == 'channeldetails':
                 channel = split[2]
                 self.tags["channel"] = channel
-                self.path = self.path.replace("."+channel+".", ".")
+                self.path = self.path.replace("." + channel + ".", ".")
+
             if split[0] == 'userdetails':
                 user = split[1]
                 team = split[2]
@@ -355,16 +374,19 @@ class MetricWrapper(Metric):
                 self.tags["user"] = user
                 self.tags["team"] = team
                 self.tags["channel"] = channel
-                self.path = self.path.replace("."+user+".", ".")
-                self.path = self.path.replace("."+team+".", ".")
-                self.path = self.path.replace("."+channel+".", ".")
+                self.path = self.path.replace("." + user + ".", ".")
+                self.path = self.path.replace("." + team + ".", ".")
+                self.path = self.path.replace("." + channel + ".", ".")
 
-    handlers = {'cpu': processCpuMetric, 'haproxy': processHaProxyMetric,
-                'mattermost': processMattermostMetric,
-                'diskspace': processDiskspaceMetric,
-                'iostat': processDiskusageMetric,
-                'network': processNetworkMetric,
-                'default': processDefaultMetric}
+    handlers = {
+        'cpu': processCpuMetric,
+        'haproxy': processHaProxyMetric,
+        'mattermost': processMattermostMetric,
+        'diskspace': processDiskspaceMetric,
+        'iostat': processDiskusageMetric,
+        'network': processNetworkMetric,
+        'default': processDefaultMetric
+    }
 
     def __init__(self, delegate, logger):
         self.path = delegate.path
@@ -380,7 +402,7 @@ class MetricWrapper(Metric):
         self.aggregate = False
         self.newMetricName = None
         self.logger = logger
+
         # call the handler for that collector
-        handler = self.handlers.get(self.getCollectorPath(),
-                                    self.handlers['default'])
+        handler = self.handlers.get(self.getCollectorPath(), self.handlers['default'])
         handler(self)

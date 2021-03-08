@@ -6,13 +6,13 @@ Collect the solr stats for the local node
 #### Dependencies
 
  * posixpath
- * urllib2
+ * urllib
  * json
 
 """
 
 import posixpath
-import urllib2
+from urllib.request import urlopen
 
 try:
     import json
@@ -72,10 +72,10 @@ class SolrCollector(diamond.collector.Collector):
 
     def _get(self, path):
         path = path.lstrip('/')
-        url = 'http://%s:%i/%s' % (
-            self.config['host'], int(self.config['port']), path)
+        url = 'http://%s:%i/%s' % (self.config['host'], int(self.config['port']), path)
+
         try:
-            response = urllib2.urlopen(url)
+            response = urlopen(url)
         except Exception as err:
             self.log.error("%s: %s", url, err)
             return False
@@ -83,8 +83,7 @@ class SolrCollector(diamond.collector.Collector):
         try:
             return json.load(response)
         except (TypeError, ValueError):
-            self.log.error("Unable to parse response from solr as a"
-                           " json object")
+            self.log.error("Unable to parse response from solr as a json object")
             return False
 
     def collect(self):
@@ -123,10 +122,9 @@ class SolrCollector(diamond.collector.Collector):
                     result["responseHeader"]["status"],
                 })
 
-            stats_url = posixpath.normpath(
-                "/solr/{}/admin/mbeans?stats=true&wt=json".format(core))
-
+            stats_url = posixpath.normpath("/solr/{}/admin/mbeans?stats=true&wt=json".format(core))
             result = self._get(stats_url)
+
             if not result:
                 continue
 
