@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.ups.ups import UPSCollector
 from diamond.collector import Collector
-from ups import UPSCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestUPSCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('UPSCollector', {
             'interval': 10,
@@ -34,9 +29,8 @@ class TestUPSCollector(CollectorTestCase):
         patch_listdir = patch('os.listdir', Mock(return_value=['sda']))
         patch_communicate = patch(
             'subprocess.Popen.communicate',
-            Mock(return_value=(
-                self.getFixture('cp550slg').getvalue(),
-                '')))
+            Mock(return_value=(self.getFixture('cp550slg').getvalue(), ''))
+        )
         patch_listdir.start()
         patch_communicate.start()
         self.collector.collect()
@@ -69,11 +63,9 @@ class TestUPSCollector(CollectorTestCase):
             'ups.vendorid.vendorid': 764.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

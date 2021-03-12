@@ -1,22 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.unbound.unbound import UnboundCollector
 from diamond.collector import Collector
-
-from unbound import UnboundCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestUnboundCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('UnboundCollector', {})
 
@@ -28,9 +22,11 @@ class TestUnboundCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_work_wtih_real_data(self, publish_mock):
         fixture_data = self.getFixture('unbound_stats').getvalue()
-        collector_mock = patch.object(UnboundCollector,
-                                      'run_command',
-                                      Mock(return_value=[fixture_data, '']))
+        collector_mock = patch.object(
+            UnboundCollector,
+            'run_command',
+            Mock(return_value=[fixture_data, ''])
+        )
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -117,16 +113,16 @@ class TestUnboundCollector(CollectorTestCase):
             'histogram.8s+': 0.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        collector_mock = patch.object(UnboundCollector,
-                                      'run_command',
-                                      Mock(return_value=None))
+        collector_mock = patch.object(
+            UnboundCollector,
+            'run_command',
+            Mock(return_value=None)
+        )
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -138,9 +134,11 @@ class TestUnboundCollector(CollectorTestCase):
         self.collector.config['histogram'] = False
 
         fixture_data = self.getFixture('unbound_stats').getvalue()
-        collector_mock = patch.object(UnboundCollector,
-                                      'run_command',
-                                      Mock(return_value=[fixture_data, '']))
+        collector_mock = patch.object(
+            UnboundCollector,
+            'run_command',
+            Mock(return_value=[fixture_data, ''])
+        )
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -233,6 +231,6 @@ class TestUnboundCollector(CollectorTestCase):
         self.assertPublishedMany(publish_mock, metrics)
         self.assertUnpublishedMany(publish_mock, histogram)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

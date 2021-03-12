@@ -5,7 +5,7 @@
 - [x] urllib2 > urllib
 - [ ] urlparse > urllib.parse
 - [ ] *.getiterator()
-- [ ] d.iteritems() > iter(d.items()) ( https://www.python.org/dev/peps/pep-0469/ )
+- [ ] *.iteritems() > iter(*.items()) ( https://www.python.org/dev/peps/pep-0469/ )
 - [x] "from StringIO import StringIO" > "from io import StringIO"
 - [ ] unicode > ( https://stackoverflow.com/questions/19877306/nameerror-global-name-unicode-is-not-defined-in-python-3 )
 - [ ] xrange > ?

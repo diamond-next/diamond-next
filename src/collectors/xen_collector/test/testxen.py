@@ -1,19 +1,13 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.xen_collector.xen_collector import XENCollector
 from diamond.collector import Collector
-from xen_collector import XENCollector
-
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_libvirt_is_available(func):
@@ -21,12 +15,13 @@ def run_only_if_libvirt_is_available(func):
         import libvirt
     except ImportError:
         libvirt = None
+
     pred = lambda: libvirt is not None
+
     return run_only(func, pred)
 
 
 class TestXENCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('XENCollector', {
         })
@@ -40,23 +35,21 @@ class TestXENCollector(CollectorTestCase):
     @patch('libvirt.openReadOnly')
     @patch.object(Collector, 'publish')
     def test_centos6(self, publish_mock, libvirt_mock, os_mock):
-
         class info:
-
             def __init__(self, id):
                 self.id = id
 
             def info(self):
                 if self.id == 0:
-                    return [1, 49420888L, 49420888L, 8, 911232000000000L]
+                    return [1, 49420888, 49420888, 8, 911232000000000]
                 if self.id == 1:
-                    return [1, 2097152L,  2097152L,  2, 310676150000000L]
+                    return [1, 2097152,  2097152,  2, 310676150000000]
                 if self.id == 2:
-                    return [1, 2097152L,  2097152L,  2, 100375300000000L]
+                    return [1, 2097152,  2097152,  2, 100375300000000]
                 if self.id == 3:
-                    return [1, 10485760L, 10485760L, 2, 335312040000000L]
+                    return [1, 10485760, 10485760, 2, 335312040000000]
                 if self.id == 4:
-                    return [1, 10485760L, 10485760L, 2, 351313480000000L]
+                    return [1, 10485760, 10485760, 2, 351313480000000]
 
         libvirt_m = Mock()
         libvirt_m.getInfo.return_value = ['x86_64', 48262, 8, 1200, 2, 1, 4, 1]
@@ -64,6 +57,7 @@ class TestXENCollector(CollectorTestCase):
 
         def lookupByIdMock(id):
             lookup = info(id)
+
             return lookup
 
         libvirt_m.lookupByID = lookupByIdMock
@@ -88,12 +82,9 @@ class TestXENCollector(CollectorTestCase):
             'AllocatedCores': 8.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 
-###############################################################################
 if __name__ == "__main__":
     unittest.main()
