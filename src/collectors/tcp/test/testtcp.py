@@ -1,28 +1,20 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
+
+from collectors.tcp.tcp import TCPCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
-from tcp import TCPCollector
-
-##########################################################################
 
 
 class TestTCPCollector(CollectorTestCase):
-
     def setUp(self, allowed_names=None, gauges=None):
         if not allowed_names:
             allowed_names = []
+
         config = get_collector_config('TCPCollector', {
             'allowed_names': allowed_names,
             'gauges': gauges,
@@ -74,8 +66,7 @@ TcpExt: 0 1 2
 
     @patch('diamond.collector.Collector.publish')
     def test_should_work_with_real_data(self, publish_mock):
-        self.setUp(['ListenOverflows', 'ListenDrops',
-                    'TCPLoss', 'TCPTimeouts'])
+        self.setUp(['ListenOverflows', 'ListenDrops', 'TCPLoss', 'TCPTimeouts'])
 
         TCPCollector.PROC = [self.getFixturePath('proc_net_netstat_1')]
         self.collector.collect()
@@ -206,11 +197,9 @@ TcpExt: 0 1 2
             'TCPPureAcks':                  1003528.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

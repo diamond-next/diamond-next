@@ -1,30 +1,25 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
+
 import os
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.memory_cgroup.memory_cgroup import MemoryCgroupCollector
 from diamond.collector import Collector
-from memory_cgroup import MemoryCgroupCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 dirname = os.path.dirname(__file__)
 fixtures_path = os.path.join(dirname, 'fixtures/')
 fixtures = []
+
 for root, dirnames, filenames in os.walk(fixtures_path):
     fixtures.append([root, dirnames, filenames])
 
 
 class TestMemoryCgroupCollector(CollectorTestCase):
-
     def test_import(self):
         self.assertTrue(MemoryCgroupCollector)
 
@@ -115,6 +110,7 @@ class TestMemoryCgroupCollector(CollectorTestCase):
          for k, v in should_be_published.iteritems()]
         [self.assertUnpublished(publish_mock, k, v)
          for k, v in should_not_be_published.iteritems()]
+
 
 if __name__ == "__main__":
     unittest.main()

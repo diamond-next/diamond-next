@@ -1,27 +1,18 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 import os
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.loadavg.loadavg import LoadAverageCollector
 from diamond.collector import Collector
-from loadavg import LoadAverageCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestLoadAverageCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('LoadAverageCollector', {
             'interval': 10
@@ -40,6 +31,7 @@ class TestLoadAverageCollector(CollectorTestCase):
             # on platforms that don't provide /proc/loadavg: don't bother
             # testing this.
             return
+
         open_mock.return_value = StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/loadavg')
@@ -65,11 +57,9 @@ class TestLoadAverageCollector(CollectorTestCase):
             'processes_total': 235
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

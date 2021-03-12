@@ -1,26 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.slabinfo.slabinfo import SlabInfoCollector
 from diamond.collector import Collector
-from slabinfo import SlabInfoCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestSlabInfoCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('SlabInfoCollector', {
             'interval': 1
@@ -46,11 +37,9 @@ class TestSlabInfoCollector(CollectorTestCase):
 
         metrics = self.getPickledResults('expected.pkl')
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

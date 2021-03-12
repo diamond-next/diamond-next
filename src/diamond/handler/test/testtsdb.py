@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 import contextlib
 import gzip
@@ -19,7 +18,6 @@ from diamond.metric import Metric
 @patch('diamond.handler.tsdb.urllib.request.urlopen')
 @patch('diamond.handler.tsdb.urllib.request.Request')
 class TestTSDBdHandler(TestCase):
-
     def setUp(self):
         self.url = 'http://127.0.0.1:4242/api/put'
 

@@ -1,26 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.vmstat.vmstat import VMStatCollector
 from diamond.collector import Collector
-from vmstat import VMStatCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestVMStatCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('VMStatCollector', {
             'interval': 10
@@ -58,12 +49,9 @@ class TestVMStatCollector(CollectorTestCase):
             'pswpout': 0.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 
-###############################################################################
 if __name__ == "__main__":
     unittest.main()

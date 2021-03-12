@@ -1,26 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.network.network import NetworkCollector
 from diamond.collector import Collector
-from network import NetworkCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNetworkCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('NetworkCollector', {
             'interfaces': ['eth', 'em', 'bond', 'veth', 'br-lxc'],
@@ -322,6 +313,6 @@ class TestNetworkCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

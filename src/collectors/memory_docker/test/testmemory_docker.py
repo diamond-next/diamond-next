@@ -1,30 +1,25 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
-import os
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import Mock
-from mock import patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+import os
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
+
+from collectors.memory_docker.memory_docker import MemoryDockerCollector
+from diamond.collector import Collector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 try:
     from docker import Client
 except ImportError:
     Client = None
 
-from diamond.collector import Collector
-from memory_docker import MemoryDockerCollector
-
 dirname = os.path.dirname(__file__)
 fixtures_path = os.path.join(dirname, 'fixtures/')
 fixtures = []
+
 for root, dirnames, filenames in os.walk(fixtures_path):
     fixtures.append([root, dirnames, filenames])
 
@@ -45,7 +40,6 @@ def run_only_if_docker_client_is_available(func):
 
 
 class TestMemoryDockerCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MemoryDockerCollector', {
             'interval': 10,
@@ -74,8 +68,7 @@ class TestMemoryDockerCollector(CollectorTestCase):
     @patch('__builtin__.open')
     @patch.object(Client, 'containers')
     @patch.object(Collector, 'publish')
-    def test_should_get_containers(self, publish_mock, containers_mock,
-                                   open_mock):
+    def test_should_get_containers(self, publish_mock, containers_mock, open_mock):
         containers_mock.return_value = []
         open_mock.side_effect = lambda x: StringIO('')
         self.collector.collect()
@@ -83,8 +76,7 @@ class TestMemoryDockerCollector(CollectorTestCase):
 
     @run_only_if_docker_client_is_available
     @patch.object(Collector, 'publish')
-    @patch.object(Client, 'containers',
-                  Mock(return_value=docker_fixture))
+    @patch.object(Client, 'containers', Mock(return_value=docker_fixture))
     def test_should_work_with_real_data(self, publish_mock):
         self.collector.collect()
 
@@ -105,6 +97,7 @@ class TestMemoryDockerCollector(CollectorTestCase):
             'docker.rss': 1,
             'docker.swap': 1,
         })
+
 
 if __name__ == "__main__":
     unittest.main()
