@@ -20,9 +20,10 @@ CassandraJolokiaCollector.conf
 ```
 """
 
-from jolokia import JolokiaCollector
 import math
 import re
+
+from jolokia import JolokiaCollector
 
 
 class CassandraJolokiaCollector(JolokiaCollector):

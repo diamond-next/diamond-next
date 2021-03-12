@@ -1,24 +1,20 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
 
+import unittest
 import urllib
+from unittest.mock import patch
+from urllib import error, parse
+
+from collectors.kafkastat.kafkastat import KafkaCollector
+from diamond.collector import Collector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 try:
     from xml.etree import ElementTree
 except ImportError:
     ElementTree = None
-
-from test import CollectorTestCase
-from test import get_collector_config
-from test import run_only
-from test import unittest
-from mock import patch
-
-from diamond.collector import Collector
-from collectors.kafkastat.kafkastat import KafkaCollector
-
-##########
 
 
 def run_only_if_ElementTree_is_available(func):
@@ -33,7 +29,6 @@ def run_only_if_ElementTree_is_available(func):
 
 
 class TestKafkaCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('KafkaCollector', {
             'interval': 10
@@ -109,10 +104,10 @@ class TestKafkaCollector(CollectorTestCase):
         get_mock.return_value = self._get_xml_fixture('mbean.xml')
 
         expected_metrics = {
-            'kafka.logs.mytopic-1.CurrentOffset': long('213500615'),
-            'kafka.logs.mytopic-1.NumAppendedMessages': long('224634137'),
+            'kafka.logs.mytopic-1.CurrentOffset': int('213500615'),
+            'kafka.logs.mytopic-1.NumAppendedMessages': int('224634137'),
             'kafka.logs.mytopic-1.NumberOfSegments': int('94'),
-            'kafka.logs.mytopic-1.Size': long('50143615339'),
+            'kafka.logs.mytopic-1.Size': int('50143615339'),
         }
 
         metrics = self.collector.query_mbean('kafka:type=kafka.logs.mytopic-1')
@@ -125,29 +120,26 @@ class TestKafkaCollector(CollectorTestCase):
         get_mock.return_value = self._get_xml_fixture('mbean.xml')
 
         expected_metrics = {
-            'some.prefix.CurrentOffset': long('213500615'),
-            'some.prefix.NumAppendedMessages': long('224634137'),
+            'some.prefix.CurrentOffset': int('213500615'),
+            'some.prefix.NumAppendedMessages': int('224634137'),
             'some.prefix.NumberOfSegments': int('94'),
-            'some.prefix.Size': long('50143615339'),
+            'some.prefix.Size': int('50143615339'),
         }
 
-        metrics = self.collector.query_mbean('kafka:type=kafka.logs.mytopic-0',
-                                             'some.prefix')
+        metrics = self.collector.query_mbean('kafka:type=kafka.logs.mytopic-0', 'some.prefix')
 
         self.assertEqual(metrics, expected_metrics)
 
     @run_only_if_ElementTree_is_available
     @patch.object(KafkaCollector, '_get')
     def test_activeController_value(self, get_mock):
-        get_mock.return_value = self._get_xml_fixture(
-            'activecontrollercount.xml')
+        get_mock.return_value = self._get_xml_fixture('activecontrollercount.xml')
 
         expected_metrics = {
             'KafkaController.ActiveControllerCount.Value': 1.0,
         }
 
-        metrics = self.collector.query_mbean(
-            'kafka.controller:type=KafkaController,name=ActiveControllerCount')
+        metrics = self.collector.query_mbean('kafka.controller:type=KafkaController,name=ActiveControllerCount')
 
         self.assertEqual(metrics, expected_metrics)
 
@@ -221,6 +213,5 @@ class TestKafkaCollector(CollectorTestCase):
         self.assertPublishedMany(publish_mock, expected_metrics)
 
 
-###############################################################################
 if __name__ == "__main__":
     unittest.main()

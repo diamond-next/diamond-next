@@ -1,13 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 import time
-
-from test import unittest
-from mock import Mock
-from mock import patch
-from mock import call
+import unittest
+from unittest.mock import Mock, call, patch
 
 import configobj
 
@@ -21,6 +17,7 @@ def fake_connect(self):
     # used for 'we can connect' tests
     m = Mock()
     self.socket = m
+
     if '__sockets_created' not in self.config:
         self.config['__sockets_created'] = [m]
     else:
@@ -33,7 +30,6 @@ def fake_bad_connect(self):
 
 
 class TestGraphiteHandler(unittest.TestCase):
-
     def setUp(self):
         self.__connect_method = mod.GraphiteHandler
         mod.GraphiteHandler._connect = fake_connect
@@ -46,8 +42,7 @@ class TestGraphiteHandler(unittest.TestCase):
         config = configobj.ConfigObj()
         config['batch'] = 1
 
-        metric = Metric('servers.com.example.www.cpu.total.idle',
-                        0, timestamp=1234567, host='will-be-ignored')
+        metric = Metric('servers.com.example.www.cpu.total.idle', 0, timestamp=1234567, host='will-be-ignored')
 
         expected_data = [
             call("servers.com.example.www.cpu.total.idle 0 1234567\n"),
@@ -94,8 +89,10 @@ class TestGraphiteHandler(unittest.TestCase):
 
         patch_sock.start()
         patch_send.start()
+
         for m in metrics:
             handler.process(m)
+
         patch_send.stop()
         patch_sock.stop()
 
@@ -126,8 +123,10 @@ class TestGraphiteHandler(unittest.TestCase):
 
         patch_sock.start()
         patch_send.start()
+
         for m in metrics:
             handler.process(m)
+
         patch_send.stop()
         patch_sock.stop()
 
@@ -169,8 +168,10 @@ class TestGraphiteHandler(unittest.TestCase):
         patch_send = patch.object(handler, '_send_data', send_mock)
 
         patch_send.start()
+
         for m in metrics:
             handler.process(m)
+
         patch_send.stop()
 
         # self.assertEqual(connect_mock.call_count, len(metrics))
@@ -199,6 +200,7 @@ class TestGraphiteHandler(unittest.TestCase):
         patch_error.start()
 
         calls = 5
+
         for _ in range(calls):
             handler._throttle_error('Error Message')
 

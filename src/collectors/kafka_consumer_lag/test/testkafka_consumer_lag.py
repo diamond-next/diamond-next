@@ -1,15 +1,12 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from mock import patch, Mock
+from unittest.mock import Mock, patch
 
+from collectors.kafka_consumer_lag.kafka_consumer_lag import KafkaConsumerLagCollector
 from diamond.collector import Collector
-from kafka_consumer_lag import KafkaConsumerLagCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestKafkaConsumerLagCollector(CollectorTestCase):
@@ -52,9 +49,7 @@ class TestKafkaConsumerLagCollector(CollectorTestCase):
             'stage_nginx_access.nginx_access.10': 0
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)\
 
 

@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.apcupsd.apcupsd import ApcupsdCollector
 from diamond.collector import Collector
-from apcupsd import ApcupsdCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestApcupsdCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('ApcupsdCollector', {
             'interval': 10
@@ -81,12 +76,10 @@ class TestApcupsdCollector(CollectorTestCase):
             'localhost.TONBATT': 0.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

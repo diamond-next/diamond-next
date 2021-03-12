@@ -6,25 +6,25 @@ Collect stats from Apache HTTPD server using mod_status
 #### Dependencies
 
  * mod_status
- * httplib
- * urlparse
 
 """
 
 import re
-import httplib
-import urlparse
-import diamond.collector
+from http.client import HTTPConnection, HTTPSConnection
+from urllib.parse import urlparse
+
+from diamond.collector import Collector
 
 
-class HttpdCollector(diamond.collector.Collector):
-
+class HttpdCollector(Collector):
     def process_config(self):
         super(HttpdCollector, self).process_config()
+
         if 'url' in self.config:
             self.config['urls'].append(self.config['url'])
 
         self.urls = {}
+
         if isinstance(self.config['urls'], str):
             self.config['urls'] = self.config['urls'].split(',')
 
@@ -32,6 +32,7 @@ class HttpdCollector(diamond.collector.Collector):
             # Handle the case where there is a trailing comman on the urls list
             if len(url) == 0:
                 continue
+
             if ' ' in url:
                 parts = url.split(' ')
                 self.urls[parts[0]] = parts[1]
@@ -46,6 +47,7 @@ class HttpdCollector(diamond.collector.Collector):
                     ", nickname http://host:port/server-status?auto, etc'",
             'max_redirects': "The maximum number of redirect requests to follow.",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -58,6 +60,7 @@ class HttpdCollector(diamond.collector.Collector):
             'urls': ['localhost http://localhost:8080/server-status?auto'],
             'max_redirects': 5,
         })
+
         return config
 
     def collect(self):
@@ -66,15 +69,16 @@ class HttpdCollector(diamond.collector.Collector):
 
             try:
                 redirects = 0
+
                 while True:
                     # Parse Url
-                    parts = urlparse.urlparse(url)
+                    parts = urlparse(url)
 
                     # Set httplib class
                     if parts.scheme == 'http':
-                        connection = httplib.HTTPConnection(parts.netloc)
+                        connection = HTTPConnection(parts.netloc)
                     elif parts.scheme == 'https':
-                        connection = httplib.HTTPSConnection(parts.netloc)
+                        connection = HTTPSConnection(parts.netloc)
                     else:
                         raise Exception("Invalid scheme: %s" % parts.scheme)
 
@@ -84,14 +88,16 @@ class HttpdCollector(diamond.collector.Collector):
                     response = connection.getresponse()
                     data = response.read()
                     headers = dict(response.getheaders())
-                    if (('location' not in headers or
-                         headers['location'] == url)):
+
+                    if (('location' not in headers or headers['location'] == url)):
                         connection.close()
                         break
+
                     url = headers['location']
                     connection.close()
 
                     redirects += 1
+
                     if redirects > self.config['max_redirects']:
                         raise Exception("Too many redirects!")
 
@@ -102,9 +108,11 @@ class HttpdCollector(diamond.collector.Collector):
                 continue
 
             exp = re.compile('^([A-Za-z ]+):\s+(.+)$')
+
             for line in data.split('\n'):
                 if line:
                     m = exp.match(line)
+
                     if m:
                         k = m.group(1)
                         v = m.group(2)
@@ -146,6 +154,7 @@ class HttpdCollector(diamond.collector.Collector):
             # Get Metric Name
             presicion_metric = False
             metric_name = "%s" % re.sub('\s+', '', key)
+
             if metric_name in metrics_precision:
                 presicion_metric = 1
 
@@ -174,7 +183,6 @@ class HttpdCollector(diamond.collector.Collector):
                 self.publish(metric_name, metric_value)
 
     def _parseScoreboard(self, sb):
-
         ret = [('IdleWorkers', sb.count('_')),
                ('ReadingWorkers', sb.count('R')),
                ('WritingWorkers', sb.count('W')),

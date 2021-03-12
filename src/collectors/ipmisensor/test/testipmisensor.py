@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.ipmisensor.ipmisensor import IPMISensorCollector
 from diamond.collector import Collector
-from ipmisensor import IPMISensorCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestIPMISensorCollector(CollectorTestCase):
-
     def setUp(self, thresholds=False):
         config = get_collector_config('IPMISensorCollector', {
             'interval': 10,
@@ -107,17 +102,13 @@ class TestIPMISensorCollector(CollectorTestCase):
             'System.Temp.Upper.NonRecoverable': 83.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data_hpilo(self, publish_mock):
-        patch_communicate = patch(
-            'subprocess.Popen.communicate',
-            Mock(return_value=(self.getFixture('ipmihp.out').getvalue(), '')))
+        patch_communicate = patch('subprocess.Popen.communicate', Mock(return_value=(self.getFixture('ipmihp.out').getvalue(), '')))
 
         patch_communicate.start()
         self.collector.collect()
@@ -134,12 +125,9 @@ class TestIPMISensorCollector(CollectorTestCase):
             'Fan.1': 15.68,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

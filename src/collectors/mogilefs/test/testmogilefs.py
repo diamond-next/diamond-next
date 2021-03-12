@@ -1,18 +1,13 @@
 #!/usr/bin/python
 # coding=utf-8
-################################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.mogilefs.mogilefs import MogilefsCollector
 from diamond.collector import Collector
-
-from mogilefs import MogilefsCollector
-
-################################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMogilefsCollector(CollectorTestCase):
@@ -28,10 +23,7 @@ class TestMogilefsCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_stub_data(self, publish_mock):
-
-        mockTelnet = Mock(**{'read_until.return_value':
-                             self.getFixture('stats').getvalue()})
-
+        mockTelnet = Mock(**{'read_until.return_value': self.getFixture('stats').getvalue()})
         patch_Telnet = patch('telnetlib.Telnet', Mock(return_value=mockTelnet))
 
         patch_Telnet.start()
@@ -55,6 +47,6 @@ class TestMogilefsCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-################################################################################
+
 if __name__ == "__main__":
     unittest.main()

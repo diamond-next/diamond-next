@@ -1,19 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
 
-from test import CollectorTestCase
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from mock import patch
+from unittest.mock import patch
 import os
-
 from diamond.collector import Collector
-from gridengine import GridEngineCollector
+from collectors.gridengine.gridengine import GridEngineCollector
 
 
 class TestGridEngineCollector(CollectorTestCase):
     """Set up the fixtures for the test
     """
-
     def setUp(self):
         config = get_collector_config('GridEngineCollector', {})
         self.collector = GridEngineCollector(config, None)
@@ -58,16 +56,13 @@ class TestGridEngineCollector(CollectorTestCase):
             'queues.secondary_q.manual_intervention': 0
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=published_metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=published_metrics, defaultpath=self.collector.config['path'])
 
         self.assertPublishedMany(publish_mock, published_metrics)
 
     @patch.object(GridEngineCollector, '_queue_stats_xml')
     @patch.object(Collector, 'publish')
-    def test_707(
-            self, publish_mock, xml_mock):
+    def test_707(self, publish_mock, xml_mock):
         """Test that fixtures are parsed correctly
         """
         xml_mock.return_value = self.getFixture('707.xml').getvalue()

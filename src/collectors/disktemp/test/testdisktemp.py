@@ -1,20 +1,15 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from mock import Mock
-from mock import patch
+from unittest.mock import Mock, patch
 
+from collectors.disktemp.disktemp import DiskTemperatureCollector
 from diamond.collector import Collector
-from disktemp import DiskTemperatureCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestDiskTemperatureCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('DiskTemperatureCollector', {
             'interval': 10,

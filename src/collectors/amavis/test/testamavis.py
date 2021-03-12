@@ -1,30 +1,25 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 import os
+import unittest
+from unittest.mock import patch
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
-
-import amavis
+from collectors.amavis.amavis import AmavisCollector
 from diamond.collector import Collector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 MOCK_PATH = os.path.join(os.path.dirname(__file__), 'mock-amavisd-agent')
 
 
 class TestAmavisCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('AmavisCollector', {
             'amavisd_exe': MOCK_PATH,
         })
 
-        self.collector = amavis.AmavisCollector(config, None)
+        self.collector = AmavisCollector(config, None)
 
     @patch.object(Collector, 'publish')
     def test_publish(self, publish_mock):
@@ -45,16 +40,14 @@ class TestAmavisCollector(CollectorTestCase):
             'virus.byname.Eicar-Test-Signature.percentage': 100.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     @patch('amavis.subprocess.Popen')
     def test_amavisd_agent_command(self, popen_mock, publish_mock):
         config = get_collector_config('AmavisCollector', {})
-        amavis.AmavisCollector(config, None).collect()
+        AmavisCollector(config, None).collect()
 
         popen_mock.assert_called_with(
             ['/usr/sbin/amavisd-agent', '-c', '1'],
@@ -68,15 +61,13 @@ class TestAmavisCollector(CollectorTestCase):
             'use_sudo': True,
             'sudo_user': 'chosen_sudo_user',
         })
-        amavis.AmavisCollector(config, None).collect()
+        AmavisCollector(config, None).collect()
 
         popen_mock.assert_called_with(
-            ['/usr/bin/sudo', '-u', 'chosen_sudo_user', '--',
-             '/usr/sbin/amavisd-agent', '-c', '1'],
+            ['/usr/bin/sudo', '-u', 'chosen_sudo_user', '--', '/usr/sbin/amavisd-agent', '-c', '1'],
             stdout=-1
         )
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

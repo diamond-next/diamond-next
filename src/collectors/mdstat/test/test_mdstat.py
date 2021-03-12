@@ -1,20 +1,18 @@
 #!/usr/bin/env python2
 # coding=utf-8
 
-import os
 import io
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import os
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.mdstat.mdstat import MdStatCollector
 from diamond.collector import Collector
-from mdstat import MdStatCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMdStatCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MdStatCollector', {
             'interval': 10
@@ -30,10 +28,12 @@ class TestMdStatCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_open_proc_loadavg(self, publish_mock, open_mock):
         MdStatCollector.MDSTAT_PATH = '/proc/mdstat'
+
         if not os.path.exists('/proc/mdstat'):
             # on platforms that don't provide /proc/mdstat: don't bother
             # testing this.
             return
+
         open_mock.return_value = io.BytesIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/mdstat', 'r')
@@ -136,8 +136,7 @@ class TestMdStatCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_mdstat_raid1_failed(self, publish_mock):
-        MdStatCollector.MDSTAT_PATH = \
-            self.getFixturePath('mdstat_raid1-failed')
+        MdStatCollector.MDSTAT_PATH = self.getFixturePath('mdstat_raid1-failed')
         self.collector.collect()
 
         metrics = {
@@ -154,8 +153,7 @@ class TestMdStatCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_mdstat_raid1_recover(self, publish_mock):
-        MdStatCollector.MDSTAT_PATH = \
-            self.getFixturePath('mdstat_raid1-recover')
+        MdStatCollector.MDSTAT_PATH = self.getFixturePath('mdstat_raid1-recover')
         self.collector.collect()
 
         metrics = {
@@ -175,15 +173,12 @@ class TestMdStatCollector(CollectorTestCase):
             'md0.bitmap.chunk_size': 65536
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_mdstat_raid1_spare(self, publish_mock):
-        MdStatCollector.MDSTAT_PATH = \
-            self.getFixturePath('mdstat_raid1-spare')
+        MdStatCollector.MDSTAT_PATH = self.getFixturePath('mdstat_raid1-spare')
         self.collector.collect()
 
         metrics = {
@@ -204,8 +199,7 @@ class TestMdStatCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_mdstat_raid5(self, publish_mock):
-        MdStatCollector.MDSTAT_PATH = \
-            self.getFixturePath('mdstat_raid5')
+        MdStatCollector.MDSTAT_PATH = self.getFixturePath('mdstat_raid5')
         self.collector.collect()
 
         metrics = {
@@ -222,6 +216,7 @@ class TestMdStatCollector(CollectorTestCase):
         }
 
         self.assertPublishedMany(publish_mock, metrics)
+
 
 if __name__ == "__main__":
     unittest.main()

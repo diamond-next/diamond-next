@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
+import unittest
+from unittest.mock import patch
 
+from collectors.jolokia.cassandra_jolokia import CassandraJolokiaCollector
 from diamond.collector import Collector
-
-from cassandra_jolokia import CassandraJolokiaCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestCassandraJolokiaCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CassandraJolokiaCollector', {})
 
@@ -129,6 +124,6 @@ class TestCassandraJolokiaCollector(CollectorTestCase):
             self.expected_fixture_a_p('p99')
         })
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,16 +1,15 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from mock import patch
-from test import unittest
+import unittest
+from unittest.mock import patch
+
 import configobj
 
 from diamond.collector import Collector
 
 
 class BaseCollectorTest(unittest.TestCase):
-
     def test_SetCustomHostname(self):
         config = configobj.ConfigObj()
         config['server'] = {}

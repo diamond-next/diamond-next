@@ -1,21 +1,19 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import subprocess
+import unittest
+from unittest.mock import call, patch
+
+from collectors.ceph.ceph import CephCollector, flatten_dictionary
+from diamond.collector import Collector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
+
 try:
     import json
 except ImportError:
     import simplejson as json
-
-import subprocess
-
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import patch, call
-
-from diamond.collector import Collector
-import ceph
 
 
 def run_only_if_assertSequenceEqual_is_available(func):
@@ -34,42 +32,42 @@ class TestCounterIterator(unittest.TestCase):
     def test_empty(self):
         data = {}
         expected = []
-        actual = list(ceph.flatten_dictionary(data))
+        actual = list(flatten_dictionary(data))
         self.assertSequenceEqual(actual, expected)
 
     @run_only_if_assertSequenceEqual_is_available
     def test_simple(self):
         data = {'a': 1, 'b': 2}
         expected = [('a', 1), ('b', 2)]
-        actual = list(ceph.flatten_dictionary(data))
+        actual = list(flatten_dictionary(data))
         self.assertSequenceEqual(actual, expected)
 
     @run_only_if_assertSequenceEqual_is_available
     def test_prefix(self):
         data = {'a': 1, 'b': 2}
         expected = [('Z.a', 1), ('Z.b', 2)]
-        actual = list(ceph.flatten_dictionary(data, prefix='Z'))
+        actual = list(flatten_dictionary(data, prefix='Z'))
         self.assertSequenceEqual(actual, expected)
 
     @run_only_if_assertSequenceEqual_is_available
     def test_sep(self):
         data = {'a': 1, 'b': 2}
         expected = [('Z:a', 1), ('Z:b', 2)]
-        actual = list(ceph.flatten_dictionary(data, prefix='Z', sep=':'))
+        actual = list(flatten_dictionary(data, prefix='Z', sep=':'))
         self.assertSequenceEqual(actual, expected)
 
     @run_only_if_assertSequenceEqual_is_available
     def test_nested(self):
         data = {'a': 1, 'b': 2, 'c': {'d': 3}}
         expected = [('a', 1), ('b', 2), ('c.d', 3)]
-        actual = list(ceph.flatten_dictionary(data))
+        actual = list(flatten_dictionary(data))
         self.assertSequenceEqual(actual, expected)
 
     @run_only_if_assertSequenceEqual_is_available
     def test_doubly_nested(self):
         data = {'a': 1, 'b': 2, 'c': {'d': 3}, 'e': {'f': {'g': 1}}}
         expected = [('a', 1), ('b', 2), ('c.d', 3), ('e.f.g', 1)]
-        actual = list(ceph.flatten_dictionary(data))
+        actual = list(flatten_dictionary(data))
         self.assertSequenceEqual(actual, expected)
 
     @run_only_if_assertSequenceEqual_is_available
@@ -87,17 +85,16 @@ class TestCounterIterator(unittest.TestCase):
             ('wait.avgcount', 0),
             ('wait.sum', 0),
         ]
-        actual = list(ceph.flatten_dictionary(data))
+        actual = list(flatten_dictionary(data))
         self.assertSequenceEqual(actual, expected)
 
 
 class TestCephCollectorSocketNameHandling(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CephCollector', {
             'interval': 10,
         })
-        self.collector = ceph.CephCollector(config, None)
+        self.collector = CephCollector(config, None)
 
     def test_counter_default_prefix(self):
         expected = 'ceph.osd.325'
@@ -118,7 +115,7 @@ class TestCephCollectorSocketNameHandling(CollectorTestCase):
             'socket_prefix': 'prefix-',
             'socket_ext': 'ext',
         })
-        collector = ceph.CephCollector(config, None)
+        collector = CephCollector(config, None)
 
         collector._get_socket_paths()
         glob_mock.assert_called_with('/path/prefix-*.ext')
@@ -130,10 +127,10 @@ class TestCephCollectorGettingStats(CollectorTestCase):
         config = get_collector_config('CephCollector', {
             'interval': 10,
         })
-        self.collector = ceph.CephCollector(config, None)
+        self.collector = CephCollector(config, None)
 
     def test_import(self):
-        self.assertTrue(ceph.CephCollector)
+        self.assertTrue(CephCollector)
 
     @run_only_if_subprocess_check_output_is_available
     @patch('subprocess.check_output')
@@ -187,12 +184,11 @@ class TestCephCollectorGettingStats(CollectorTestCase):
 
 
 class TestCephCollectorPublish(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CephCollector', {
             'interval': 10,
         })
-        self.collector = ceph.CephCollector(config, None)
+        self.collector = CephCollector(config, None)
 
     @patch.object(Collector, 'publish')
     def test_simple(self, publish_mock):
@@ -211,6 +207,7 @@ class TestCephCollectorPublish(CollectorTestCase):
                                             metric_type='GAUGE', instance=None,
                                             precision=0),
                                        ])
+
 
 if __name__ == "__main__":
     unittest.main()

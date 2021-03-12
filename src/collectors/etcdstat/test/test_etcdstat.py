@@ -1,26 +1,21 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
+import unittest
+from unittest.mock import Mock, patch
+
+from collectors.etcdstat.etcdstat import EtcdCollector
 from diamond.collector import Collector
-from test import CollectorTestCase
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from test import unittest
-from mock import patch
-from mock import Mock
-
-from etcdstat import EtcdCollector
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-##########################################################################
-
 
 class TestEtcdCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('EtcdCollector', {
             'interval': 10
@@ -123,10 +118,8 @@ class TestEtcdCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

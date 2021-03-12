@@ -2,17 +2,13 @@
 # coding=utf-8
 
 import datetime
-import mock
+import unittest
+from unittest.mock import Mock, patch
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
-from test import run_only
-from mock import Mock
-
+from collectors.elb.elb import ElbCollector
 from diamond.collector import Collector
-from elb import ElbCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_boto_is_available(func):
@@ -20,12 +16,13 @@ def run_only_if_boto_is_available(func):
         import boto
     except ImportError:
         boto = None
+
     pred = lambda: boto is not None
+
     return run_only(func, pred)
 
 
 class TestElbCollector(CollectorTestCase):
-
     @run_only_if_boto_is_available
     def test_throws_exception_when_interval_not_multiple_of_60(self):
         config = get_collector_config('ElbCollector',
@@ -99,8 +96,8 @@ class TestElbCollector(CollectorTestCase):
         collector = ElbCollector(config, handlers=[])
 
         target = ts + datetime.timedelta(minutes=1)
-        with mock.patch.object(datetime, 'datetime',
-                               mock.Mock(wraps=datetime.datetime)) as patched:
+
+        with patch.object(datetime, 'datetime', Mock(wraps=datetime.datetime)) as patched:
             patched.utcnow.return_value = target
             collector.collect()
 
@@ -175,8 +172,8 @@ class TestElbCollector(CollectorTestCase):
         collector = ElbCollector(config, handlers=[])
 
         target = ts + datetime.timedelta(minutes=1)
-        with mock.patch.object(datetime, 'datetime',
-                               mock.Mock(wraps=datetime.datetime)) as patched:
+
+        with patch.object(datetime, 'datetime', Mock(wraps=datetime.datetime)) as patched:
             patched.utcnow.return_value = target
             collector.collect()
 
@@ -199,8 +196,7 @@ class TestElbCollector(CollectorTestCase):
             })
 
 
-def assertRaisesAndContains(excClass, contains_str, callableObj, *args,
-                            **kwargs):
+def assertRaisesAndContains(excClass, contains_str, callableObj, *args, **kwargs):
     try:
         callableObj(*args, **kwargs)
     except excClass as e:
@@ -217,6 +213,7 @@ def assertRaisesAndContains(excClass, contains_str, callableObj, *args,
         else:
             excName = str(excClass)
         raise AssertionError("%s not raised" % excName)
+
 
 if __name__ == "__main__":
     unittest.main()
