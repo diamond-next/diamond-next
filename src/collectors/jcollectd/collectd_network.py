@@ -23,22 +23,12 @@
 Collectd network protocol implementation.
 """
 
+import select
 import socket
 import struct
-import select
-import sys
-from datetime import datetime
 from copy import deepcopy
-
-if sys.version_info.major == 2:
-    # Python 2.7 io.StringIO does not like unicode
-    from StringIO import StringIO
-else:
-    try:
-        from io import StringIO
-    except ImportError:
-        from cStringIO import StringIO
-
+from datetime import datetime
+from io import StringIO
 
 DEFAULT_PORT = 25826
 """Default port"""

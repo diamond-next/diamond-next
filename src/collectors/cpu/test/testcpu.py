@@ -1,26 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.cpu.cpu import CPUCollector
 from diamond.collector import Collector
-from cpu import CPUCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestCPUCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CPUCollector', {
             'interval': 10,
@@ -234,7 +225,6 @@ class TestCPUCollectorNormalize(CollectorTestCase):
     @patch('cpu.os')
     @patch('cpu.psutil')
     def test_should_work_psutil(self, psutil_mock, os_mock, publish_mock):
-
         os_mock.access.return_value = False
 
         total = Mock(**self.input_base)
@@ -257,6 +247,6 @@ class TestCPUCollectorNormalize(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, self.expected)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

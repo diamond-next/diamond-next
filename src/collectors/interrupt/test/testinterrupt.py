@@ -1,26 +1,17 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.interrupt.interrupt import InterruptCollector
 from diamond.collector import Collector
-from interrupt import InterruptCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestInterruptCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('InterruptCollector', {
             'interval': 1
@@ -110,6 +101,6 @@ class TestInterruptCollector(CollectorTestCase):
             'LOC.total': 557993.000000,
         })
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,25 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from mock import Mock
-from mock import patch
+from io import StringIO
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.uptime.uptime import UptimeCollector
 from diamond.collector import Collector
-from uptime import UptimeCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestUptimeCollector(CollectorTestCase):
-
     def setUp(self, config=None):
         if config is None:
             config = get_collector_config('UptimeCollector', {

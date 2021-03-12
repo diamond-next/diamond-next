@@ -1,25 +1,16 @@
 #!/usr/bin/env python
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
+
+from collectors.ip.ip import IPCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
-from ip import IPCollector
-
-###############################################################################
 
 
 class TestIPCollector(CollectorTestCase):
-
     def setUp(self, allowed_names=None):
         if not allowed_names:
             allowed_names = []
@@ -134,6 +125,6 @@ Ip: 0 1 2
                            defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-###############################################################################
+
 if __name__ == '__main__':
     unittest.main()

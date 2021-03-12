@@ -1,18 +1,16 @@
 from __future__ import print_function
-import os
+
 import inspect
-import configobj
+import os
 import unittest
+from io import StringIO
+
+import configobj
 
 try:
     import cPickle as pickle
 except ImportError:
     import pickle as pickle
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 try:
     from setproctitle import setproctitle
@@ -41,7 +39,6 @@ def get_collector_config(key, value):
 
 
 class CollectorTestCase(unittest.TestCase):
-
     def setDocExample(self, collector, metrics, defaultpath=None):
         # function does not fit in to test case
         return

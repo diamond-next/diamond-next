@@ -1,28 +1,18 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 import os
+import unittest
+from io import StringIO
+from unittest.mock import Mock, patch
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.kvm.kvm import KVMCollector
 from diamond.collector import Collector
-from kvm import KVMCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestKVMCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('KVMCollector', {
             'interval': 10,
@@ -90,6 +80,6 @@ class TestKVMCollector(CollectorTestCase):
                            defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()
