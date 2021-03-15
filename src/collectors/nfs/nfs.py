@@ -9,18 +9,18 @@ The NfsCollector collects nfs utilization metrics using /proc/net/rpc/nfs.
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class NfsCollector(diamond.collector.Collector):
-
     PROC = '/proc/net/rpc/nfs'
 
     def get_default_config_help(self):
         config_help = super(NfsCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -29,8 +29,9 @@ class NfsCollector(diamond.collector.Collector):
         """
         config = super(NfsCollector, self).get_default_config()
         config.update({
-            'path':     'nfs'
+            'path': 'nfs'
         })
+
         return config
 
     def collect(self):
@@ -38,8 +39,8 @@ class NfsCollector(diamond.collector.Collector):
         Collect stats
         """
         if os.access(self.PROC, os.R_OK):
-
             results = {}
+
             # Open file
             file = open(self.PROC)
 
@@ -56,7 +57,7 @@ class NfsCollector(diamond.collector.Collector):
                     results['rpc.retrans'] = line[2]
                     results['rpc.authrefrsh'] = line[3]
                 elif line[0] == 'proc2':
-                    line.pop(1)     # remove column-cnt field
+                    line.pop(1)  # remove column-cnt field
                     results['v2.null'] = line[1]
                     results['v2.getattr'] = line[2]
                     results['v2.setattr'] = line[3]
@@ -76,7 +77,7 @@ class NfsCollector(diamond.collector.Collector):
                     results['v2.readdir'] = line[17]
                     results['v2.fsstat'] = line[18]
                 elif line[0] == 'proc3':
-                    line.pop(1)     # remove column-cnt field
+                    line.pop(1)  # remove column-cnt field
                     results['v3.null'] = line[1]
                     results['v3.getattr'] = line[2]
                     results['v3.setattr'] = line[3]
@@ -100,7 +101,7 @@ class NfsCollector(diamond.collector.Collector):
                     results['v3.pathconf'] = line[21]
                     results['v3.commit'] = line[22]
                 elif line[0] == 'proc4':
-                    line.pop(1)     # remove column-cnt field
+                    line.pop(1)  # remove column-cnt field
                     results['v4.null'] = line[1]
                     results['v4.read'] = line[2]
                     results['v4.write'] = line[3]
@@ -131,82 +132,102 @@ class NfsCollector(diamond.collector.Collector):
                     results['v4.statfs'] = line[28]
                     results['v4.readlink'] = line[29]
                     results['v4.readdir'] = line[30]
+
                     try:
                         results['v4.server_caps'] = line[31]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.delegreturn'] = line[32]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.getacl'] = line[33]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.setacl'] = line[34]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.fs_locations'] = line[35]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.rel_lkowner'] = line[36]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.exchange_id'] = line[37]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.create_ses'] = line[38]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.destroy_ses'] = line[39]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.sequence'] = line[40]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.get_lease_t'] = line[41]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.reclaim_comp'] = line[42]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.layoutget'] = line[43]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.layoutcommit'] = line[44]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.layoutreturn'] = line[45]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.getdevlist'] = line[46]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.getdevinfo'] = line[47]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.ds_write'] = line[48]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.ds_commit'] = line[49]
                     except IndexError:
                         pass
+
                     try:
                         results['v4.getdevlist'] = line[50]
                     except IndexError:
@@ -217,9 +238,10 @@ class NfsCollector(diamond.collector.Collector):
 
             for stat in results.keys():
                 metric_name = stat
-                metric_value = long(float(results[stat]))
+                metric_value = int(float(results[stat]))
                 metric_value = self.derivative(metric_name, metric_value)
                 self.publish(metric_name, metric_value, precision=3)
+
             return True
 
         return False

@@ -127,9 +127,7 @@ class TestNfsCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data_rhel6(self, publish_mock):

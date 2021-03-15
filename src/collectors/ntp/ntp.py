@@ -27,15 +27,15 @@ from diamond import convertor
 
 
 class NtpCollector(diamond.collector.ProcessCollector):
-
     def get_default_config_help(self):
         config_help = super(NtpCollector, self).get_default_config_help()
         config_help.update({
-            'bin':      'Path to ntpdate binary',
+            'bin': 'Path to ntpdate binary',
             'ntp_pool': 'NTP Pool address',
             'precision': 'Number of decimal places to report to',
             'time_scale': 'Time unit to report offset in',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -44,9 +44,9 @@ class NtpCollector(diamond.collector.ProcessCollector):
         """
         config = super(NtpCollector, self).get_default_config()
         config.update({
-            'bin':      self.find_binary('/usr/sbin/ntpdate'),
+            'bin': self.find_binary('/usr/sbin/ntpdate'),
             'ntp_pool': 'pool.ntp.org',
-            'path':     'ntp',
+            'path': 'ntp',
             'precision': 0,
             'time_scale': 'milliseconds',
         })
@@ -69,8 +69,7 @@ class NtpCollector(diamond.collector.ProcessCollector):
             # Sample of line: 31 Apr 12:00:00 ntpdate[12345]: adjust time \
             #   server 123.456.789.2 offset -0.000123 sec
             if len(parts) != 11:
-                self.log.error('NtpCollector: Output of ntpdate was %s words '
-                               'long but was expected to be 11' % len(parts))
+                self.log.error('NtpCollector: Output of ntpdate was %s words long but was expected to be 11' % len(parts))
                 self.log.debug('NtpCollector: ntpdate output was %s' % parts)
                 continue
 
@@ -78,15 +77,12 @@ class NtpCollector(diamond.collector.ProcessCollector):
             offset_in_s = float(parts[9])
 
             # Convert to the requested time unit
-            offset = convertor.time.convert(offset_in_s,
-                                            's',
-                                            self.config['time_scale'])
+            offset = convertor.time.convert(offset_in_s, 's', self.config['time_scale'])
 
             # Determine metric namespace based on given time unit
             metric_name = 'offset.%s' % self.config['time_scale']
 
-            data[metric_name] = {'val': offset,
-                                 'precision': self.config['precision']}
+            data[metric_name] = {'val': offset, 'precision': self.config['precision']}
 
         return data.items()
 

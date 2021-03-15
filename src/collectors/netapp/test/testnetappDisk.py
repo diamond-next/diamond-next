@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import unittest
+
+from collectors.netapp.netappDisk import netappDisk
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
-import unittest
-from collectors.netapp.netappDisk import netappDisk
 
 
 class TestnetappDisk(CollectorTestCase):

@@ -21,17 +21,15 @@ class TestNtpdCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_wtih_real_data(self, publish_mock):
-        ntpq_data = Mock(
-            return_value=self.getFixture('ntpq').getvalue())
-        ntpdc_kerninfo_data = Mock(
-            return_value=self.getFixture('ntpdc_kerninfo').getvalue())
-        ntpdc_sysinfo_data = Mock(
-            return_value=self.getFixture('ntpdc_sysinfo').getvalue())
+        ntpq_data = Mock(return_value=self.getFixture('ntpq').getvalue())
+        ntpdc_kerninfo_data = Mock(return_value=self.getFixture('ntpdc_kerninfo').getvalue())
+        ntpdc_sysinfo_data = Mock(return_value=self.getFixture('ntpdc_sysinfo').getvalue())
         collector_mock = patch.multiple(
             NtpdCollector,
             get_ntpq_output=ntpq_data,
             get_ntpdc_kerninfo_output=ntpdc_kerninfo_data,
-            get_ntpdc_sysinfo_output=ntpdc_sysinfo_data)
+            get_ntpdc_sysinfo_output=ntpdc_sysinfo_data
+        )
 
         collector_mock.start()
         self.collector.collect()
@@ -52,9 +50,7 @@ class TestNtpdCollector(CollectorTestCase):
             'root_dispersion': 0.09311
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
@@ -66,7 +62,8 @@ class TestNtpdCollector(CollectorTestCase):
             NtpdCollector,
             get_ntpq_output=ntpq_data,
             get_ntpdc_kerninfo_output=ntpdc_kerninfo_data,
-            get_ntpdc_sysinfo_output=ntpdc_sysinfo_data)
+            get_ntpdc_sysinfo_output=ntpdc_sysinfo_data
+        )
 
         collector_mock.start()
         self.collector.collect()

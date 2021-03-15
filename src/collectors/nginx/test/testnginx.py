@@ -23,14 +23,13 @@ class TestNginxCollector(CollectorTestCase):
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
     def test_should_work_with_real_data(self, publish_counter_mock, publish_gauge_mock, publish_mock):
-        mockMimeMessage = Mock(**{'gettype.return_value': 'text/html'})
-        mockResponse = Mock(**{
+        mock_mime_message = Mock(**{'gettype.return_value': 'text/html'})
+        mock_response = Mock(**{
             'readlines.return_value': self.getFixture('status').readlines(),
-            'info.return_value': mockMimeMessage,
-            }
-        )
+            'info.return_value': mock_mime_message,
+        })
 
-        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mockResponse))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mock_response))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -53,15 +52,14 @@ class TestNginxCollector(CollectorTestCase):
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
     def test_plus_should_work_with_real_data(self, publish_counter_mock, publish_gauge_mock, publish_mock):
-        mockMimeMessage = Mock(**{'gettype.return_value': 'application/json'})
-        mockResponse = Mock(**{
+        mock_mime_message = Mock(**{'gettype.return_value': 'application/json'})
+        mock_response = Mock(**{
             'readlines.return_value': self.getFixture('plus_status').readlines(),
-            'info.return_value': mockMimeMessage,
+            'info.return_value': mock_mime_message,
             'read.return_value': self.getFixture('plus_status').read(),
-            }
-        )
+        })
 
-        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mockResponse))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mock_response))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -145,14 +143,13 @@ class TestNginxCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        mockMimeMessage = Mock(**{'gettype.return_value': 'text/html'})
-        mockResponse = Mock(**{
+        mock_mime_message = Mock(**{'gettype.return_value': 'text/html'})
+        mock_response = Mock(**{
             'readlines.return_value': self.getFixture('status_blank').readlines(),
-            'info.return_value': mockMimeMessage,
-            }
-        )
+            'info.return_value': mock_mime_message,
+        })
 
-        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mockResponse))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mock_response))
 
         patch_urlopen.start()
         self.collector.collect()

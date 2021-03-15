@@ -33,8 +33,7 @@ class TestNetworkCollector(CollectorTestCase):
         open_mock.assert_called_once_with('/proc/net/dev')
 
     @patch.object(Collector, 'publish')
-    def test_should_work_with_virtual_interfaces_and_bridges(self,
-                                                             publish_mock):
+    def test_should_work_with_virtual_interfaces_and_bridges(self, publish_mock):
         NetworkCollector.PROC = self.getFixturePath('proc_net_dev_1')
         self.collector.collect()
 
@@ -58,9 +57,7 @@ class TestNetworkCollector(CollectorTestCase):
             'br-lxc-247.rx_megabyte': (0.032, 2)
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
@@ -84,9 +81,7 @@ class TestNetworkCollector(CollectorTestCase):
             'bond3.tx_megabyte': (4.707, 2)
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     # Named test_z_* to run after test_should_open_proc_net_dev

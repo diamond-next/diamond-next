@@ -9,24 +9,23 @@ Collect counters from Netfilter accounting
 
 """
 
-import diamond.collector
-from subprocess import Popen, PIPE
 import re
+from subprocess import PIPE, Popen
 
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class NetfilterAccountingCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = (
-            super(NetfilterAccountingCollector, self).get_default_config_help())
+        config_help = (super(NetfilterAccountingCollector, self).get_default_config_help())
         config_help.update({
             'bin': 'The path to the smartctl binary',
             'reset': 'Reset counters after collecting',
             'use_sudo': 'Use sudo?',
             'sudo_cmd': 'Path to sudo',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -42,6 +41,7 @@ class NetfilterAccountingCollector(diamond.collector.Collector):
             'sudo_cmd': '/usr/bin/sudo',
             'method': 'Threaded'
         })
+
         return config
 
     def collect(self):
@@ -67,6 +67,7 @@ class NetfilterAccountingCollector(diamond.collector.Collector):
 
         for line in lines:
             matches = re.match(matcher, line)
+
             if matches:
                 num_packets = int(matches.group(1))
                 num_bytes = int(matches.group(2))

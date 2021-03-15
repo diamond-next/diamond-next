@@ -28,10 +28,11 @@ GRANT PROCESS ON *.* TO 'user'@'hostname' IDENTIFIED BY
 
 """
 
-import diamond.collector
-from diamond.collector import str_to_bool
 import re
 import time
+
+import diamond.collector
+from diamond.collector import str_to_bool
 
 try:
     import MySQLdb
@@ -42,7 +43,6 @@ except ImportError:
 
 
 class MySQLCollector(diamond.collector.Collector):
-
     _GAUGE_KEYS = [
         'Innodb_buffer_pool_pages_data', 'Innodb_buffer_pool_pages_dirty',
         'Innodb_buffer_pool_pages_free',
@@ -275,19 +275,20 @@ class MySQLCollector(diamond.collector.Collector):
         """
         config = super(MySQLCollector, self).get_default_config()
         config.update({
-            'path':     'mysql',
+            'path': 'mysql',
             # Connection settings
-            'hosts':    [],
+            'hosts': [],
 
             # Which rows of 'SHOW GLOBAL STATUS' you would like to publish.
             # http://dev.mysql.com/doc/refman/5.1/en/show-status.html
             # Leave unset to publish all
             # 'publish': '',
 
-            'slave':    False,
-            'master':   False,
-            'innodb':   False,
+            'slave': False,
+            'master': False,
+            'innodb': False,
         })
+
         return config
 
     def get_db_stats(self, query):
@@ -355,8 +356,10 @@ class MySQLCollector(diamond.collector.Collector):
 
         if self.config['slave']:
             metrics['slave'] = {}
+
             try:
                 rows = self.get_db_slave_status()
+
                 for row_slave in rows:
                     for key, value in row_slave.items():
                         if key in self._IGNORE_KEYS:
@@ -372,22 +375,25 @@ class MySQLCollector(diamond.collector.Collector):
         if self.config['innodb']:
             metrics['innodb'] = {}
             innodb_status_timer = time.time()
+
             try:
                 rows = self.get_db_innodb_status()
-
                 innodb_status_output = rows[0]
-
                 todo = self.innodb_status_keys.keys()
+
                 for line in innodb_status_output['Status'].split('\n'):
                     for key in todo:
                         match = self.innodb_status_keys[key].match(line)
+
                         if match is not None:
                             todo.remove(key)
                             match_index = 1
+
                             for key_index in key.split(','):
                                 try:
                                     value = float(match.group(match_index))
                                     # store value
+
                                     if key_index in metrics:
                                         self.log.debug("MySQLCollector: %s " +
                                                        "already defined, " +
@@ -427,29 +433,24 @@ class MySQLCollector(diamond.collector.Collector):
                     continue
 
                 if metric_name not in self._GAUGE_KEYS:
-                    metric_value = self.derivative(nickname + metric_name,
-                                                   metric_value)
+                    metric_value = self.derivative(nickname + metric_name, metric_value)
+
                 if key == 'status':
-                    if (('publish' not in self.config or
-                         metric_name in self.config['publish'])):
+                    if 'publish' not in self.config or metric_name in self.config['publish']:
                         self.publish(nickname + metric_name, metric_value)
                 else:
                     self.publish(nickname + metric_name, metric_value)
 
     def collect(self):
-
         if MySQLdb is None:
             self.log.error('Unable to import MySQLdb')
             return False
 
         for host in self.config['hosts']:
-            matches = re.search(
-                '^([^:]*):([^@]*)@([^:]*):?([^/]*)/([^/]*)/?(.*)', host)
+            matches = re.search('^([^:]*):([^@]*)@([^:]*):?([^/]*)/([^/]*)/?(.*)', host)
 
             if not matches:
-                self.log.error(
-                    'Connection string not in required format, skipping: %s',
-                    host)
+                self.log.error('Connection string not in required format, skipping: %s', host)
                 continue
 
             params = {'host': matches.group(3)}
@@ -458,11 +459,13 @@ class MySQLCollector(diamond.collector.Collector):
                 params['port'] = int(matches.group(4))
             except ValueError:
                 params['port'] = 3306
+
             params['db'] = matches.group(5)
             params['user'] = matches.group(1)
             params['passwd'] = matches.group(2)
 
             nickname = matches.group(6)
+
             if len(nickname):
                 nickname += '.'
 
@@ -476,14 +479,15 @@ class MySQLCollector(diamond.collector.Collector):
                     self.disconnect()
                 except MySQLdb.ProgrammingError:
                     pass
+
                 self.log.error('Collection failed for %s %s', nickname, e)
+
                 continue
 
             # Warn if publish contains an unknown variable
             if 'publish' in self.config and metrics['status']:
                 for k in self.config['publish'].split():
                     if k not in metrics['status']:
-                        self.log.error("No such key '%s' available, issue " +
-                                       "'show global status' for a full " +
-                                       "list", k)
+                        self.log.error("No such key '%s' available, issue 'show global status' for a full list", k)
+
             self._publish_stats(nickname, metrics)

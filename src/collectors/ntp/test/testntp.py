@@ -21,11 +21,8 @@ class TestNtpCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_wtih_real_data(self, publish_mock):
-        ntpdate_data = Mock(
-            return_value=(self.getFixture('ntpdate').getvalue(), None))
-        collector_mock = patch.object(NtpCollector,
-                                      'run_command',
-                                      ntpdate_data)
+        ntpdate_data = Mock(return_value=(self.getFixture('ntpdate').getvalue(), None))
+        collector_mock = patch.object(NtpCollector, 'run_command', ntpdate_data)
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -35,9 +32,7 @@ class TestNtpCollector(CollectorTestCase):
             'offset.milliseconds': 0
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
@@ -49,11 +44,8 @@ class TestNtpCollector(CollectorTestCase):
 
         self.collector = NtpCollector(config, None)
 
-        ntpdate_data = Mock(
-            return_value=(self.getFixture('ntpdate').getvalue(), None))
-        collector_mock = patch.object(NtpCollector,
-                                      'run_command',
-                                      ntpdate_data)
+        ntpdate_data = Mock(return_value=(self.getFixture('ntpdate').getvalue(), None))
+        collector_mock = patch.object(NtpCollector, 'run_command', ntpdate_data)
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -63,17 +55,13 @@ class TestNtpCollector(CollectorTestCase):
             'offset.seconds': -0.000128
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
         ntpdate_data = Mock(return_value=('', None))
-        collector_mock = patch.object(NtpCollector,
-                                      'run_command',
-                                      ntpdate_data)
+        collector_mock = patch.object(NtpCollector, 'run_command', ntpdate_data)
 
         collector_mock.start()
         self.collector.collect()

@@ -37,8 +37,9 @@ class NetstatCollector(diamond.collector.Collector):
         """
         config = super(NetstatCollector, self).get_default_config()
         config.update({
-            'path':         'netstat',
+            'path': 'netstat',
         })
+
         return config
 
     def collect(self):
@@ -64,6 +65,7 @@ class NetstatCollector(diamond.collector.Collector):
         with open(NetstatCollector.PROC_TCP, 'r') as f:
             content = f.readlines()
             content.pop(0)
+
         return content
 
     @staticmethod
@@ -72,10 +74,13 @@ class NetstatCollector(diamond.collector.Collector):
 
     @staticmethod
     def _ip(s):
-        ip = [(NetstatCollector._hex2dec(s[6:8])),
-              (NetstatCollector._hex2dec(s[4:6])),
-              (NetstatCollector._hex2dec(s[2:4])),
-              (NetstatCollector._hex2dec(s[0:2]))]
+        ip = [
+            (NetstatCollector._hex2dec(s[6:8])),
+            (NetstatCollector._hex2dec(s[4:6])),
+            (NetstatCollector._hex2dec(s[2:4])),
+            (NetstatCollector._hex2dec(s[0:2]))
+        ]
+
         return '.'.join(ip)
 
     @staticmethod
@@ -85,4 +90,5 @@ class NetstatCollector(diamond.collector.Collector):
     @staticmethod
     def _convert_ip_port(array):
         host, port = array.split(':')
+
         return NetstatCollector._ip(host), NetstatCollector._hex2dec(port)

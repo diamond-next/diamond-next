@@ -24,7 +24,7 @@ class TestNetstatCollector(CollectorTestCase):
         self.collector.collect()
 
         metrics = {
-            'LISTEN':  9
+            'LISTEN': 9
         }
 
         self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])

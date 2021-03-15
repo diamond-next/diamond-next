@@ -29,7 +29,6 @@ try:
 except ImportError:
     netappsdk = None
 
-
 __author__ = 'peter@phyn3t.com'
 
 
@@ -66,8 +65,7 @@ class netapp_inodeCol(object):
         graphite_path += '.' + self.device + '.' + 'volume'
         graphite_path += '.' + volume + '.' + metric_name
 
-        metric = Metric(graphite_path, metric_value, precision=4,
-                        host=self.device)
+        metric = Metric(graphite_path, metric_value, precision=4, host=self.device)
 
         self.publish_metric(metric)
 
@@ -81,9 +79,7 @@ class netapp_inodeCol(object):
         netapp_data = self.server.invoke('volume-list-info')
 
         if netapp_data.results_status() == 'failed':
-            self.log.error(
-                'While using netapp API failed to retrieve '
-                'volume-list-info for netapp filer %s' % self.device)
+            self.log.error('While using netapp API failed to retrieve volume-list-info for netapp filer %s' % self.device)
             return
 
         netapp_xml = ET.fromstring(netapp_data.sprintf()).find('volumes')
@@ -112,8 +108,7 @@ class netapp_inode(diamond.collector.Collector):
         """
 
         if netappsdk is None:
-            self.log.error(
-                'Failed to import netappsdk.NaServer or netappsdk.NaElement')
+            self.log.error('Failed to import netappsdk.NaServer or netappsdk.NaElement')
             return
 
         if device in self.running:
