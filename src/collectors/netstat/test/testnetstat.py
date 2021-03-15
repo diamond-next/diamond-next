@@ -1,23 +1,20 @@
 #!/usr/bin/python
 # coding=utf-8
-################################################################################
 
 from __future__ import print_function
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
 
+import unittest
+from unittest.mock import patch
+
+from collectors.netstat.netstat import NetstatCollector
 from diamond.collector import Collector
-from netstat import NetstatCollector
-
-################################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNetstatCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('NetstatCollector', {
-        })
+        config = get_collector_config('NetstatCollector', {})
 
         self.collector = NetstatCollector(config, None)
 
@@ -30,12 +27,10 @@ class TestNetstatCollector(CollectorTestCase):
             'LISTEN':  9
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         print(publish_mock)
         self.assertPublishedMany(publish_mock, metrics)
 
-################################################################################
+
 if __name__ == "__main__":
     unittest.main()

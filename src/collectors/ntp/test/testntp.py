@@ -1,22 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.ntp.ntp import NtpCollector
 from diamond.collector import Collector
-
-from ntp import NtpCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNtpCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('NtpCollector', {})
 
@@ -87,6 +81,6 @@ class TestNtpCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

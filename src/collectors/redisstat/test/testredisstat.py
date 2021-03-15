@@ -1,18 +1,13 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import Mock
-from mock import patch, call
+import unittest
+from unittest.mock import Mock, call, patch
 
+from collectors.redisstat.redisstat import RedisCollector
 from diamond.collector import Collector
-from redisstat import RedisCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_redis_is_available(func):
@@ -23,12 +18,13 @@ def run_only_if_redis_is_available(func):
         import redis
     except ImportError:
         redis = None
+
     pred = lambda: redis is not None
+
     return run_only(func, pred)
 
 
 class TestRedisCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('RedisCollector', {
             'interval': '1',
@@ -43,7 +39,6 @@ class TestRedisCollector(CollectorTestCase):
     @run_only_if_redis_is_available
     @patch.object(Collector, 'publish')
     def test_real_data(self, publish_mock):
-
         data_1 = {'pubsub_channels': 0,
                   'used_memory_peak_human': '700.71K',
                   'bgrewriteaof_in_progress': 0,
@@ -200,7 +195,6 @@ class TestRedisCollector(CollectorTestCase):
     @run_only_if_redis_is_available
     @patch.object(Collector, 'publish')
     def test_hostport_or_instance_config(self, publish_mock):
-
         testcases = {
             'default': {
                 'config': {},  # test default settings
@@ -307,7 +301,6 @@ class TestRedisCollector(CollectorTestCase):
     @run_only_if_redis_is_available
     @patch.object(Collector, 'publish')
     def test_process_config_with_instances(self, publish_mock):
-
         config_data = {
             'instances': [
                 'nick1@host1:1111',
@@ -334,7 +327,6 @@ class TestRedisCollector(CollectorTestCase):
     @run_only_if_redis_is_available
     @patch.object(Collector, 'publish')
     def test_key_naming_when_using_instances(self, publish_mock):
-
         config_data = {
             'instances': [
                 'nick1@host1:1111',
@@ -396,6 +388,5 @@ class TestRedisCollector(CollectorTestCase):
         publish_mock.assert_has_calls(expected_calls, any_order=True)
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

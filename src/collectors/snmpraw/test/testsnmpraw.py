@@ -1,24 +1,19 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
+
 import time
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
-from snmpraw import SNMPRawCollector
+from collectors.snmpraw.snmpraw import SNMPRawCollector
 from diamond.collector import Collector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestSNMPRawCollector(CollectorTestCase):
-
     def setUp(self):
-        config = get_collector_config('SNMPRawCollector', {
-        })
+        config = get_collector_config('SNMPRawCollector', {})
         self.collector = SNMPRawCollector(config, None)
 
     def test_import(self):
@@ -46,6 +41,5 @@ class TestSNMPRawCollector(CollectorTestCase):
         self.assertEqual(metric.timestamp, 1000)
 
 
-###############################################################################
 if __name__ == "__main__":
     unittest.main()

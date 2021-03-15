@@ -1,21 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.supervisord.supervisord import SupervisordCollector
 from diamond.collector import Collector
-from supervisord import SupervisordCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestSupervisordCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('SupervisordCollector', {})
         self.collector = SupervisordCollector(config, None)
@@ -26,9 +21,7 @@ class TestSupervisordCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_success(self, publish_mock):
-
-        self.collector.getAllProcessInfo = Mock(
-            return_value=eval(self.getFixture('valid_fixture').getvalue()))
+        self.collector.getAllProcessInfo = Mock(return_value=eval(self.getFixture('valid_fixture').getvalue()))
 
         self.collector.collect()
 
@@ -39,11 +32,9 @@ class TestSupervisordCollector(CollectorTestCase):
             'test_group.test_name_2.uptime': 500
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

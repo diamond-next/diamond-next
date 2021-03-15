@@ -1,25 +1,20 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.postfix.postfix import PostfixCollector
 from diamond.collector import Collector
-from postfix import PostfixCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestPostfixCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('PostfixCollector', {
-            'host':     'localhost',
-            'port':     7777,
+            'host': 'localhost',
+            'port': 7777,
             'interval': '1',
         })
 
@@ -43,9 +38,7 @@ class TestPostfixCollector(CollectorTestCase):
         self.assertPublishedMany(publish_mock, {})
 
         second_resp = self.getFixture('postfix-stats.2.json').getvalue()
-        patch_collector = patch.object(PostfixCollector,
-                                       'get_json',
-                                       Mock(return_value=second_resp))
+        patch_collector = patch.object(PostfixCollector, 'get_json', Mock(return_value=second_resp))
 
         patch_collector.start()
         self.collector.collect()
@@ -59,10 +52,8 @@ class TestPostfixCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

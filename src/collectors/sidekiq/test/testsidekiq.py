@@ -1,19 +1,15 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
+
+import unittest
+from unittest.mock import Mock, patch
+
 import redis
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import Mock
-from mock import patch
-
+from collectors.sidekiq.sidekiq import SidekiqCollector
 from diamond.collector import Collector
-from sidekiq import SidekiqCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_redis_is_available(func):
@@ -24,11 +20,11 @@ def run_only_if_redis_is_available(func):
         import redis
     except ImportError:
         redis = None
+
     return run_only(func, lambda: redis is not None)
 
 
 class TestSidekiqCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('SidekiqWebCollector', {
             'password': 'TEST_PASSWORD'
@@ -150,11 +146,9 @@ class TestSidekiqCollector(CollectorTestCase):
             'queue.test-sidekiq.6379.0.schedule': 100,
             'queue.test-sidekiq.6379.0.retry': 100
         }
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

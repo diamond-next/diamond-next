@@ -1,16 +1,12 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import run_only
-from test import unittest
-from mock import patch
+import unittest
+from unittest.mock import patch
 
-from pgbouncer import PgbouncerCollector
-
-##########################################################################
+from collectors.pgbouncer.pgbouncer import PgbouncerCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_psycopg2_is_available(func):
@@ -18,12 +14,13 @@ def run_only_if_psycopg2_is_available(func):
         import psycopg2
     except ImportError:
         psycopg2 = None
+
     pred = lambda: psycopg2 is not None
+
     return run_only(func, pred)
 
 
 class TestPgbouncerCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('PgbouncerCollector', {})
 
@@ -97,12 +94,9 @@ class TestPgbouncerCollector(CollectorTestCase):
         collector = PgbouncerCollector(config, None)
         collector.collect()
 
-        _get_stats_by_database.assert_any_call(
-            '127.0.0.1', '6433', 'postgres', 'foobar')
-        _get_stats_by_database.assert_any_call(
-            '127.0.0.2', '6432', 'pgbouncer', '')
+        _get_stats_by_database.assert_any_call('127.0.0.1', '6433', 'postgres', 'foobar')
+        _get_stats_by_database.assert_any_call('127.0.0.2', '6432', 'pgbouncer', '')
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

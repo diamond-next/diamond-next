@@ -1,15 +1,14 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import unittest
-from test import run_only
-from mock import patch
+import unittest
+from unittest.mock import patch
 
 import configobj
 
 from diamond.handler.stats_d import StatsdHandler
 from diamond.metric import Metric
+from test import run_only
 
 
 def run_only_if_statsd_is_available(func):
@@ -17,12 +16,13 @@ def run_only_if_statsd_is_available(func):
         import statsd
     except ImportError:
         statsd = None
+
     pred = lambda: statsd is not None
+
     return run_only(func, pred)
 
 
 class TestStatsdHandler(unittest.TestCase):
-
     @run_only_if_statsd_is_available
     @patch('statsd.StatsClient')
     def test_single_gauge(self, mock_client):

@@ -1,20 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
+import unittest
+from unittest.mock import patch
 
+from collectors.openvpn.openvpn import OpenVPNCollector
 from diamond.collector import Collector
-from openvpn import OpenVPNCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestOpenVPNCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('OpenVPNCollector', {
             'interval': 10,
@@ -46,11 +42,9 @@ class TestOpenVPNCollector(CollectorTestCase):
             'status.global.max_bcast-mcast_queue_length': 14.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,19 +1,15 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
 import os
 import time
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import patch
+import unittest
+from unittest.mock import patch
 
+from collectors.processresources.processresources import ProcessResourcesCollector
 from diamond.collector import Collector
-from processresources import ProcessResourcesCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_psutil_is_available(func):
@@ -21,6 +17,7 @@ def run_only_if_psutil_is_available(func):
         import psutil
     except ImportError:
         psutil = None
+
     return run_only(func, lambda: psutil is not None)
 
 
@@ -53,8 +50,7 @@ class TestProcessResourcesCollector(CollectorTestCase):
     SELFMON_PID = 10001  # used for selfmonitoring
 
     def setUp(self):
-        config = get_collector_config('ProcessResourcesCollector',
-                                      self.TEST_CONFIG)
+        config = get_collector_config('ProcessResourcesCollector', self.TEST_CONFIG)
 
         self.collector = ProcessResourcesCollector(config, None)
 
@@ -157,8 +153,7 @@ class TestProcessResourcesCollector(CollectorTestCase):
             def as_dict(self, attrs=None, ad_value=None):
                 from collections import namedtuple
                 meminfo = namedtuple('meminfo', 'rss vms')
-                ext_meminfo = namedtuple('meminfo',
-                                         'rss vms shared text lib data dirty')
+                ext_meminfo = namedtuple('meminfo', 'rss vms shared text lib data dirty')
                 cputimes = namedtuple('cputimes', 'user system')
                 thread = namedtuple('thread', 'id user_time system_time')
                 user = namedtuple('user', 'real effective saved')
@@ -230,6 +225,6 @@ class TestProcessResourcesCollector(CollectorTestCase):
         self.assertPublished(publish_mock, 'noprocess.workers_count', 0)
         self.assertUnpublished(publish_mock, 'noprocess.uptime', 0)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

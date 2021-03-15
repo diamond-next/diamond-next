@@ -1,15 +1,14 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import unittest
-from test import run_only
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
+
 import configobj
 
 import diamond.handler.riemann as mod
 from diamond.metric import Metric
+from test import run_only
 
 try:
     from riemann_client.client import Client
@@ -30,7 +29,6 @@ def fake_connect(self):
 
 
 class TestRiemannHandler(unittest.TestCase):
-
     def setUp(self):
         self.__connect_method = mod.RiemannHandler
         mod.RiemannHandler._connect = fake_connect
@@ -61,10 +59,10 @@ class TestRiemannHandler(unittest.TestCase):
             self.assertEqual(event, {
                 'host': u'com.example.www',
                 'service': u'servers.cpu.total.idle',
-                'time': 1234567L,
+                'time': 1234567,
                 'metric_f': 0.0,
             })
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

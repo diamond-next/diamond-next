@@ -1,13 +1,11 @@
 #!/usr/bin/python
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import run_only
-from mock import patch
+from unittest.mock import patch
 
-from slony import SlonyCollector
+from collectors.slony.slony import SlonyCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_psycopg2_is_available(func):
@@ -15,12 +13,13 @@ def run_only_if_psycopg2_is_available(func):
         import psycopg2
     except ImportError:
         psycopg2 = None
+
     pred = lambda: psycopg2 is not None
+
     return run_only(func, pred)
 
 
 class TestSlonyCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('SlonyCollector', {})
         self.collector = SlonyCollector(config, None)

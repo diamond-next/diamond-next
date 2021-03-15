@@ -1,20 +1,16 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch, Mock
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.nvidia_gpu.nvidia_gpu import NvidiaGPUCollector
 from diamond.collector import Collector
-from nvidia_gpu import NvidiaGPUCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNvidiaGPUCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('NvidiaGPUCollector', {
         })
@@ -66,12 +62,9 @@ class TestNvidiaGPUCollector(CollectorTestCase):
             'gpu_3.temperature.gpu': 44
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()
