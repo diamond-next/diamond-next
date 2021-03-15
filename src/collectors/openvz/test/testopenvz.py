@@ -21,8 +21,7 @@ class TestOpenvzCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_parse_values(self, publish_mock):
-        collector_mock = patch.object(OpenvzCollector, 'poll', Mock(
-            return_value=self.getFixture('vzlist.json').getvalue()))
+        collector_mock = patch.object(OpenvzCollector, 'poll', Mock(return_value=self.getFixture('vzlist.json').getvalue()))
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()

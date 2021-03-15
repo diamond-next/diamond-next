@@ -12,10 +12,10 @@ from test import get_collector_config
 
 class TestOneWireCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('OneWireCollector', {
-            'owfs': self.getFixturePath('.'),
-            'scan': {'temperature': 't'},
-            'id:28.2F702A010000': {'presure': 'p11'}})
+        config = get_collector_config(
+            'OneWireCollector',
+            {'owfs': self.getFixturePath('.'), 'scan': {'temperature': 't'}, 'id:28.2F702A010000': {'presure': 'p11'}}
+        )
         self.collector = OneWireCollector(config, None)
 
     def test_import(self):

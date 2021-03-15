@@ -22,15 +22,15 @@ Author: Tomasz Prus
 """
 
 import os
+
 import diamond.collector
 
 
 class OneWireCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(OneWireCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -44,6 +44,7 @@ class OneWireCollector(diamond.collector.Collector):
             # 'scan': {'temperature': 't'},
             # 'id:24.BB000000': {'file_with_value': 'alias'},
         })
+
         return config
 
     def collect(self):
@@ -76,6 +77,7 @@ class OneWireCollector(diamond.collector.Collector):
 
         for fn, alias in files.iteritems():
             fv = os.path.join(oid_path, fn)
+
             if os.path.isfile(fv):
                 try:
                     f = open(fv)

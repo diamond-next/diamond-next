@@ -19,3 +19,4 @@
 - [x] string.replace(…) > '…'.replace(…)
 - [x] string.letters > string.ascii_letters
 - [x] reduce(…) > functools.reduce(…)
+- [x] izip(…) > zip(…)

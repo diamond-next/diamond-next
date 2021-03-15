@@ -15,14 +15,14 @@ Metrics:
 
 """
 
+import re
+import subprocess
+
 import diamond.collector
 from diamond.collector import str_to_bool
-import subprocess
-import re
 
 
 class OssecCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(OssecCollector, self).get_default_config_help()
         config_help.update({
@@ -38,10 +38,10 @@ class OssecCollector(diamond.collector.Collector):
         """
         config = super(OssecCollector, self).get_default_config()
         config.update({
-            'bin':              '/var/ossec/bin/agent_control',
-            'use_sudo':         True,
-            'sudo_cmd':         '/usr/bin/sudo',
-            'path':             'ossec',
+            'bin': '/var/ossec/bin/agent_control',
+            'use_sudo': True,
+            'sudo_cmd': '/usr/bin/sudo',
+            'path': 'ossec',
         })
         return config
 
@@ -55,23 +55,24 @@ class OssecCollector(diamond.collector.Collector):
             p = subprocess.Popen(command, stdout=subprocess.PIPE)
             res = p.communicate()[0]
         except Exception as e:
-            self.log.error('Unable to exec cmd: %s, because %s'
-                           % (' '.join(command), str(e)))
+            self.log.error('Unable to exec cmd: %s, because %s' % (' '.join(command), str(e)))
             return
 
         if res == '':
-            self.log.error('Empty result from exec cmd: %s'
-                           % (' '.join(command)))
+            self.log.error('Empty result from exec cmd: %s' % (' '.join(command)))
             return
 
         states = {}
+
         for line in res.split("\n"):
             #    ID: 000, Name: local-ossec-001.localdomain (server), IP:\
             # 127.0.0.1, Active/Local
             if not line.startswith('   ID: '):
                 continue
+
             fragments = line.split(',')
             state = fragments[-1].lstrip()
+
             if state not in states:
                 states[state] = 1
             else:

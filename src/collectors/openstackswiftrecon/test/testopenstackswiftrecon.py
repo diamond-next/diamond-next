@@ -14,6 +14,7 @@ class TestOpenstackSwiftReconCollector(CollectorTestCase):
     def setUp(self, allowed_names=None):
         if not allowed_names:
             allowed_names = []
+
         config = get_collector_config('OpenstackSwiftReconCollector', {
             'allowed_names': allowed_names,
             'interval': 1,

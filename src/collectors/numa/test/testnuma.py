@@ -27,23 +27,16 @@ class TestNumaCollector(CollectorTestCase):
         self.collector.collect()
 
         metrics = {
-            'node_0_free_MB':  342,
-            'node_0_size_MB':  15976
+            'node_0_free_MB': 342,
+            'node_0_size_MB': 15976
         }
 
-        patch_communicate = patch(
-            'subprocess.Popen.communicate',
-            Mock(return_value=(
-                self.getFixture('single_node.txt').getvalue(),
-                '')))
+        patch_communicate = patch('subprocess.Popen.communicate', Mock(return_value=(self.getFixture('single_node.txt').getvalue(), '')))
         patch_communicate.start()
         self.collector.collect()
         patch_communicate.stop()
 
-        self.setDocExample(
-            collector=self.collector.__class__.__name__,
-            metrics=metrics,
-            defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 

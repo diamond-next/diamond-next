@@ -12,8 +12,7 @@ from test import get_collector_config
 
 class TestNvidiaGPUCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('NvidiaGPUCollector', {
-        })
+        config = get_collector_config('NvidiaGPUCollector', {})
 
         self.collector = NvidiaGPUCollector(config, None)
 
@@ -22,14 +21,8 @@ class TestNvidiaGPUCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_publish_gpu_stat(self, publish_mock):
-        output_mock = Mock(
-            return_value=(self.getFixture('nvidia_smi').getvalue(), '')
-        )
-        collector_mock = patch.object(
-            NvidiaGPUCollector,
-            'run_command',
-            output_mock
-        )
+        output_mock = Mock(return_value=(self.getFixture('nvidia_smi').getvalue(), ''))
+        collector_mock = patch.object(NvidiaGPUCollector, 'run_command', output_mock)
 
         collector_mock.start()
         self.collector.collect()

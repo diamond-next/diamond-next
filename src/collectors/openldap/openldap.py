@@ -18,7 +18,6 @@ except ImportError:
 
 
 class OpenLDAPCollector(diamond.collector.Collector):
-
     STATS = {
         'conns.total': {
             'base': 'cn=Total,cn=Connections,cn=Monitor',
@@ -108,6 +107,7 @@ class OpenLDAPCollector(diamond.collector.Collector):
             'username': 'DN of user we connect with',
             'password': 'Password of user we connect with',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -125,6 +125,7 @@ class OpenLDAPCollector(diamond.collector.Collector):
             'username': 'cn=monitor',
             'password': 'password',
         })
+
         return config
 
     def get_datapoints(self, ldap_url, username, password):
@@ -138,13 +139,11 @@ class OpenLDAPCollector(diamond.collector.Collector):
             for key in self.STATS.keys():
                 base = self.STATS[key]['base']
                 attr = self.STATS[key]['attr']
-                num = conn.search(base, ldap.SCOPE_BASE,
-                                  'objectClass=*', [attr])
+                num = conn.search(base, ldap.SCOPE_BASE, 'objectClass=*', [attr])
                 result_type, result_data = conn.result(num, 0)
                 datapoints[key] = int(result_data[0][1][attr][0])
         except:
-            self.log.warn('Unable to query ldap base=%s, attr=%s'
-                          % (base, attr))
+            self.log.warn('Unable to query ldap base=%s, attr=%s' % (base, attr))
             raise
 
         return datapoints
@@ -154,12 +153,10 @@ class OpenLDAPCollector(diamond.collector.Collector):
             self.log.error('Unable to import module ldap')
             return {}
 
-        ldap_url = 'ldap://%s:%d' % (self.config['host'],
-                                     int(self.config['port']))
+        ldap_url = 'ldap://%s:%d' % (self.config['host'], int(self.config['port']))
+
         try:
-            datapoints = self.get_datapoints(ldap_url,
-                                             self.config['username'],
-                                             self.config['password'])
+            datapoints = self.get_datapoints(ldap_url, self.config['username'], self.config['password'])
         except Exception as e:
             self.log.error('Unable to query %s: %s' % (ldap_url, e))
             return {}

@@ -14,7 +14,7 @@ class TestOpenVPNCollector(CollectorTestCase):
     def setUp(self):
         config = get_collector_config('OpenVPNCollector', {
             'interval': 10,
-            'method':   None,
+            'method': None,
             'instances': 'file://' + self.getFixturePath('status.log'),
         })
 

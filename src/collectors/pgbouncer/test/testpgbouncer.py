@@ -37,8 +37,7 @@ class TestPgbouncerCollector(CollectorTestCase):
 
         self.collector.collect()
 
-        _get_stats_by_database.assert_called_with(
-            'localhost', '6432', 'postgres', '')
+        _get_stats_by_database.assert_called_with('localhost', '6432', 'postgres', '')
 
         self.assertPublished(publish, 'default.foo.bar', 42)
 
