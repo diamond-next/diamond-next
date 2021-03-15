@@ -16,6 +16,7 @@ parameter the instance alias will be appended to the
 import base64
 import re
 from urllib.request import Request, urlopen
+
 from diamond.collector import str_to_bool
 
 try:
@@ -29,10 +30,10 @@ RE_LOGSTASH_INDEX = re.compile('^(.*)-\d{4}(\.\d{2}){2,3}$')
 
 
 class ElasticSearchCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(ElasticSearchCollector, self).process_config()
         instance_list = self.config['instances']
+
         if isinstance(instance_list, str):
             instance_list = [instance_list]
 
@@ -44,6 +45,7 @@ class ElasticSearchCollector(diamond.collector.Collector):
             instance_list.append('@%s:%s' % (host, port))
 
         self.instances = {}
+
         for instance in instance_list:
             if '@' in instance:
                 (alias, hostport) = instance.split('@', 1)
@@ -60,8 +62,7 @@ class ElasticSearchCollector(diamond.collector.Collector):
             self.instances[alias] = (host, int(port))
 
     def get_default_config_help(self):
-        config_help = super(ElasticSearchCollector,
-                            self).get_default_config_help()
+        config_help = super(ElasticSearchCollector, self).get_default_config_help()
         config_help.update({
             'host': "",
             'port': "",
@@ -91,16 +92,16 @@ class ElasticSearchCollector(diamond.collector.Collector):
         """
         config = super(ElasticSearchCollector, self).get_default_config()
         config.update({
-            'host':           '127.0.0.1',
-            'port':           9200,
-            'user':           '',
-            'password':       '',
-            'instances':      [],
-            'scheme':         'http',
-            'path':           'elasticsearch',
-            'stats':          ['jvm', 'thread_pool', 'indices'],
+            'host': '127.0.0.1',
+            'port': 9200,
+            'user': '',
+            'password': '',
+            'instances': [],
+            'scheme': 'http',
+            'path': 'elasticsearch',
+            'stats': ['jvm', 'thread_pool', 'indices'],
             'logstash_mode': False,
-            'cluster':       False,
+            'cluster': False,
         })
         return config
 

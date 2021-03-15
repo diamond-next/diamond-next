@@ -11,12 +11,13 @@ Diamond collector for Hadoop metrics, see:
 
 """
 
-from diamond.metric import Metric
+import glob
+import os
+import re
+
 import diamond.collector
 from diamond.collector import str_to_bool
-import glob
-import re
-import os
+from diamond.metric import Metric
 
 
 class HadoopCollector(diamond.collector.Collector):

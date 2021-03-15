@@ -86,25 +86,25 @@ Ip: 0 1 2
     @patch('diamond.collector.Collector.publish')
     def test_should_work_with_all_data(self, publish_mock):
         metrics = {
-            'Forwarding':       2,
-            'DefaultTTL':       64,
-            'InReceives':       2,
-            'InHdrErrors':      0,
-            'InAddrErrors':     0,
-            'ForwDatagrams':    0,
-            'InUnknownProtos':  0,
-            'InDiscards':       0,
-            'InDelivers':       2,
-            'OutRequests':      1,
-            'OutDiscards':      0,
-            'OutNoRoutes':      0,
-            'ReasmTimeout':     0,
-            'ReasmReqds':       0,
-            'ReasmOKs':         0,
-            'ReasmFails':       0,
-            'FragOKs':          0,
-            'FragFails':        0,
-            'FragCreates':      0,
+            'Forwarding': 2,
+            'DefaultTTL': 64,
+            'InReceives': 2,
+            'InHdrErrors': 0,
+            'InAddrErrors': 0,
+            'ForwDatagrams': 0,
+            'InUnknownProtos': 0,
+            'InDiscards': 0,
+            'InDelivers': 2,
+            'OutRequests': 1,
+            'OutDiscards': 0,
+            'OutNoRoutes': 0,
+            'ReasmTimeout': 0,
+            'ReasmReqds': 0,
+            'ReasmOKs': 0,
+            'ReasmFails': 0,
+            'FragOKs': 0,
+            'FragFails': 0,
+            'FragCreates': 0,
         }
 
         self.setUp(allowed_names=metrics.keys())
@@ -120,9 +120,7 @@ Ip: 0 1 2
         ]
         self.collector.collect()
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 

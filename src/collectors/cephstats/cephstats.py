@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+
 from collectors.ceph.ceph import CephCollector
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ceph'))
@@ -31,7 +32,7 @@ def to_bytes(value, unit):
     return fval
 
 
-def process_ceph_status(output):
+def process_ceph_status(self, output):
     res = patternchk.search(output)
     if not res:
         return {}
@@ -72,7 +73,7 @@ class CephStatsCollector(CephCollector):
                 'Could not get stats: %s' % err)
             self.log.exception('Could not get stats')
             return {}
-        return process_ceph_status(output)
+        return process_ceph_status(self, output)
 
     def collect(self):
         """

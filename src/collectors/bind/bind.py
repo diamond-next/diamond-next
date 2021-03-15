@@ -10,13 +10,13 @@ Collects stats from bind 9.5's statistics server
 
 """
 
-import diamond.collector
-from urllib.request import urlopen
 import xml.etree.cElementTree as ElementTree
+from urllib.request import urlopen
+
+import diamond.collector
 
 
 class BindCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(BindCollector, self).get_default_config_help()
         config_help.update({
@@ -31,6 +31,7 @@ class BindCollector(diamond.collector.Collector):
             'publish_view_bind': "",
             'publish_view_meta': "",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -63,8 +64,10 @@ class BindCollector(diamond.collector.Collector):
 
     def clean_counter(self, name, value):
         value = self.derivative(name, value)
+
         if value < 0:
             value = 0
+
         self.publish(name, value)
 
     def collect(self):
@@ -72,6 +75,7 @@ class BindCollector(diamond.collector.Collector):
             req = urlopen('http://%s:%d/' % (self.config['host'], int(self.config['port'])))
         except Exception as e:
             self.log.error('Could not connect to bind: %s', e)
+
             return {}
 
         tree = ElementTree.parse(req)
@@ -84,29 +88,31 @@ class BindCollector(diamond.collector.Collector):
         if 'resolver' in self.config['publish']:
             for view in root.findall('views/view'):
                 name = view.find('name').text
+
                 if name == '_bind' and not self.config['publish_view_bind']:
                     continue
+
                 if name == '_meta' and not self.config['publish_view_meta']:
                     continue
+
                 nzones = len(view.findall('zones/zone'))
                 self.publish('view.%s.zones' % name, nzones)
+
                 for counter in view.findall('rdtype'):
                     self.clean_counter(
-                        'view.%s.query.%s' % (name,
-                                              counter.find('name').text),
+                        'view.%s.query.%s' % (name, counter.find('name').text),
                         int(counter.find('counter').text)
                     )
+
                 for counter in view.findall('resstat'):
                     self.clean_counter(
-                        'view.%s.resstat.%s' % (name,
-                                                counter.find('name').text),
+                        'view.%s.resstat.%s' % (name, counter.find('name').text),
                         int(counter.find('counter').text)
                     )
+
                 for counter in view.findall('cache/rrset'):
                     self.clean_counter(
-                        'view.%s.cache.%s' % (
-                            name, counter.find('name').text.replace('!',
-                                                                    'NOT_')),
+                        'view.%s.cache.%s' % (name, counter.find('name').text.replace('!', 'NOT_')),
                         int(counter.find('counter').text)
                     )
 
@@ -116,11 +122,13 @@ class BindCollector(diamond.collector.Collector):
                     'requests.%s' % counter.find('name').text,
                     int(counter.find('counter').text)
                 )
+
             for counter in root.findall('server/queries-in/rdtype'):
                 self.clean_counter(
                     'queries.%s' % counter.find('name').text,
                     int(counter.find('counter').text)
                 )
+
             for counter in root.findall('server/nsstat'):
                 self.clean_counter(
                     'nsstat.%s' % counter.find('name').text,

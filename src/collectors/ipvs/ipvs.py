@@ -9,20 +9,18 @@ Shells out to get ipvs statistics, which may or may not require sudo access
 
 """
 
-import diamond.collector
-import subprocess
 import os
-import string
+import subprocess
+
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class IPVSCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(IPVSCollector, self).process_config()
         # Verify the --exact flag works
-        self.statcommand = [self.config['bin'], '--list', '--stats',
-                            '--numeric', '--exact']
+        self.statcommand = [self.config['bin'], '--list', '--stats', '--numeric', '--exact']
         self.concommand = [self.config['bin'], '--list', '--numeric']
 
         if str_to_bool(self.config['use_sudo']):
@@ -48,10 +46,10 @@ class IPVSCollector(diamond.collector.Collector):
         """
         config = super(IPVSCollector, self).get_default_config()
         config.update({
-            'bin':              '/usr/sbin/ipvsadm',
-            'use_sudo':         True,
-            'sudo_cmd':         '/usr/bin/sudo',
-            'path':             'ipvs'
+            'bin': '/usr/sbin/ipvsadm',
+            'use_sudo': True,
+            'sudo_cmd': '/usr/bin/sudo',
+            'path': 'ipvs'
         })
         return config
 
@@ -67,16 +65,13 @@ class IPVSCollector(diamond.collector.Collector):
                            self.config['sudo_cmd'])
             return False
 
-        p = subprocess.Popen(self.statcommand, stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE)
+        p = subprocess.Popen(self.statcommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         p.wait()
 
         if p.returncode == 255:
-            self.statcommand = filter(
-                lambda a: a != '--exact', self.statcommand)
+            self.statcommand = filter(lambda a: a != '--exact', self.statcommand)
 
-        p = subprocess.Popen(self.statcommand,
-                             stdout=subprocess.PIPE).communicate()[0][:-1]
+        p = subprocess.Popen(self.statcommand, stdout=subprocess.PIPE).communicate()[0][:-1]
 
         columns = {
             'conns': 2,
@@ -94,10 +89,10 @@ class IPVSCollector(diamond.collector.Collector):
             row = line.split()
 
             if row[0] == "TCP" or row[0] == "UDP":
-                external = row[0] + "_" + string.replace(row[1], ".", "_")
+                external = row[0] + "_" + row[1].replace(".", "_")
                 backend = "total"
             elif row[0] == "->":
-                backend = string.replace(row[1], ".", "_")
+                backend = row[1].replace(".", "_")
             else:
                 continue
 
@@ -117,8 +112,7 @@ class IPVSCollector(diamond.collector.Collector):
 
                 self.publish(metric_name, metric_value)
 
-        p = subprocess.Popen(self.concommand,
-                             stdout=subprocess.PIPE).communicate()[0][:-1]
+        p = subprocess.Popen(self.concommand, stdout=subprocess.PIPE).communicate()[0][:-1]
 
         columns = {
             'active': 4,
@@ -142,10 +136,10 @@ class IPVSCollector(diamond.collector.Collector):
                 for k in columns.keys():
                     total[k] = 0.0
 
-                external = row[0] + "_" + string.replace(row[1], ".", "_")
+                external = row[0] + "_" + row[1].replace(".", "_")
                 continue
             elif row[0] == "->":
-                backend = string.replace(row[1], ".", "_")
+                backend = row[1].replace(".", "_")
             else:
                 continue
 

@@ -34,15 +34,12 @@ import diamond.collector
 
 
 class HttpCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(HttpCollector, self).get_default_config_help()
         config_help.update({
             'req_port': 'Port',
-            'req_url':
-            'array of full URL to get (ex : https://www.ici.net/mypage.html)',
-            'req_vhost':
-            'Host header variable if needed. Will be added to every request',
+            'req_url': 'array of full URL to get (ex : https://www.ici.net/mypage.html)',
+            'req_vhost': 'Host header variable if needed. Will be added to every request',
         })
         return config_help
 
@@ -52,7 +49,7 @@ class HttpCollector(diamond.collector.Collector):
         default_config['req_vhost'] = ''
         default_config['req_url'] = ['http://localhost/']
 
-        default_config['headers'] = {'User-Agent': 'Diamond HTTP collector', }
+        default_config['headers'] = {'User-Agent': 'Diamond HTTP collector'}
         return default_config
 
     def collect(self):
@@ -89,7 +86,6 @@ class HttpCollector(diamond.collector.Collector):
                     len(the_page))
 
             except IOError as e:
-                self.log.error("Unable to open %s",
-                               self.config['req_url'])
+                self.log.error("Unable to open %s", self.config['req_url'])
             except Exception as e:
                 self.log.error("Unknown error opening url: %s", e)

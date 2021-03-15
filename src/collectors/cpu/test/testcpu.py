@@ -147,7 +147,6 @@ class TestCPUCollector(CollectorTestCase):
 
 
 class TestCPUCollectorNormalize(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CPUCollector', {
             'interval': 1,

@@ -20,6 +20,7 @@ This collector is based upon the HTTPJSONCollector.
 import json
 from urllib.error import URLError
 from urllib.request import Request, urlopen
+
 import diamond.collector
 
 
@@ -65,10 +66,10 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
             elif isinstance(value, str):
                 if value == "Running":
                     value = 1
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
                 elif value == "Stopped":
                     value = 0
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
                 else:
                     if self.config['debug']:
                         self.log.debug("ignoring string value = %s", value)
@@ -79,7 +80,7 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
                 except ValueError:
                     self.log.debug("cast to int failed, value = %s", value)
                 finally:
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
 
     def collect(self):
         eventstore_host = "%s%s:%s%s" % (

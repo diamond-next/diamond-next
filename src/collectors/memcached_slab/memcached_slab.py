@@ -9,8 +9,8 @@ host = localhost  # optional
 port = 11211  # optional
 """
 
-from collections import defaultdict
 import socket
+from collections import defaultdict
 
 import diamond.collector
 from diamond.metric import Metric
@@ -94,6 +94,7 @@ class MemcachedSlabCollector(diamond.collector.Collector):
             'host': 'localhost',
             'port': 11211,
         })
+
         return config
 
     def get_slab_stats(self):
@@ -101,12 +102,16 @@ class MemcachedSlabCollector(diamond.collector.Collector):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.host, self.port))
         s.send("stats slabs\n")
+
         try:
             data = ""
+
             while True:
                 data += s.recv(4096)
+
                 if data.endswith('END\r\n'):
                     break
+
             return data
         finally:
             s.close()
@@ -115,6 +120,7 @@ class MemcachedSlabCollector(diamond.collector.Collector):
         unparsed_slab_stats = self.get_slab_stats()
         slab_stats = parse_slab_stats(unparsed_slab_stats)
         paths = dict_to_paths(slab_stats)
+
         for path, value in paths.iteritems():
             # Add path and prefix to metric (e.g.
             # 'servers.cache-main-01.memchached_slab')

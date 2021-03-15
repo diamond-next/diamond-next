@@ -12,6 +12,7 @@ Collect statistics from Flume
 
 from urllib.error import URLError
 from urllib.request import urlopen
+
 import diamond.collector
 
 try:

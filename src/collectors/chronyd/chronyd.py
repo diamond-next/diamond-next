@@ -11,6 +11,7 @@ Collect metrics from chrony - http://chrony.tuxfamily.org/
 
 import re
 import subprocess
+
 import diamond.collector
 import diamond.convertor
 from diamond.collector import str_to_bool

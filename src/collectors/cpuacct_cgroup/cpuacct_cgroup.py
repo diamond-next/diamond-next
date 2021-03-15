@@ -10,11 +10,11 @@ A mounted cgroup fs. Defaults to /sys/fs/cgroup/cpuacct/
 """
 
 import os
+
 import diamond.collector
 
 
 class CpuAcctCgroupCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(
             CpuAcctCgroupCollector, self).get_default_config_help()
@@ -22,6 +22,7 @@ class CpuAcctCgroupCollector(diamond.collector.Collector):
             'path': """Directory path to where cpuacct is located,
 defaults to /sys/fs/cgroup/cpuacct/. Redhat/CentOS/SL use /cgroup"""
         })
+
         return config_help
 
     def get_default_config(self):
@@ -30,8 +31,9 @@ defaults to /sys/fs/cgroup/cpuacct/. Redhat/CentOS/SL use /cgroup"""
         """
         config = super(CpuAcctCgroupCollector, self).get_default_config()
         config.update({
-            'path':     '/sys/fs/cgroup/cpuacct/'
+            'path': '/sys/fs/cgroup/cpuacct/'
         })
+
         return config
 
     def collect(self):

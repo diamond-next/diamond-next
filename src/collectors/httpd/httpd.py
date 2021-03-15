@@ -89,7 +89,7 @@ class HttpdCollector(Collector):
                     data = response.read()
                     headers = dict(response.getheaders())
 
-                    if (('location' not in headers or headers['location'] == url)):
+                    if 'location' not in headers or headers['location'] == url:
                         connection.close()
                         break
 

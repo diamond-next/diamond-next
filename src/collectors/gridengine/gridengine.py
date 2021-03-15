@@ -125,7 +125,7 @@ class GridEngineCollector(diamond.collector.Collector):
         parser = self.QueueStatsParser(output)
         for cq in parser.parse():
             name = self._sanitize(cq.name)
-            prefix = 'queues.%s' % (name)
+            prefix = 'queues.%s' % name
             metrics = ['load', 'used', 'resv', 'available', 'total',
                        'temp_disabled', 'manual_intervention']
             for metric in metrics:

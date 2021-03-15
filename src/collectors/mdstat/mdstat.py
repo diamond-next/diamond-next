@@ -46,8 +46,9 @@ bitmap: 1/1 pages [4KB], 65536KB chunk
 - recovery.remaining_time
 """
 
-import diamond.collector
 import re
+
+import diamond.collector
 
 
 class MdStatCollector(diamond.collector.Collector):
@@ -304,9 +305,10 @@ class MdStatCollector(diamond.collector.Collector):
 
         # convert all values to int
         for key, value in array_bitmap_dict.iteritems():
-                if not value:
-                    continue
-                array_bitmap_dict_sanitizied[key] = int(value)
+            if not value:
+                continue
+
+            array_bitmap_dict_sanitizied[key] = int(value)
 
         # convert page_size to bytes
         array_bitmap_dict_sanitizied['page_size'] *= 1024
@@ -350,15 +352,12 @@ class MdStatCollector(diamond.collector.Collector):
 
         array_recovery_dict = regexp_res.groupdict()
 
-        array_recovery_dict['percent'] = \
-            float(array_recovery_dict['percent'])
+        array_recovery_dict['percent'] = float(array_recovery_dict['percent'])
 
         # convert speed to bits
-        array_recovery_dict['speed'] = \
-            int(array_recovery_dict['speed']) * 1024
+        array_recovery_dict['speed'] = int(array_recovery_dict['speed']) * 1024
 
         # convert minutes to milliseconds
-        array_recovery_dict['remaining_time'] = \
-            int(float(array_recovery_dict['remaining_time'])*60*1000)
+        array_recovery_dict['remaining_time'] = int(float(array_recovery_dict['remaining_time'])*60*1000)
 
         return array_recovery_dict

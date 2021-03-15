@@ -24,7 +24,7 @@ class TestHttpdCollector(CollectorTestCase):
         if config is None:
             config = get_collector_config('HttpdCollector', {
                 'interval': '10',
-                'url':      'http://www.example.com:80/server-status?auto'
+                'url': 'http://www.example.com:80/server-status?auto'
             })
         else:
             config = get_collector_config('HttpdCollector', config)

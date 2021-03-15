@@ -7,16 +7,15 @@ Collect statistics from Mogilefs
 
  * telnetlib
  * time
-
-
 """
-import diamond.collector
+
 import telnetlib
 import time
 
+import diamond.collector
+
 
 class MogilefsCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(MogilefsCollector, self).get_default_config_help()
         config_help.update({
@@ -27,7 +26,7 @@ class MogilefsCollector(diamond.collector.Collector):
     def get_default_config(self):
         config = super(MogilefsCollector, self).get_default_config()
         config.update({
-            'path':     'mogilefs'
+            'path': 'mogilefs'
         })
         return config
 
@@ -41,7 +40,7 @@ class MogilefsCollector(diamond.collector.Collector):
 
         for line in out.splitlines()[:-1]:
             name, var = line.partition(" ")[::2]
-            myvars[name.strip()] = long(var)
+            myvars[name.strip()] = int(var)
 
         for key, value in myvars.iteritems():
             # Set Metric Name

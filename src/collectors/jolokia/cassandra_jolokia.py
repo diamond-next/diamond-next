@@ -28,10 +28,8 @@ from jolokia import JolokiaCollector
 
 class CassandraJolokiaCollector(JolokiaCollector):
     # override to allow setting which percentiles will be collected
-
     def get_default_config_help(self):
-        config_help = super(CassandraJolokiaCollector,
-                            self).get_default_config_help()
+        config_help = super(CassandraJolokiaCollector, self).get_default_config_help()
         config_help.update({
             'percentiles':
             'Comma separated list of percentiles to be collected '

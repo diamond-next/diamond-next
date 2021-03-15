@@ -24,18 +24,16 @@ community = mycommunitystring
 
 """
 
-import sys
 import os
-import time
 import struct
-
-# Fix Path for locating the SNMPCollector
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             '../',
-                                             'snmp',
-                                             )))
+import sys
+import time
 
 from diamond.metric import Metric
+
+# Fix Path for locating the SNMPCollector
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
+
 from snmp import SNMPCollector as parent_SNMPCollector
 
 

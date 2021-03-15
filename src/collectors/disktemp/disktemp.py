@@ -16,12 +16,12 @@ a single value.
 import os
 import re
 import subprocess
+
 import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class DiskTemperatureCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(DiskTemperatureCollector, self).process_config()
         self.devices = re.compile(self.config['devices'])

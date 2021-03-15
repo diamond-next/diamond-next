@@ -12,18 +12,17 @@ with server hardware but usually not available in consumer hardware.
 
 """
 
+import getpass
+import os
+from subprocess import PIPE, Popen
+
 import diamond.collector
 from diamond.collector import str_to_bool
-from subprocess import Popen, PIPE
-import os
-import getpass
 
 
 class IPMISensorCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(IPMISensorCollector,
-                            self).get_default_config_help()
+        config_help = super(IPMISensorCollector, self).get_default_config_help()
         config_help.update({
             'bin': 'Path to the ipmitool binary',
             'use_sudo': 'Use sudo?',
@@ -39,12 +38,12 @@ class IPMISensorCollector(diamond.collector.Collector):
         """
         config = super(IPMISensorCollector, self).get_default_config()
         config.update({
-            'bin':              '/usr/bin/ipmitool',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
-            'path':             'ipmi.sensors',
-            'thresholds':       False,
-            'delimiter':        '.'
+            'bin': '/usr/bin/ipmitool',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
+            'path': 'ipmi.sensors',
+            'thresholds': False,
+            'delimiter': '.'
         })
         return config
 

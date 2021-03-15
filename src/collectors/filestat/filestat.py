@@ -34,9 +34,10 @@ Uses lsof to collect data on number of open files per user per type
 
 """
 
-import diamond.collector
-import re
 import os
+import re
+
+import diamond.collector
 
 _RE = re.compile(r'(\d+)\s+(\d+)\s+(\d+)')
 

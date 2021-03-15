@@ -104,9 +104,7 @@ class TestBeanstalkdCollector(CollectorTestCase):
             ]
         }
 
-        patch_get_stats = patch.object(BeanstalkdCollector,
-                                       '_get_stats',
-                                       Mock(return_value=stats))
+        patch_get_stats = patch.object(BeanstalkdCollector, '_get_stats', Mock(return_value=stats))
 
         patch_get_stats.start()
         self.collector.collect()

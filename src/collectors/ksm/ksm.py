@@ -15,18 +15,19 @@ It can be enabled, if compiled into your kernel, by echoing 1 to
 
 """
 
-import os
 import glob
+import os
+
 import diamond.collector
 
 
 class KSMCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(KSMCollector, self).get_default_config_help()
         config_help.update({
             'ksm_path': "location where KSM kernel data can be found",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -39,16 +40,19 @@ class KSMCollector(diamond.collector.Collector):
         config = super(KSMCollector, self).get_default_config()
         config.update({
             'path': 'ksm',
-            'ksm_path': '/sys/kernel/mm/ksm'})
+            'ksm_path': '/sys/kernel/mm/ksm'
+        })
+
         return config
 
     def collect(self):
         for item in glob.glob(os.path.join(self.config['ksm_path'], "*")):
             if os.access(item, os.R_OK):
                 filehandle = open(item)
+
                 try:
-                    self.publish(os.path.basename(item),
-                                 float(filehandle.readline().rstrip()))
+                    self.publish(os.path.basename(item), float(filehandle.readline().rstrip()))
                 except ValueError:
                     pass
+
                 filehandle.close()

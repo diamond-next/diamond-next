@@ -22,18 +22,18 @@ See https://github.com/emicklei/jcollectd for an up-to-date jcollect fork.
 
 """
 
-import collectors.jcollectd.collectd_network
-import diamond.metric
 import re
 import threading
-from diamond.collector import Collector
 from queue import Empty, Full, Queue
+
+import diamond.metric
+from collectors.jcollectd.collectd_network import Reader
+from diamond.collector import Collector
 
 ALIVE = True
 
 
 class JCollectdCollector(Collector):
-
     def __init__(self, *args, **kwargs):
         super(JCollectdCollector, self).__init__(*args, **kwargs)
         self.listener_thread = None
@@ -44,7 +44,7 @@ class JCollectdCollector(Collector):
         """
         config = super(JCollectdCollector, self).get_default_config()
         config.update({
-            'path':     'jvm',
+            'path': 'jvm',
             'listener_host': '127.0.0.1',
             'listener_port': 25826,
         })
@@ -91,8 +91,7 @@ class JCollectdCollector(Collector):
             metric_type = "COUNTER"
         else:
             metric_type = "GAUGE"
-        metric = diamond.metric.Metric(path, dp.value, dp.time,
-                                       metric_type=metric_type)
+        metric = diamond.metric.Metric(path, dp.value, dp.time, metric_type=metric_type)
 
         return metric
 
@@ -102,7 +101,6 @@ class JCollectdCollector(Collector):
 
 
 class ListenerThread(threading.Thread):
-
     def __init__(self, host, port, log, poll_interval=0.4):
         super(ListenerThread, self).__init__()
         self.name = 'JCollectdListener'  # thread name
@@ -117,7 +115,7 @@ class ListenerThread(threading.Thread):
     def run(self):
         self.log.info('ListenerThread started on {}:{}(udp)'.format(self.host, self.port))
 
-        rdr = collectd_network.Reader(self.host, self.port)
+        rdr = Reader(self.host, self.port)
 
         try:
             while ALIVE:
@@ -194,7 +192,6 @@ def sanitize_word(s):
 
 
 class Datapoint(object):
-
     def __init__(self, host, time, name, value, is_counter):
         self.host = host
         self.time = time

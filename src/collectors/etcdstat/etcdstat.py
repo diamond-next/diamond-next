@@ -12,24 +12,25 @@ Collects metrics from an Etcd instance.
 ```
 """
 
-import diamond.collector
 import json
 from urllib.error import HTTPError
 from urllib.request import urlopen
 
-METRICS_KEYS = ['sendPkgRate',
-                'recvPkgRate',
-                'sendAppendRequestCnt',
-                'recvAppendRequestCnt',
-                'sendBandwidthRate',
-                'recvBandwidthRate']
+import diamond.collector
+
+METRICS_KEYS = [
+    'sendPkgRate',
+    'recvPkgRate',
+    'sendAppendRequestCnt',
+    'recvAppendRequestCnt',
+    'sendBandwidthRate',
+    'recvBandwidthRate'
+]
 
 
 class EtcdCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(EtcdCollector,
-                            self).get_default_config_help()
+        config_help = super(EtcdCollector, self).get_default_config_help()
         config_help.update({
             'host': 'Hostname',
             'port': 'Port (default is 2379)',

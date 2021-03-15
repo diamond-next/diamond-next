@@ -23,6 +23,7 @@ TO use a unix socket, set a host string like this
 
 import re
 import socket
+
 import diamond.collector
 from diamond.collector import str_to_bool
 

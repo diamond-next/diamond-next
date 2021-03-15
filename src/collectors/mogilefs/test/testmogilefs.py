@@ -23,14 +23,14 @@ class TestMogilefsCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_stub_data(self, publish_mock):
-        mockTelnet = Mock(**{'read_until.return_value': self.getFixture('stats').getvalue()})
-        patch_Telnet = patch('telnetlib.Telnet', Mock(return_value=mockTelnet))
+        mock_telnet = Mock(**{'read_until.return_value': self.getFixture('stats').getvalue()})
+        patch_telnet = patch('telnetlib.Telnet', Mock(return_value=mock_telnet))
 
-        patch_Telnet.start()
+        patch_telnet.start()
         self.collector.collect()
-        patch_Telnet.stop()
+        patch_telnet.stop()
 
-        mockTelnet.read_until.assert_any_call('.', 3)
+        mock_telnet.read_until.assert_any_call('.', 3)
 
         metrics = {
             'uptime': 181491,

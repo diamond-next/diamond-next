@@ -9,24 +9,25 @@ Uses /proc/loadavg to collect data on load average
 
 """
 
-import diamond.collector
-import re
-import os
 import multiprocessing
+import os
+import re
+
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class LoadAverageCollector(diamond.collector.Collector):
-
     PROC_LOADAVG = '/proc/loadavg'
+
     PROC_LOADAVG_RE = re.compile(r'([\d.]+) ([\d.]+) ([\d.]+) (\d+)/(\d+)')
 
     def get_default_config_help(self):
-        config_help = super(LoadAverageCollector,
-                            self).get_default_config_help()
+        config_help = super(LoadAverageCollector, self).get_default_config_help()
         config_help.update({
-            'simple':   'Only collect the 1 minute load average'
+            'simple': 'Only collect the 1 minute load average'
         })
+
         return config_help
 
     def get_default_config(self):
@@ -35,8 +36,8 @@ class LoadAverageCollector(diamond.collector.Collector):
         """
         config = super(LoadAverageCollector, self).get_default_config()
         config.update({
-            'path':     'loadavg',
-            'simple':   'False'
+            'path': 'loadavg',
+            'simple': 'False'
         })
         return config
 
@@ -59,10 +60,12 @@ class LoadAverageCollector(diamond.collector.Collector):
         # /proc/loadavg (if available).
         if os.access(self.PROC_LOADAVG, os.R_OK):
             file = open(self.PROC_LOADAVG)
+
             for line in file:
                 match = self.PROC_LOADAVG_RE.match(line)
+
                 if match:
-                    self.publish_gauge('processes_running',
-                                       int(match.group(4)))
+                    self.publish_gauge('processes_running', int(match.group(4)))
                     self.publish_gauge('processes_total', int(match.group(5)))
+
             file.close()

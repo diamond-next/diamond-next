@@ -24,10 +24,15 @@ for root, dirnames, filenames in os.walk(fixtures_path):
     fixtures.append([root, dirnames, filenames])
 
 docker_fixture = [
-    {u'Id': u'c3341726a9b4235a35b390c5f6f28e5a6869879a48da1d609db8f6bf4275bdc5',
-     u'Names': [u'/testcontainer']},
-    {u'Id': u'9c151939e20682b924d7299875e94a4aabbe946b30b407f89e276507432c625b',
-     u'Names': None}]
+    {
+        u'Id': u'c3341726a9b4235a35b390c5f6f28e5a6869879a48da1d609db8f6bf4275bdc5',
+        u'Names': [u'/testcontainer']
+    },
+    {
+        u'Id': u'9c151939e20682b924d7299875e94a4aabbe946b30b407f89e276507432c625b',
+        u'Names': None
+    }
+]
 
 
 def run_only_if_docker_client_is_available(func):
@@ -35,7 +40,9 @@ def run_only_if_docker_client_is_available(func):
         from docker import Client
     except ImportError:
         Client = None
+
     pred = lambda: Client is not None
+
     return run_only(func, pred)
 
 
@@ -59,8 +66,7 @@ class TestMemoryDockerCollector(CollectorTestCase):
     def test_should_open_all_cpuacct_stat(self, publish_mock, open_mock):
         open_mock.side_effect = lambda x: StringIO('')
         self.collector.collect()
-        open_mock.assert_any_call(
-            fixtures_path + 'lxc/testcontainer/memory.stat')
+        open_mock.assert_any_call(fixtures_path + 'lxc/testcontainer/memory.stat')
         open_mock.assert_any_call(fixtures_path + 'lxc/memory.stat')
         open_mock.assert_any_call(fixtures_path + 'memory.stat')
 

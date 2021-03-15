@@ -5,10 +5,17 @@
 - [x] urllib2 > urllib
 - [ ] urlparse > urllib.parse
 - [ ] *.getiterator()
+- [ ] *.getchildren()
 - [ ] *.iteritems() > iter(*.items()) ( https://www.python.org/dev/peps/pep-0469/ )
-- [x] "from StringIO import StringIO" > "from io import StringIO"
+- [ ] *.iterkeys()
+- [ ] *.itervalues()
 - [ ] unicode > ( https://stackoverflow.com/questions/19877306/nameerror-global-name-unicode-is-not-defined-in-python-3 )
 - [ ] xrange > ?
-- [x] "from mock import patch" > "from unittest.mock import patch"
-- [x] "from test import CollectorTestCase" > "from diamond.testing import CollectorTestCase"
-- [x] "from test import unittest" > "import unittest"
+- [x] from StringIO import StringIO > from io import StringIO
+- [x] from mock import patch > from unittest.mock import patch
+- [x] from test import CollectorTestCase > from diamond.testing import CollectorTestCase
+- [x] from test import unittest > import unittest
+- [x] import cPickle > import pickle
+- [x] string.replace(…) > '…'.replace(…)
+- [x] string.letters > string.ascii_letters
+- [x] reduce(…) > functools.reduce(…)

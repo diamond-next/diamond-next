@@ -17,14 +17,13 @@ import diamond.collector
 
 
 class DropwizardCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(DropwizardCollector,
-                            self).get_default_config_help()
+        config_help = super(DropwizardCollector, self).get_default_config_help()
         config_help.update({
             'host': "",
             'port': "",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -33,10 +32,11 @@ class DropwizardCollector(diamond.collector.Collector):
         """
         config = super(DropwizardCollector, self).get_default_config()
         config.update({
-            'host':     '127.0.0.1',
-            'port':     8081,
-            'path':     'dropwizard',
+            'host': '127.0.0.1',
+            'port': 8081,
+            'path': 'dropwizard',
         })
+
         return config
 
     def collect(self):

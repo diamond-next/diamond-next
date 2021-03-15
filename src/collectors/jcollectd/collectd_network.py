@@ -331,8 +331,7 @@ class Reader(object):
     def receive(self, poll_interval):
         """Receives a single raw collect network packet.
         """
-        readable, writeable, errored = select.select(self._readlist, [], [],
-                                                     poll_interval)
+        readable, writeable, errored = select.select(self._readlist, [], [], poll_interval)
         for s in readable:
             data, addr = s.recvfrom(self.BUFFER_SIZE)
             if data:

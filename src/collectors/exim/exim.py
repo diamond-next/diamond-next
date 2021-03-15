@@ -9,21 +9,21 @@ Shells out to get the exim queue length
 
 """
 
-import diamond.collector
-import subprocess
 import os
+import subprocess
+
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class EximCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(EximCollector, self).get_default_config_help()
         config_help.update({
-            'bin':         'The path to the exim binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
-            'sudo_user':   'User to sudo as',
+            'bin': 'The path to the exim binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
+            'sudo_user': 'User to sudo as',
         })
         return config_help
 
@@ -33,11 +33,11 @@ class EximCollector(diamond.collector.Collector):
         """
         config = super(EximCollector, self).get_default_config()
         config.update({
-            'path':            'exim',
-            'bin':              '/usr/sbin/exim',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
-            'sudo_user':        'root',
+            'path': 'exim',
+            'bin': '/usr/sbin/exim',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
+            'sudo_user': 'root',
         })
         return config
 

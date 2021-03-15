@@ -4,15 +4,15 @@
 Diamond collector for HBase metrics, see:
 """
 
-from diamond.metric import Metric
-import diamond.collector
 import glob
-import re
 import os
+import re
+
+import diamond.collector
+from diamond.metric import Metric
 
 
 class HBaseCollector(diamond.collector.Collector):
-
     re_log = re.compile(r'^(?P<timestamp>\d+) (?P<name>\S+): (?P<metrics>.*)$')
 
     def get_default_config_help(self):
@@ -28,8 +28,8 @@ class HBaseCollector(diamond.collector.Collector):
         """
         config = super(HBaseCollector, self).get_default_config()
         config.update({
-            'path':     'hbase',
-            'metrics':  ['/var/log/hbase/*.metrics'],
+            'path': 'hbase',
+            'metrics': ['/var/log/hbase/*.metrics'],
         })
         return config
 

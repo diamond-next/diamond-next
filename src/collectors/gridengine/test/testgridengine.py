@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import os
+from unittest.mock import patch
+
+from collectors.gridengine.gridengine import GridEngineCollector
+from diamond.collector import Collector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from unittest.mock import patch
-import os
-from diamond.collector import Collector
-from collectors.gridengine.gridengine import GridEngineCollector
 
 
 class TestGridEngineCollector(CollectorTestCase):

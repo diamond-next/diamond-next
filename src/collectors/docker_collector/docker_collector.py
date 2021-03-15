@@ -20,7 +20,6 @@ except ImportError:
 
 
 class DockerCollector(diamond.collector.Collector):
-
     METRICS = {
         # memory stats
         "memory_stats.stats.total_rss": "RSS_byte",

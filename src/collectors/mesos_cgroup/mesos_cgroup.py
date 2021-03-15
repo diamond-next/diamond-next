@@ -31,7 +31,6 @@ from diamond.collector import Collector
 
 
 class MesosCGroupCollector(Collector):
-
     def get_default_config_help(self):
         config_help = super(MesosCGroupCollector, self).get_default_config_help()
         config_help.update({
@@ -67,17 +66,18 @@ class MesosCGroupCollector(Collector):
             aspect_path = os.path.join(sysfs, aspect, cgroup_root)
 
             contents = os.listdir(aspect_path)
-            for task_id in [entry for entry in contents if
-                            os.path.isdir(os.path.join(aspect_path, entry))]:
 
+            for task_id in [entry for entry in contents if os.path.isdir(os.path.join(aspect_path, entry))]:
                 if task_id not in containers:
                     continue
 
-                key_parts = [containers[task_id]['environment'],
-                             containers[task_id]['role'],
-                             containers[task_id]['task'],
-                             containers[task_id]['id'],
-                             aspect]
+                key_parts = [
+                    containers[task_id]['environment'],
+                    containers[task_id]['role'],
+                    containers[task_id]['task'],
+                    containers[task_id]['id'],
+                    aspect
+                ]
 
                 # list task_id items
                 task_id = os.path.join(aspect_path, task_id)
@@ -85,18 +85,14 @@ class MesosCGroupCollector(Collector):
                 if aspect == "cpuacct":
                     with open(os.path.join(task_id, "%s.usage" % aspect)) as f:
                         value = f.readline()
-                        self.publish(
-                            self.clean_up(
-                                '.'.join(key_parts + ['usage'])), value)
+                        self.publish(self.clean_up('.'.join(key_parts + ['usage'])), value)
 
                 with open(os.path.join(task_id, "%s.stat" % aspect)) as f:
                     data = f.readlines()
 
                     for kv_pair in data:
                         key, value = kv_pair.split()
-                        self.publish(
-                            self.clean_up(
-                                '.'.join(key_parts + [key])), value)
+                        self.publish(self.clean_up('.'.join(key_parts + [key])), value)
 
     def get_containers(self):
         state = self.get_mesos_state()
@@ -112,23 +108,23 @@ class MesosCGroupCollector(Collector):
                     source = executor['source']
                     role, environment, task, number = source.split('.')
 
-                    containers[container] = {'role': role,
-                                             'environment': environment,
-                                             'task': task,
-                                             'id': number
-                                             }
+                    containers[container] = {
+                        'role': role,
+                        'environment': environment,
+                        'task': task,
+                        'id': number
+                    }
 
         return containers
 
     def get_mesos_state(self):
         try:
-            url = "http://%s:%s/%s" % (self.config['host'],
-                                       self.config['port'],
-                                       self.config['mesos_state_path'])
+            url = "http://%s:%s/%s" % (self.config['host'], self.config['port'], self.config['mesos_state_path'])
 
             return json.load(urlopen(url))
         except (HTTPError, ValueError) as err:
             self.log.error('Unable to read JSON response: %s' % err)
+
             return {}
 
     def clean_up(self, text):

@@ -2,15 +2,11 @@ from __future__ import print_function
 
 import inspect
 import os
+import pickle
 import unittest
 from io import StringIO
 
 import configobj
-
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle as pickle
 
 try:
     from setproctitle import setproctitle

@@ -17,6 +17,7 @@ before graphite will generate the metrics.
 import os
 import re
 import time
+
 import diamond.collector
 import diamond.convertor
 
@@ -27,15 +28,14 @@ except ImportError:
 
 
 class DiskUsageCollector(diamond.collector.Collector):
-
     MAX_VALUES = {
-        'reads':                    4294967295,
-        'reads_merged':             4294967295,
-        'reads_milliseconds':       4294967295,
-        'writes':                   4294967295,
-        'writes_merged':            4294967295,
-        'writes_milliseconds':      4294967295,
-        'io_milliseconds':          4294967295,
+        'reads': 4294967295,
+        'reads_merged': 4294967295,
+        'reads_milliseconds': 4294967295,
+        'writes': 4294967295,
+        'writes_merged': 4294967295,
+        'writes_milliseconds': 4294967295,
+        'io_milliseconds': 4294967295,
         'io_milliseconds_weighted': 4294967295
     }
 
@@ -249,7 +249,8 @@ class DiskUsageCollector(diamond.collector.Collector):
                 rkey = 'reads_%s' % unit
                 wkey = 'writes_%s' % unit
                 metric_name = 'average_request_size_%s' % unit
-                if (metrics['io'] > 0):
+
+                if metrics['io'] > 0:
                     metrics[metric_name] = (
                         metrics[rkey] + metrics[wkey]) / metrics['io']
                 else:
@@ -257,7 +258,7 @@ class DiskUsageCollector(diamond.collector.Collector):
 
             metrics['iops'] = metrics['io'] / time_delta
 
-            if (metrics['io'] > 0):
+            if metrics['io'] > 0:
                 metrics['service_time'] = (
                     metrics['io_milliseconds'] / metrics['io'])
                 metrics['await'] = (
@@ -274,8 +275,7 @@ class DiskUsageCollector(diamond.collector.Collector):
                 (metrics['service_time'] / 1000.0))
 
             # Only publish when we have io figures
-            if (metrics['io'] > 0 or self.config['send_zero']):
+            if metrics['io'] > 0 or self.config['send_zero']:
                 for key in metrics:
-                    metric_name = '.'.join([info['device'], key]).replace(
-                        '/', '_')
+                    metric_name = '.'.join([info['device'], key]).replace('/', '_')
                     self.publish(metric_name, metrics[key], precision=3)

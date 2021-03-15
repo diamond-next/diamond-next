@@ -6,6 +6,7 @@ Collect the DataStax OpsCenter metrics
 
 import datetime
 from urllib.request import urlopen
+
 import diamond.collector
 
 try:
@@ -20,8 +21,7 @@ class DseOpsCenterCollector(diamond.collector.Collector):
     last_schema_sync_time = 0
 
     def get_default_config_help(self):
-        config_help = super(DseOpsCenterCollector,
-                            self).get_default_config_help()
+        config_help = super(DseOpsCenterCollector, self).get_default_config_help()
         config_help.update({
             'host': "",
             'port': "",

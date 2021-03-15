@@ -18,16 +18,17 @@ except ImportError:
 
 def run_only_if_assertSequenceEqual_is_available(func):
     pred = lambda: 'assertSequenceEqual' in dir(unittest.TestCase)
+
     return run_only(func, pred)
 
 
 def run_only_if_subprocess_check_output_is_available(func):
     pred = lambda: 'check_output' in dir(subprocess)
+
     return run_only(func, pred)
 
 
 class TestCounterIterator(unittest.TestCase):
-
     @run_only_if_assertSequenceEqual_is_available
     def test_empty(self):
         data = {}
@@ -122,7 +123,6 @@ class TestCephCollectorSocketNameHandling(CollectorTestCase):
 
 
 class TestCephCollectorGettingStats(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CephCollector', {
             'interval': 10,

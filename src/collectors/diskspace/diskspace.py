@@ -22,6 +22,7 @@ Uses /proc/mounts and os.statvfs() to get disk space usage
 
 import os
 import re
+
 import diamond.collector
 import diamond.convertor
 
@@ -32,7 +33,6 @@ except ImportError:
 
 
 class DiskSpaceCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(DiskSpaceCollector, self).get_default_config_help()
         config_help.update({

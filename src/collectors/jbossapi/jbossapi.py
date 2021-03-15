@@ -61,10 +61,11 @@ jvm_thread_stats = True | False
 
 """
 
-import diamond.collector
 import os
 import re
 import subprocess
+
+import diamond.collector
 
 try:
     import json
@@ -120,9 +121,9 @@ gc_types = [
 
 
 class JbossApiCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(JbossApiCollector, self).process_config()
+
         if self.config['hosts'].__class__.__name__ != 'list':
             self.config['hosts'] = [self.config['hosts']]
 
@@ -138,8 +139,7 @@ class JbossApiCollector(diamond.collector.Collector):
             self.config['hosts'].append(hoststr)
 
         if type(self.config['connector_options']) is not list:
-            self.config['connector_options'] = [
-                self.config['connector_options']]
+            self.config['connector_options'] = [self.config['connector_options']]
 
     def get_default_config_help(self):
         # Need to update this when done to help explain details when running
@@ -353,9 +353,7 @@ class JbossApiCollector(diamond.collector.Collector):
             current_user, current_pword))
 
         try:
-            attributes = subprocess.Popen(the_cmd, shell=True,
-                                          stdout=subprocess.PIPE
-                                          ).communicate()[0]
+            attributes = subprocess.Popen(the_cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
             output = json.loads(attributes)
         except Exception as e:
             self.log.error("JbossApiCollector: There was an exception %s", e)
@@ -363,8 +361,7 @@ class JbossApiCollector(diamond.collector.Collector):
         return output
 
     def is_number(self, value):
-        return (isinstance(value, (int, long, float)) and
-                not isinstance(value, bool))
+        return (isinstance(value, (int, float)) and not isinstance(value, bool))
 
     def string_fix(self, s):
         return re.sub(r"[^a-zA-Z0-9_]", "_", s)
@@ -389,7 +386,6 @@ class JbossApiCollector(diamond.collector.Collector):
             current_pword = matches.group(2)
 
             # Call get_stats for each instance of jboss
-            self.get_stats(current_host, current_port, current_proto,
-                           current_user, current_pword)
+            self.get_stats(current_host, current_port, current_proto, current_user, current_pword)
 
         return True

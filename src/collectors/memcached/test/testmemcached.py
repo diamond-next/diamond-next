@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # coding=utf-8
 
-from diamond.testing import CollectorTestCase
-from test import get_collector_config
 import unittest
 from unittest.mock import MagicMock, Mock, patch
-from diamond.collector import Collector
+
 from collectors.memcached.memcached import MemcachedCollector
+from diamond.collector import Collector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMemcachedCollector(CollectorTestCase):

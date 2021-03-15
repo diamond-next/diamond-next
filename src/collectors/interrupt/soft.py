@@ -10,8 +10,9 @@ The SoftInterruptCollector collects metrics on software interrupts from
 
 """
 
-import platform
 import os
+import platform
+
 import diamond.collector
 
 # Detect the architecture of the system
@@ -26,14 +27,12 @@ else:
 
 
 class SoftInterruptCollector(diamond.collector.Collector):
-
     PROC = '/proc/stat'
 
     def get_default_config_help(self):
-        config_help = super(SoftInterruptCollector,
-                            self).get_default_config_help()
-        config_help.update({
-        })
+        config_help = super(SoftInterruptCollector, self).get_default_config_help()
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -42,8 +41,9 @@ class SoftInterruptCollector(diamond.collector.Collector):
         """
         config = super(SoftInterruptCollector, self).get_default_config()
         config.update({
-            'path':     'softirq'
+            'path': 'softirq'
         })
+
         return config
 
     def collect(self):
@@ -58,7 +58,6 @@ class SoftInterruptCollector(diamond.collector.Collector):
 
         # Get data
         for line in file:
-
             if not line.startswith('softirq'):
                 continue
 
@@ -66,17 +65,13 @@ class SoftInterruptCollector(diamond.collector.Collector):
 
             metric_name = 'total'
             metric_value = int(data[1])
-            metric_value = int(self.derivative(
-                metric_name,
-                long(metric_value), counter))
+            metric_value = int(self.derivative(metric_name, int(metric_value), counter))
             self.publish(metric_name, metric_value)
 
             for i in range(2, len(data)):
                 metric_name = str(i - 2)
                 metric_value = int(data[i])
-                metric_value = int(self.derivative(
-                    metric_name,
-                    long(metric_value), counter))
+                metric_value = int(self.derivative(metric_name, int(metric_value), counter))
                 self.publish(metric_name, metric_value)
 
         # Close file

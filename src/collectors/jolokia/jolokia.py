@@ -60,7 +60,6 @@ import diamond.collector
 
 
 class JolokiaCollector(diamond.collector.Collector):
-
     LIST_URL = "/list"
 
     """

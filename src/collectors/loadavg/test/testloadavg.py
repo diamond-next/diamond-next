@@ -39,8 +39,7 @@ class TestLoadAverageCollector(CollectorTestCase):
     @patch('multiprocessing.cpu_count')
     @patch('os.getloadavg')
     @patch.object(Collector, 'publish')
-    def test_should_work_with_real_data(self, publish_mock, getloadavg_mock,
-                                        cpu_count_mock):
+    def test_should_work_with_real_data(self, publish_mock, getloadavg_mock, cpu_count_mock):
         LoadAverageCollector.PROC_LOADAVG = self.getFixturePath('proc_loadavg')
         getloadavg_mock.return_value = (0.12, 0.23, 0.34)
         cpu_count_mock.return_value = 2

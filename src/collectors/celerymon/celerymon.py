@@ -29,7 +29,6 @@ except ImportError:
 
 
 class CelerymonCollector(diamond.collector.Collector):
-
     LastCollectTime = None
 
     def get_default_config_help(self):
@@ -40,6 +39,7 @@ class CelerymonCollector(diamond.collector.Collector):
             'port': 'The celerymon port'
 
         })
+
         return config_help
 
     def get_default_config(self):
@@ -48,8 +48,8 @@ class CelerymonCollector(diamond.collector.Collector):
         """
         config = super(CelerymonCollector, self).get_default_config()
         config.update({
-            'host':     'localhost',
-            'port':     '8989'
+            'host': 'localhost',
+            'port': '8989'
         })
         return config
 
@@ -61,6 +61,7 @@ class CelerymonCollector(diamond.collector.Collector):
         # Handle collection time intervals correctly
         collect_time = int(time.time())
         time_delta = float(self.config['interval'])
+
         if not self.LastCollectTime:
             self.LastCollectTime = collect_time - time_delta
 
@@ -74,19 +75,25 @@ class CelerymonCollector(diamond.collector.Collector):
 
         results = dict()
         total_messages = 0
+
         for data in celery_data:
             name = str(data[1]['name'])
+
             if name not in results:
                 results[name] = dict()
+
             state = str(data[1]['state'])
+
             if state not in results[name]:
                 results[name][state] = 1
             else:
                 results[name][state] += 1
+
             total_messages += 1
 
         # Publish Metric
         self.publish('total_messages', total_messages)
+
         for result in results:
             for state in results[result]:
                 metric_value = results[result][state]

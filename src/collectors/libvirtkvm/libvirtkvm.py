@@ -11,6 +11,7 @@ Uses libvirt to harvest per KVM instance stats
 
 import diamond.collector
 from diamond.collector import str_to_bool
+
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -92,9 +93,8 @@ class LibvirtKVMCollector(diamond.collector.Collector):
             metric = value
         else:
             # Nanoseconds (10^9), however, we want to express in 100%
-            metric = self.derivative(statname, float(value) / 10000000.0,
-                                     max_value=diamond.collector.MAX_COUNTER,
-                                     instance=instance)
+            metric = self.derivative(statname, float(value) / 10000000.0, max_value=diamond.collector.MAX_COUNTER, instance=instance)
+
         self.publish(statname, metric, instance=instance)
 
     def collect(self):
@@ -132,11 +132,9 @@ class LibvirtKVMCollector(diamond.collector.Collector):
                     idx = self.blockStats[stat]
                     val = stats[idx]
                     accum[stat] += val
-                    self.publish('block.%s.%s' % (disk, stat), val,
-                                 instance=name)
+                    self.publish('block.%s.%s' % (disk, stat), val, instance=name)
             for stat in self.blockStats.keys():
-                self.publish('block.total.%s' % stat, accum[stat],
-                             instance=name)
+                self.publish('block.total.%s' % stat, accum[stat], instance=name)
 
             # Network stats
             vifs = self.get_network_devices(dom)
@@ -150,14 +148,11 @@ class LibvirtKVMCollector(diamond.collector.Collector):
                     idx = self.vifStats[stat]
                     val = stats[idx]
                     accum[stat] += val
-                    self.publish('net.%s.%s' % (vif, stat), val,
-                                 instance=name)
+                    self.publish('net.%s.%s' % (vif, stat), val, instance=name)
             for stat in self.vifStats.keys():
-                self.publish('net.total.%s' % stat, accum[stat],
-                             instance=name)
+                self.publish('net.total.%s' % stat, accum[stat], instance=name)
 
             # Memory stats
             mem = dom.memoryStats()
-            self.publish('memory.nominal', mem['actual'] * 1024,
-                         instance=name)
+            self.publish('memory.nominal', mem['actual'] * 1024, instance=name)
             self.publish('memory.rss', mem['rss'] * 1024, instance=name)

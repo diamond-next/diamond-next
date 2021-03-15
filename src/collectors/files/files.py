@@ -7,15 +7,15 @@ This class collects data from plain text files
 
 """
 
-import diamond.collector
 import os
 import re
+
+import diamond.collector
 
 _RE = re.compile(r'([A-Za-z0-9._-]+)[\s=:]+(-?[0-9]+)(\.?\d*)')
 
 
 class FilesCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(FilesCollector, self).get_default_config_help()
         config_help.update({
@@ -54,7 +54,8 @@ class FilesCollector(diamond.collector.Collector):
                                     precision=max(0, len(m.groups()[2]) - 1))
                                 found = True
                         fh.close()
-                        if (found and self.config['delete']):
+
+                        if found and self.config['delete']:
                             os.unlink(os.path.join(self.config['dir'], fn))
                     except:
                         pass

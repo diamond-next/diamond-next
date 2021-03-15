@@ -8,13 +8,13 @@ Collect Memory usage and limit of LXCs
 
 """
 
-from diamond.collector import Collector
-import diamond.convertor
 import os
+
+import diamond.convertor
+from diamond.collector import Collector
 
 
 class MemoryLxcCollector(Collector):
-
     def get_default_config_help(self):
         """
         Return help text for collector configuration.
@@ -31,7 +31,7 @@ class MemoryLxcCollector(Collector):
         """
         config = super(MemoryLxcCollector, self).get_default_config()
         config.update({
-            "path":     "lxc",
+            "path": "lxc",
             "sys_path": "/sys/fs/cgroup/lxc",
         })
         return config

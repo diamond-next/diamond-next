@@ -11,6 +11,7 @@ The CPUCollector collects CPU utilization metric using /proc/stat.
 
 import os
 import time
+
 import diamond.collector
 from diamond.collector import str_to_bool
 
@@ -21,8 +22,8 @@ except ImportError:
 
 
 class CPUCollector(diamond.collector.Collector):
-
     PROC = '/proc/stat'
+
     INTERVAL = 1
 
     MAX_VALUES = {
@@ -41,10 +42,11 @@ class CPUCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(CPUCollector, self).get_default_config_help()
         config_help.update({
-            'percore':  'Collect metrics per cpu core or just total',
-            'simple':   'only return aggregate CPU% metric',
+            'percore': 'Collect metrics per cpu core or just total',
+            'simple': 'only return aggregate CPU% metric',
             'normalize': 'for cpu totals, divide by the number of CPUs',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -53,12 +55,13 @@ class CPUCollector(diamond.collector.Collector):
         """
         config = super(CPUCollector, self).get_default_config()
         config.update({
-            'path':     'cpu',
-            'percore':  'True',
-            'xenfix':   None,
-            'simple':   'False',
+            'path': 'cpu',
+            'percore': 'True',
+            'xenfix': None,
+            'simple': 'False',
             'normalize': 'False',
         })
+
         return config
 
     def collect(self):
@@ -73,9 +76,12 @@ class CPUCollector(diamond.collector.Collector):
 
             statFile = open(self.PROC, "r")
             timeList = statFile.readline().split(" ")[2:6]
+
             for i in range(len(timeList)):
                 timeList[i] = int(timeList[i])
+
             statFile.close()
+
             return timeList
 
         def cpu_delta_time(interval):
@@ -85,17 +91,19 @@ class CPUCollector(diamond.collector.Collector):
             pre_check = cpu_time_list()
             time.sleep(interval)
             post_check = cpu_time_list()
+
             for i in range(len(pre_check)):
                 post_check[i] -= pre_check[i]
+
             return post_check
 
         if os.access(self.PROC, os.R_OK):
-
             # If simple only return aggregate CPU% metric
             if str_to_bool(self.config['simple']):
                 dt = cpu_delta_time(self.INTERVAL)
                 cpuPct = 100 - (dt[len(dt) - 1] * 100.00 / sum(dt))
                 self.publish('percent', str('%.4f' % cpuPct))
+
                 return True
 
             results = {}
@@ -103,13 +111,13 @@ class CPUCollector(diamond.collector.Collector):
             file = open(self.PROC)
 
             ncpus = -1  # dont want to count the 'cpu'(total) cpu.
+
             for line in file:
                 if not line.startswith('cpu'):
                     continue
 
                 ncpus += 1
                 elements = line.split()
-
                 cpu = elements[0]
 
                 if cpu == 'cpu':
@@ -262,5 +270,3 @@ class CPUCollector(diamond.collector.Collector):
             self.publish('cpu_count', psutil.cpu_count())
 
             return True
-
-        return None

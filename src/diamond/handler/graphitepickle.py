@@ -16,13 +16,10 @@ use it.
 
 """
 
+import pickle
 import struct
-from diamond.handler.graphite import GraphiteHandler
 
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle as pickle
+from diamond.handler.graphite import GraphiteHandler
 
 
 class GraphitePickleHandler(GraphiteHandler):
@@ -30,7 +27,6 @@ class GraphitePickleHandler(GraphiteHandler):
     Overrides the GraphiteHandler class
     Sending data to graphite using batched pickle format
     """
-
     def __init__(self, config=None):
         """
         Create a new instance of the GraphitePickleHandler

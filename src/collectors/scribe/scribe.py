@@ -9,14 +9,13 @@ Collect counters from scribe
 
 """
 
-import subprocess
 import string
+import subprocess
 
 import diamond.collector
 
 
 class ScribeCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(ScribeCollector, self).get_default_config_help()
         config_help.update({
@@ -36,7 +35,7 @@ class ScribeCollector(diamond.collector.Collector):
 
     def key_to_metric(self, key):
         """Replace all non-letter characters with underscores"""
-        return ''.join(l if l in string.letters else '_' for l in key)
+        return ''.join(l if l in string.ascii_letters else '_' for l in key)
 
     def get_scribe_ctrl_output(self):
         cmd = [self.config['scribe_ctrl_bin'], 'counters']
@@ -47,8 +46,7 @@ class ScribeCollector(diamond.collector.Collector):
         self.log.debug("Running command %r", cmd)
 
         try:
-            p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE)
+            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except OSError:
             self.log.exception("Unable to run %r", cmd)
             return ""

@@ -11,6 +11,7 @@ kernel module.
 """
 
 import os
+
 import diamond.collector
 
 
@@ -48,6 +49,7 @@ class ConnTrackCollector(diamond.collector.Collector):
         Collect metrics
         """
         collected = {}
+        dirs = []
         files = []
 
         if isinstance(self.config['dir'], str):
