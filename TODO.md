@@ -9,7 +9,6 @@
 - [x] "from StringIO import StringIO" > "from io import StringIO"
 - [ ] unicode > ( https://stackoverflow.com/questions/19877306/nameerror-global-name-unicode-is-not-defined-in-python-3 )
 - [ ] xrange > ?
-- [ ] "from mock import patch" > "from unittest.mock import patch"
-- [ ] "from test import CollectorTestCase" > "from diamond.testing import CollectorTestCase"
-- [ ] "from test import unittest" > "import unittest"
-- [ ] "from bind import BindCollector"
+- [x] "from mock import patch" > "from unittest.mock import patch"
+- [x] "from test import CollectorTestCase" > "from diamond.testing import CollectorTestCase"
+- [x] "from test import unittest" > "import unittest"

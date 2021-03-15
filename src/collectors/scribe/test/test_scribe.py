@@ -1,15 +1,12 @@
 import json
+from unittest.mock import Mock, patch
 
-from test import CollectorTestCase
+from collectors.scribe.scribe import ScribeCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-
-from mock import Mock, patch
-
-from scribe import ScribeCollector
 
 
 class ScribeCollectorTestCase(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('ScribeCollector', {})
         self.collector = ScribeCollector(config, None)
@@ -25,12 +22,9 @@ class ScribeCollectorTestCase(CollectorTestCase):
 
     def test_get_scribe_stats(self):
         scribe_ctrl_output = self.getFixture('scribe_ctrl').getvalue()
-        expected_scribe_stats = json.loads(self.getFixture(
-                                           'scribe_ctrl_stats.json')
-                                           .getvalue())
+        expected_scribe_stats = json.loads(self.getFixture('scribe_ctrl_stats.json').getvalue())
 
-        with patch.object(ScribeCollector, 'get_scribe_ctrl_output',
-                          Mock(return_value=scribe_ctrl_output)):
+        with patch.object(ScribeCollector, 'get_scribe_ctrl_output', Mock(return_value=scribe_ctrl_output)):
             scribe_stats = self.collector.get_scribe_stats()
 
         self.assertEqual(dict(scribe_stats), expected_scribe_stats)
