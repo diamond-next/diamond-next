@@ -1,5 +1,6 @@
 # TODO
 
+- [x] basestring > str
 - [ ] long > int
 - [ ] base64.encodestring > ?
 - [x] urllib2 > urllib
