@@ -27,7 +27,6 @@ class TestSockstatCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_open_proc_net_sockstat(self, publish_mock, open_mock):
         class Klass(Iterator):
-
             def close(self):
                 pass
 

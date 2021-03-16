@@ -35,6 +35,7 @@ warnings.showwarning = old_showwarning
 class SNMPCollector(diamond.collector.Collector):
     def __init__(self, *args, **kwargs):
         super(SNMPCollector, self).__init__(*args, **kwargs)
+
         if cmdgen is not None:
             self.snmpCmdGen = cmdgen.CommandGenerator()
 
@@ -85,23 +86,22 @@ class SNMPCollector(diamond.collector.Collector):
         host = socket.gethostbyname(host)
 
         # Assemble SNMP Auth Data
-        snmpAuthData = cmdgen.CommunityData(
-            'agent-{}'.format(community),
-            community)
+        snmp_auth_data = cmdgen.CommunityData('agent-{}'.format(community), community)
 
         # Assemble SNMP Transport Data
-        snmpTransportData = cmdgen.UdpTransportTarget(
+        snmp_transport_data = cmdgen.UdpTransportTarget(
             (host, port),
             int(self.config['timeout']),
-            int(self.config['retries']))
+            int(self.config['retries'])
+        )
 
         # Assemble SNMP Next Command
-        result = self.snmpCmdGen.getCmd(snmpAuthData, snmpTransportData, oid)
-        varBind = result[3]
+        result = self.snmpCmdGen.getCmd(snmp_auth_data, snmp_transport_data, oid)
+        var_bind = result[3]
 
         # TODO: Error check
 
-        for o, v in varBind:
+        for o, v in var_bind:
             ret[str(o)] = v.prettyPrint()
 
         return ret
@@ -121,25 +121,18 @@ class SNMPCollector(diamond.collector.Collector):
         host = socket.gethostbyname(host)
 
         # Assemble SNMP Auth Data
-        snmpAuthData = cmdgen.CommunityData(
-            'agent-{}'.format(community),
-            community)
+        snmp_auth_data = cmdgen.CommunityData('agent-{}'.format(community), community)
 
         # Assemble SNMP Transport Data
-        snmpTransportData = cmdgen.UdpTransportTarget(
-            (host, port),
-            int(self.config['timeout']),
-            int(self.config['retries']))
+        snmp_transport_data = cmdgen.UdpTransportTarget((host, port), int(self.config['timeout']), int(self.config['retries']))
 
         # Assemble SNMP Next Command
-        resultTable = self.snmpCmdGen.nextCmd(snmpAuthData,
-                                              snmpTransportData,
-                                              oid)
-        varBindTable = resultTable[3]
+        result_table = self.snmpCmdGen.nextCmd(snmp_auth_data, snmp_transport_data, oid)
+        var_bind_table = result_table[3]
 
         # TODO: Error Check
 
-        for varBindTableRow in varBindTable:
+        for varBindTableRow in var_bind_table:
             for o, v in varBindTableRow:
                 ret[str(o)] = v.prettyPrint()
 
