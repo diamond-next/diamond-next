@@ -57,9 +57,10 @@ is the default metric key.
 
 """
 
-import diamond.collector
-import time
 import os
+import time
+
+import diamond.collector
 
 try:
     import redis
@@ -72,44 +73,48 @@ SOCKET_PREFIX_LEN = len(SOCKET_PREFIX)
 
 
 class RedisCollector(diamond.collector.Collector):
-
     _DATABASE_COUNT = 16
     _DEFAULT_DB = 0
     _DEFAULT_HOST = 'localhost'
     _DEFAULT_PORT = 6379
     _DEFAULT_SOCK_TIMEOUT = 5
-    _KEYS = {'clients.blocked': 'blocked_clients',
-             'clients.connected': 'connected_clients',
-             'clients.longest_output_list': 'client_longest_output_list',
-             'cpu.parent.sys': 'used_cpu_sys',
-             'cpu.children.sys': 'used_cpu_sys_children',
-             'cpu.parent.user': 'used_cpu_user',
-             'cpu.children.user': 'used_cpu_user_children',
-             'hash_max_zipmap.entries': 'hash_max_zipmap_entries',
-             'hash_max_zipmap.value': 'hash_max_zipmap_value',
-             'keys.evicted': 'evicted_keys',
-             'keys.expired': 'expired_keys',
-             'keyspace.hits': 'keyspace_hits',
-             'keyspace.misses': 'keyspace_misses',
-             'last_save.changes_since': 'changes_since_last_save',
-             'last_save.time': 'last_save_time',
-             'memory.internal_view': 'used_memory',
-             'memory.external_view': 'used_memory_rss',
-             'memory.fragmentation_ratio': 'mem_fragmentation_ratio',
-             'process.commands_processed': 'total_commands_processed',
-             'process.connections_received': 'total_connections_received',
-             'process.uptime': 'uptime_in_seconds',
-             'pubsub.channels': 'pubsub_channels',
-             'pubsub.patterns': 'pubsub_patterns',
-             'replication.master_sync_in_progress': 'master_sync_in_progress',
-             'slaves.connected': 'connected_slaves',
-             'slaves.last_io': 'master_last_io_seconds_ago'}
-    _RENAMED_KEYS = {'last_save.changes_since': 'rdb_changes_since_last_save',
-                     'last_save.time': 'rdb_last_save_time'}
+    _KEYS = {
+        'clients.blocked': 'blocked_clients',
+        'clients.connected': 'connected_clients',
+        'clients.longest_output_list': 'client_longest_output_list',
+        'cpu.parent.sys': 'used_cpu_sys',
+        'cpu.children.sys': 'used_cpu_sys_children',
+        'cpu.parent.user': 'used_cpu_user',
+        'cpu.children.user': 'used_cpu_user_children',
+        'hash_max_zipmap.entries': 'hash_max_zipmap_entries',
+        'hash_max_zipmap.value': 'hash_max_zipmap_value',
+        'keys.evicted': 'evicted_keys',
+        'keys.expired': 'expired_keys',
+        'keyspace.hits': 'keyspace_hits',
+        'keyspace.misses': 'keyspace_misses',
+        'last_save.changes_since': 'changes_since_last_save',
+        'last_save.time': 'last_save_time',
+        'memory.internal_view': 'used_memory',
+        'memory.external_view': 'used_memory_rss',
+        'memory.fragmentation_ratio': 'mem_fragmentation_ratio',
+        'process.commands_processed': 'total_commands_processed',
+        'process.connections_received': 'total_connections_received',
+        'process.uptime': 'uptime_in_seconds',
+        'pubsub.channels': 'pubsub_channels',
+        'pubsub.patterns': 'pubsub_patterns',
+        'replication.master_sync_in_progress': 'master_sync_in_progress',
+        'slaves.connected': 'connected_slaves',
+        'slaves.last_io': 'master_last_io_seconds_ago'
+    }
+    _RENAMED_KEYS = {
+        'last_save.changes_since': 'rdb_changes_since_last_save',
+        'last_save.time': 'rdb_last_save_time'
+    }
 
     def process_config(self):
         super(RedisCollector, self).process_config()
         instance_list = self.config['instances']
+
         # configobj make str of single-element list, let's convert
         if isinstance(instance_list, str):
             instance_list = [instance_list]
@@ -119,14 +124,15 @@ class RedisCollector(diamond.collector.Collector):
             host = self.config['host']
             port = int(self.config['port'])
             auth = self.config['auth']
+
             if auth is not None:
                 instance_list.append('%s:%d/%s' % (host, port, auth))
             else:
                 instance_list.append('%s:%d' % (host, port))
 
         self.instances = {}
-        for instance in instance_list:
 
+        for instance in instance_list:
             if '@' in instance:
                 (nickname, hostport) = instance.split('@', 1)
             else:
@@ -134,17 +140,13 @@ class RedisCollector(diamond.collector.Collector):
                 hostport = instance
 
             if hostport.startswith(SOCKET_PREFIX):
-                unix_socket, __, port_auth = hostport[
-                    SOCKET_PREFIX_LEN:].partition(':')
+                unix_socket, __, port_auth = hostport[SOCKET_PREFIX_LEN:].partition(':')
                 auth = port_auth.partition('/')[2] or None
 
                 if nickname is None:
-                    nickname = os.path.splitext(
-                        os.path.basename(unix_socket))[0]
-                self.instances[nickname] = (self._DEFAULT_HOST,
-                                            self._DEFAULT_PORT,
-                                            unix_socket,
-                                            auth)
+                    nickname = os.path.splitext(os.path.basename(unix_socket))[0]
+
+                self.instances[nickname] = (self._DEFAULT_HOST, self._DEFAULT_PORT, unix_socket, auth)
             else:
                 if '/' in hostport:
                     parts = hostport.split('/')
@@ -181,8 +183,7 @@ class RedisCollector(diamond.collector.Collector):
             'db': '',
             'auth': 'Password?',
             'databases': 'how many database instances to collect',
-            'instances': "Redis addresses, comma separated, syntax:" +
-                         " nick1@host:port, nick2@:port or nick3@host"
+            'instances': "Redis addresses, comma separated, syntax: nick1@host:port, nick2@:port or nick3@host"
         })
         return config_help
 
@@ -216,15 +217,13 @@ class RedisCollector(diamond.collector.Collector):
         """
         db = int(self.config['db'])
         timeout = int(self.config['timeout'])
+
         try:
-            cli = redis.Redis(host=host, port=port,
-                              db=db, socket_timeout=timeout, password=auth,
-                              unix_socket_path=unix_socket)
+            cli = redis.Redis(host=host, port=port, db=db, socket_timeout=timeout, password=auth, unix_socket_path=unix_socket)
             cli.ping()
             return cli
         except Exception as ex:
-            self.log.error("RedisCollector: failed to connect to %s:%i. %s.",
-                           unix_socket or host, port, ex)
+            self.log.error("RedisCollector: failed to connect to %s:%i. %s.", unix_socket or host, port, ex)
 
     def _precision(self, value):
         """Return the precision of the number
@@ -235,8 +234,10 @@ class RedisCollector(diamond.collector.Collector):
         """
         value = str(value)
         decimal = value.rfind('.')
+
         if decimal == -1:
             return 0
+
         return len(value) - decimal - 1
 
     def _publish_key(self, nick, key):
@@ -319,8 +320,8 @@ class RedisCollector(diamond.collector.Collector):
 
         # Connect to redis and get the maxmemory config value
         # Then calculate the % maxmemory of memory used
-        maxmemory_config = self._get_config(host, port, unix_socket, auth,
-                                            'maxmemory')
+        maxmemory_config = self._get_config(host, port, unix_socket, auth, 'maxmemory')
+
         if maxmemory_config and 'maxmemory' in maxmemory_config.keys():
             maxmemory = float(maxmemory_config['maxmemory'])
 
@@ -330,6 +331,7 @@ class RedisCollector(diamond.collector.Collector):
             else:
                 maxmemory_percent = info['used_memory'] / maxmemory * 100
                 maxmemory_percent = round(maxmemory_percent, 2)
+
             data['memory.used_percent'] = float("%.2f" % maxmemory_percent)
 
         # Iterate over the top level keys

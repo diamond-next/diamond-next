@@ -10,8 +10,9 @@ SNMPCollector is a special collector for collecting data by using SNMP
 """
 
 import socket
-
 import warnings
+
+import diamond.collector
 
 # pysnmp packages on debian 6.0 use sha and md5 which are deprecated
 # packages. there is nothing to be done about it until pysnmp
@@ -30,11 +31,8 @@ except ImportError:
 
 warnings.showwarning = old_showwarning
 
-import diamond.collector
-
 
 class SNMPCollector(diamond.collector.Collector):
-
     def __init__(self, *args, **kwargs):
         super(SNMPCollector, self).__init__(*args, **kwargs)
         if cmdgen is not None:

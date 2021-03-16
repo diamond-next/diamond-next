@@ -42,7 +42,6 @@ class TestSlonyCollector(CollectorTestCase):
             'postgres',
             '_postgres',
             'Node [0-9]+ - postgres@localhost',
-
         )
 
         self.assertPublished(publish, 'foo', 7)

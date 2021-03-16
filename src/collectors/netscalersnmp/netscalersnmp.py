@@ -8,21 +8,15 @@ balancing, firewall, proxy and VPN functions.
 
 """
 
-import os
 import re
 import struct
-import sys
 import time
 
+from collectors.snmp.snmp import SNMPCollector
 from diamond.metric import Metric
 
-# Fix Path for locating the SNMPCollector
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
 
-from snmp import SNMPCollector as parent_SNMPCollector
-
-
-class NetscalerSNMPCollector(parent_SNMPCollector):
+class NetscalerSNMPCollector(SNMPCollector):
     """
     SNMPCollector for Netscaler Metrics
     """
@@ -172,14 +166,14 @@ class NetscalerSNMPCollector(parent_SNMPCollector):
         # Collect Netscaler System OIDs
         for k, v in self.NETSCALER_SYSTEM_GUAGES.items():
             # Get Metric Name and Value
-            metricName = '.'.join([k])
-            metricValue = int(self.get(v, host, port, community)[v])
+            metric_name = '.'.join([k])
+            metric_value = int(self.get(v, host, port, community)[v])
 
             # Get Metric Path
-            metricPath = '.'.join(['devices', device, 'system', metricName])
+            metric_path = '.'.join(['devices', device, 'system', metric_name])
 
             # Create Metric
-            metric = Metric(metricPath, metricValue, timestamp, 0)
+            metric = Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)
@@ -187,98 +181,98 @@ class NetscalerSNMPCollector(parent_SNMPCollector):
         # Collect Netscaler System Counter OIDs
         for k, v in self.NETSCALER_SYSTEM_COUNTERS.items():
             # Get Metric Name and Value
-            metricName = '.'.join([k])
+            metric_name = '.'.join([k])
 
             # Get Metric Path
-            metricPath = '.'.join(['devices', device, 'system', metricName])
+            metric_path = '.'.join(['devices', device, 'system', metric_name])
 
             # Get Metric Value
-            metricValue = self.derivative(metricPath, int(self.get(v, host, port, community)[v]), self.MAX_VALUE)
+            metric_value = self.derivative(metric_path, int(self.get(v, host, port, community)[v]), self.MAX_VALUE)
 
             # Create Metric
-            metric = Metric(metricPath, metricValue, timestamp, 0)
+            metric = Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)
 
         # Collect Netscaler Services
-        serviceNames = [v.strip("\'") for v in self.walk(self.NETSCALER_SERVICE_NAMES, host, port, community).values()]
+        service_names = [v.strip("\'") for v in self.walk(self.NETSCALER_SERVICE_NAMES, host, port, community).values()]
 
-        for serviceName in serviceNames:
+        for serviceName in service_names:
             # Get Service Name in OID form
-            serviceNameOid = self.get_string_index_oid(serviceName)
+            service_name_oid = self.get_string_index_oid(serviceName)
 
             # Get Service Type
-            serviceTypeOid = ".".join([self.NETSCALER_SERVICE_TYPE, self._convert_from_oid(serviceNameOid)])
-            serviceType = int(self.get(serviceTypeOid, host, port, community)[serviceTypeOid].strip("\'"))
+            service_type_oid = ".".join([self.NETSCALER_SERVICE_TYPE, self._convert_from_oid(service_name_oid)])
+            service_type = int(self.get(service_type_oid, host, port, community)[service_type_oid].strip("\'"))
 
             # Filter excluded service types
-            if serviceType in map(lambda v: int(v), self.config.get('exclude_service_type')):
+            if service_type in map(lambda v: int(v), self.config.get('exclude_service_type')):
                 continue
 
             # Get Service State
-            serviceStateOid = ".".join([self.NETSCALER_SERVICE_STATE, self._convert_from_oid(serviceNameOid)])
-            serviceState = int(self.get(serviceStateOid, host, port, community)[serviceStateOid].strip("\'"))
+            service_state_oid = ".".join([self.NETSCALER_SERVICE_STATE, self._convert_from_oid(service_name_oid)])
+            service_state = int(self.get(service_state_oid, host, port, community)[service_state_oid].strip("\'"))
 
             # Filter excluded service states
-            if serviceState in map(lambda v: int(v), self.config.get('exclude_service_state')):
+            if service_state in map(lambda v: int(v), self.config.get('exclude_service_state')):
                 continue
 
             for k, v in self.NETSCALER_SERVICE_GUAGES.items():
-                serviceGuageOid = ".".join([v, self._convert_from_oid(serviceNameOid)])
+                service_guage_oid = ".".join([v, self._convert_from_oid(service_name_oid)])
 
                 # Get Metric Name
-                metricName = '.'.join([re.sub(r'\.|\\', '_', serviceName), k])
+                metric_name = '.'.join([re.sub(r'\.|\\', '_', serviceName), k])
 
                 # Get Metric Value
-                metricValue = int(self.get(serviceGuageOid, host, port, community)[serviceGuageOid].strip("\'"))
+                metric_value = int(self.get(service_guage_oid, host, port, community)[service_guage_oid].strip("\'"))
 
                 # Get Metric Path
-                metricPath = '.'.join(['devices', device, 'service', metricName])
+                metric_path = '.'.join(['devices', device, 'service', metric_name])
 
                 # Create Metric
-                metric = Metric(metricPath, metricValue, timestamp, 0)
+                metric = Metric(metric_path, metric_value, timestamp, 0)
 
                 # Publish Metric
                 self.publish_metric(metric)
 
         # Collect Netscaler Vservers
-        vserverNames = [v.strip("\'") for v in self.walk(self.NETSCALER_VSERVER_NAMES, host, port, community).values()]
+        vserver_names = [v.strip("\'") for v in self.walk(self.NETSCALER_VSERVER_NAMES, host, port, community).values()]
 
-        for vserverName in vserverNames:
+        for vserverName in vserver_names:
             # Get Vserver Name in OID form
-            vserverNameOid = self.get_string_index_oid(vserverName)
+            vserver_name_oid = self.get_string_index_oid(vserverName)
 
             # Get Vserver Type
-            vserverTypeOid = ".".join([self.NETSCALER_VSERVER_TYPE, self._convert_from_oid(vserverNameOid)])
-            vserverType = int(self.get(vserverTypeOid, host, port, community)[vserverTypeOid].strip("\'"))
+            vserver_type_oid = ".".join([self.NETSCALER_VSERVER_TYPE, self._convert_from_oid(vserver_name_oid)])
+            vserver_type = int(self.get(vserver_type_oid, host, port, community)[vserver_type_oid].strip("\'"))
 
             # filter excluded vserver types
-            if vserverType in map(lambda v: int(v), self.config.get('exclude_vserver_type')):
+            if vserver_type in map(lambda v: int(v), self.config.get('exclude_vserver_type')):
                 continue
 
             # Get Service State
-            vserverStateOid = ".".join([self.NETSCALER_VSERVER_STATE, self._convert_from_oid(vserverNameOid)])
-            vserverState = int(self.get(vserverStateOid, host, port, community)[vserverStateOid].strip("\'"))
+            vserver_state_oid = ".".join([self.NETSCALER_VSERVER_STATE, self._convert_from_oid(vserver_name_oid)])
+            vserver_state = int(self.get(vserver_state_oid, host, port, community)[vserver_state_oid].strip("\'"))
 
             # Filter excluded vserver state
-            if vserverState in map(lambda v: int(v), self.config.get('exclude_vserver_state')):
+            if vserver_state in map(lambda v: int(v), self.config.get('exclude_vserver_state')):
                 continue
 
             for k, v in self.NETSCALER_VSERVER_GUAGES.items():
-                vserverGuageOid = ".".join([v, self._convert_from_oid(vserverNameOid)])
+                vserver_guage_oid = ".".join([v, self._convert_from_oid(vserver_name_oid)])
 
                 # Get Metric Name
-                metricName = '.'.join([re.sub(r'\.|\\', '_', vserverName), k])
+                metric_name = '.'.join([re.sub(r'\.|\\', '_', vserverName), k])
 
                 # Get Metric Value
-                metricValue = int(self.get(vserverGuageOid, host, port, community)[vserverGuageOid].strip("\'"))
+                metric_value = int(self.get(vserver_guage_oid, host, port, community)[vserver_guage_oid].strip("\'"))
 
                 # Get Metric Path
-                metricPath = '.'.join(['devices', device, 'vserver', metricName])
+                metric_path = '.'.join(['devices', device, 'vserver', metric_name])
 
                 # Create Metric
-                metric = Metric(metricPath, metricValue, timestamp, 0)
+                metric = Metric(metric_path, metric_value, timestamp, 0)
 
                 # Publish Metric
                 self.publish_metric(metric)

@@ -10,8 +10,9 @@ The SlabInfoCollector collects metrics on process stats from
 
 """
 
-import platform
 import os
+import platform
+
 import diamond.collector
 
 # Detect the architecture of the system
@@ -31,8 +32,8 @@ class SlabInfoCollector(diamond.collector.Collector):
 
     def get_default_config_help(self):
         config_help = super(SlabInfoCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -41,7 +42,7 @@ class SlabInfoCollector(diamond.collector.Collector):
         """
         config = super(SlabInfoCollector, self).get_default_config()
         config.update({
-            'path':     'slabinfo'
+            'path': 'slabinfo'
         })
         return config
 
@@ -66,25 +67,21 @@ class SlabInfoCollector(diamond.collector.Collector):
 
             data = line.split()
 
-            for key in ['<active_objs>', '<num_objs>', '<objsize>',
-                        '<objperslab>', '<pagesperslab>']:
+            for key in ['<active_objs>', '<num_objs>', '<objsize>', '<objperslab>', '<pagesperslab>']:
                 i = keys.index(key)
-                metric_name = data[0] + '.' + key.replace(
-                    '<', '').replace('>', '')
+                metric_name = data[0] + '.' + key.replace('<', '').replace('>', '')
                 metric_value = int(data[i])
                 self.publish(metric_name, metric_value)
 
             for key in ['<limit>', '<batchcount>', '<sharedfactor>']:
                 i = keys.index(key)
-                metric_name = data[0] + '.tunables.' + key.replace(
-                    '<', '').replace('>', '')
+                metric_name = data[0] + '.tunables.' + key.replace('<', '').replace('>', '')
                 metric_value = int(data[i])
                 self.publish(metric_name, metric_value)
 
             for key in ['<active_slabs>', '<num_slabs>', '<sharedavail>']:
                 i = keys.index(key)
-                metric_name = data[0] + '.slabdata.' + key.replace(
-                    '<', '').replace('>', '')
+                metric_name = data[0] + '.slabdata.' + key.replace('<', '').replace('>', '')
                 metric_value = int(data[i])
                 self.publish(metric_name, metric_value)
 
