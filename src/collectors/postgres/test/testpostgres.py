@@ -1,10 +1,11 @@
 #!/usr/bin/python
 # coding=utf-8
 
+from unittest.mock import Mock, patch
+
+from collectors.postgres.postgres import PostgresqlCollector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from unittest.mock import Mock, patch
-from collectors.postgres.postgres import PostgresqlCollector
 
 
 class TestPostgresqlCollector(CollectorTestCase):

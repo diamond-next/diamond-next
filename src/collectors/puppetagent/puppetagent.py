@@ -9,19 +9,17 @@ Collect stats from puppet agent's last_run_summary.yaml
 
 """
 
+import diamond.collector
+
 try:
     import yaml
 except ImportError:
     yaml = None
 
-import diamond.collector
-
 
 class PuppetAgentCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(PuppetAgentCollector,
-                            self).get_default_config_help()
+        config_help = super(PuppetAgentCollector, self).get_default_config_help()
         config_help.update({
             'yaml_path': "Path to last_run_summary.yaml",
         })
@@ -34,7 +32,7 @@ class PuppetAgentCollector(diamond.collector.Collector):
         config = super(PuppetAgentCollector, self).get_default_config()
         config.update({
             'yaml_path': '/var/lib/puppet/state/last_run_summary.yaml',
-            'path':     'puppetagent',
+            'path': 'puppetagent',
         })
         return config
 

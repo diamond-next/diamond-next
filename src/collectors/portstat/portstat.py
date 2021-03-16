@@ -8,6 +8,7 @@ The PortStatCollector collects metrics about ports listed in config file.
 """
 
 from collections import defaultdict
+
 import diamond.collector
 
 try:
@@ -23,30 +24,36 @@ def get_port_stats(port):
     :return: Counter with port states
     """
     cnts = defaultdict(int)
+
     for c in psutil.net_connections():
         c_port = c.laddr[1]
+
         if c_port != port:
             continue
+
         status = c.status.lower()
         cnts[status] += 1
+
     return cnts
 
 
 class PortStatCollector(diamond.collector.Collector):
-
     def __init__(self, *args, **kwargs):
         super(PortStatCollector, self).__init__(*args, **kwargs)
         self.ports = {}
+
         for port_name, cfg in self.config['port'].items():
             port_cfg = {}
+
             for key in ('number',):
                 port_cfg[key] = cfg.get(key, [])
+
             self.ports[port_name] = port_cfg
 
     def get_default_config_help(self):
         config_help = super(PortStatCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -55,6 +62,7 @@ class PortStatCollector(diamond.collector.Collector):
             'path': 'port',
             'port': {},
         })
+
         return config
 
     def collect(self):

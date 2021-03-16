@@ -42,7 +42,6 @@ IGNORE_COLUMNS = ['user']
 
 
 class PgbouncerCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(PgbouncerCollector, self).get_default_config_help()
         config_help.update({
@@ -73,6 +72,7 @@ class PgbouncerCollector(diamond.collector.Collector):
             return {}
 
         instances = self.config['instances']
+
         # HACK: setting default with subcategory messes up merging of configs,
         # so we only set the default if one wasn't provided.
         if not instances:
@@ -89,25 +89,19 @@ class PgbouncerCollector(diamond.collector.Collector):
             user = instance.get('user') or self.config['user']
             password = instance.get('password') or self.config['password']
 
-            for database, stats in self._get_stats_by_database(
-                    host, port, user, password).iteritems():
+            for database, stats in self._get_stats_by_database(host, port, user, password).iteritems():
                 for stat_name, stat_value in stats.iteritems():
-                    self.publish(
-                        self._get_metric_name(name, database, stat_name),
-                        stat_value)
+                    self.publish(self._get_metric_name(name, database, stat_name), stat_value)
 
     def _get_metric_name(self, name, database, stat_name):
         name = name.replace('.', '_').replace(':', '_').strip()
+
         return '.'.join([name, database, stat_name])
 
     def _get_stats_by_database(self, host, port, user, password):
         # Mapping of database name -> stats.
         databases = defaultdict(dict)
-        conn = psycopg2.connect(database='pgbouncer',
-                                user=user,
-                                password=password,
-                                host=host,
-                                port=port)
+        conn = psycopg2.connect(database='pgbouncer', user=user, password=password, host=host, port=port)
 
         # Avoid using transactions, set isolation level to autocommit
         conn.set_isolation_level(0)
@@ -116,6 +110,7 @@ class PgbouncerCollector(diamond.collector.Collector):
 
         for query in STATS_QUERIES:
             cursor.execute(query)
+
             for row in cursor.fetchall():
                 stats = row.copy()
                 database = stats.pop('database')

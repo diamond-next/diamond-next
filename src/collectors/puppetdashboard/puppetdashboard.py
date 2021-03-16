@@ -16,7 +16,6 @@ from diamond.collector import Collector
 
 
 class PuppetDashboardCollector(Collector):
-
     def get_default_config_help(self):
         config_help = super(PuppetDashboardCollector, self).get_default_config_help()
         config_help.update({
@@ -52,8 +51,7 @@ class PuppetDashboardCollector(Collector):
                 continue
 
             try:
-                regex = re.compile(
-                    "<a href=\"/nodes/(?P<key>[\w.]+)\">(?P<count>[\d.]+)</a>")
+                regex = re.compile("<a href=\"/nodes/(?P<key>[\w.]+)\">(?P<count>[\d.]+)</a>")
                 r = regex.search(line)
                 results = r.groupdict()
 

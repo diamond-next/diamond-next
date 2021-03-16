@@ -10,14 +10,14 @@ pdns_control binary.
 
 """
 
-import diamond.collector
-import subprocess
 import os
+import subprocess
+
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class PowerDNSCollector(diamond.collector.Collector):
-
     _GAUGE_KEYS = [
         'cache-bytes', 'cache-entries', 'chain-resends',
         'concurrent-queries', 'dlg-only-drops', 'dont-outqueries',
@@ -29,9 +29,9 @@ class PowerDNSCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PowerDNSCollector, self).get_default_config_help()
         config_help.update({
-            'bin':         'The path to the pdns_control binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
+            'bin': 'The path to the pdns_control binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
         })
         return config_help
 
@@ -43,8 +43,8 @@ class PowerDNSCollector(diamond.collector.Collector):
         config.update({
             'bin': '/usr/bin/pdns_control',
             'path': 'powerdns',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
         })
         return config
 
@@ -58,19 +58,23 @@ class PowerDNSCollector(diamond.collector.Collector):
         if str_to_bool(self.config['use_sudo']):
             command.insert(0, self.config['sudo_cmd'])
 
-        data = subprocess.Popen(command,
-                                stdout=subprocess.PIPE).communicate()[0]
+        data = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
 
         for metric in data.split(','):
             if not metric.strip():
                 continue
+
             metric, value = metric.split('=')
+
             try:
                 value = float(value)
             except:
                 pass
+
             if metric not in self._GAUGE_KEYS:
                 value = self.derivative(metric, value)
+
                 if value < 0:
                     continue
+
             self.publish(metric, value)

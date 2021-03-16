@@ -32,6 +32,7 @@ uri = fpm-status
 """
 
 from urllib.request import urlopen
+
 from diamond.collector import Collector
 
 try:
@@ -41,7 +42,6 @@ except ImportError:
 
 
 class PhpFpmCollector(Collector):
-
     def get_default_config_help(self):
         config_help = super(PhpFpmCollector, self).get_default_config_help()
         config_help.update({

@@ -208,20 +208,17 @@ class TestProcessResourcesCollector(CollectorTestCase):
 
         getpid_mock.return_value = self.SELFMON_PID
 
-        patch_psutil_process_iter = patch('psutil.process_iter',
-                                          return_value=process_iter_mock)
+        patch_psutil_process_iter = patch('psutil.process_iter', return_value=process_iter_mock)
         patch_psutil_process_iter.start()
         self.collector.collect()
         patch_psutil_process_iter.stop()
         self.assertPublished(publish_mock, 'foo.uptime', 1234567890)
         self.assertPublished(publish_mock, 'foo.num_fds', 10)
-        self.assertPublished(publish_mock, 'postgres.memory_info_ex.rss',
-                             1000000 + 100000 + 10000 + 1000 + 100)
+        self.assertPublished(publish_mock, 'postgres.memory_info_ex.rss', 1000000 + 100000 + 10000 + 1000 + 100)
         self.assertPublished(publish_mock, 'foo.memory_info_ex.rss', 1)
         self.assertPublished(publish_mock, 'bar.memory_info_ex.rss', 3)
         self.assertPublished(publish_mock, 'barexe.memory_info_ex.rss', 3)
-        self.assertPublished(publish_mock,
-                             'diamond-selfmon.memory_info_ex.rss', 1234)
+        self.assertPublished(publish_mock, 'diamond-selfmon.memory_info_ex.rss', 1234)
         self.assertPublished(publish_mock, 'noprocess.workers_count', 0)
         self.assertUnpublished(publish_mock, 'noprocess.uptime', 0)
 

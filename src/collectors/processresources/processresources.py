@@ -77,17 +77,20 @@ def process_info(process, info_keys):
     results = {}
     process_info = process.as_dict(info_keys)
     metrics = ((key, process_info.get(key, None)) for key in info_keys)
+
     for key, value in metrics:
         if type(value) in [float, int]:
             results.update({key: value})
         elif hasattr(value, '_asdict'):
             for subkey, subvalue in value._asdict().iteritems():
                 results.update({"%s.%s" % (key, subkey): subvalue})
+
     return results
 
 
 def get_value(process, name):
     result = getattr(process, name)
+
     try:
         return result()
     except TypeError:
@@ -95,7 +98,6 @@ def get_value(process, name):
 
 
 class ProcessResourcesCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(ProcessResourcesCollector, self).process_config()
         """
@@ -111,22 +113,25 @@ class ProcessResourcesCollector(diamond.collector.Collector):
         """
         self.processes = {}
         self.processes_info = {}
+
         for pg_name, cfg in self.config['process'].items():
             pg_cfg = {}
+
             for key in ('exe', 'name', 'cmdline'):
                 pg_cfg[key] = cfg.get(key, [])
+
                 if not isinstance(pg_cfg[key], list):
                     pg_cfg[key] = [pg_cfg[key]]
+
                 pg_cfg[key] = [re.compile(e) for e in pg_cfg[key]]
+
             pg_cfg['selfmon'] = cfg.get('selfmon', '').lower() == 'true'
-            pg_cfg['count_workers'] = cfg.get(
-                'count_workers', '').lower() == 'true'
+            pg_cfg['count_workers'] = cfg.get('count_workers', '').lower() == 'true'
             self.processes[pg_name] = pg_cfg
             self.processes_info[pg_name] = {}
 
     def get_default_config_help(self):
-        config_help = super(ProcessResourcesCollector,
-                            self).get_default_config_help()
+        config_help = super(ProcessResourcesCollector, self).get_default_config_help()
         config_help.update({
             'info_keys': 'List of process metrics to collect. ' +
                          'Valid list of metrics can be found ' +
@@ -169,15 +174,19 @@ class ProcessResourcesCollector(diamond.collector.Collector):
             pid = get_value(process, 'pid')
             name = get_value(process, 'name')
             cmdline = get_value(process, 'cmdline')
+
             try:
                 exe = get_value(process, 'exe')
             except psutil.AccessDenied:
                 exe = ""
+
             for pg_name, cfg in self.processes.items():
                 if match_process(pid, name, cmdline, exe, cfg):
                     pi = process_info(process, self.config['info_keys'])
+
                     if cfg['count_workers']:
                         pi.update({'workers_count': 1})
+
                     uptime = time.time() - get_value(process, 'create_time')
                     pi.update({'uptime': uptime})
                     self.save_process_info(pg_name, pi)
