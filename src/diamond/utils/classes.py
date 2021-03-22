@@ -1,17 +1,18 @@
 # coding=utf-8
 
-import configobj
+import imp
+import inspect
+import logging
 import os
 import sys
-import logging
-import inspect
 import traceback
-import pkg_resources
-import imp
 
-from diamond.util import load_class_from_name
+import configobj
+import pkg_resources
+
 from diamond.collector import Collector
 from diamond.handler.Handler import Handler
+from diamond.util import load_class_from_name
 
 logger = logging.getLogger('diamond')
 
@@ -24,14 +25,16 @@ def load_include_path(paths):
         # Verify the path is valid
         if not os.path.isdir(path):
             continue
-        # Add path to the system path, to avoid name clashes
-        # with mysql-connector for example ...
+
+        # Add path to the system path, to avoid name clashes with mysql-connector for example ...
         if path not in sys.path:
             sys.path.insert(1, path)
+
         # Load all the files in path
         for f in os.listdir(path):
             # Are we a directory? If so process down the tree
             fpath = os.path.join(path, f)
+
             if os.path.isdir(fpath):
                 load_include_path([fpath])
 
@@ -55,7 +58,6 @@ def load_handlers(config, handler_names):
     """
     Load handlers
     """
-
     handlers = []
 
     if isinstance(handler_names, str):
@@ -63,6 +65,7 @@ def load_handlers(config, handler_names):
 
     for handler in handler_names:
         logger.debug('Loading Handler %s', handler)
+
         try:
             # Load Handler Class
             cls = load_dynamic_class(handler, Handler)
@@ -70,8 +73,10 @@ def load_handlers(config, handler_names):
 
             # Initialize Handler config
             handler_config = configobj.ConfigObj()
+
             # Merge default Handler default config
             handler_config.merge(config['handlers']['default'])
+
             # Check if Handler config exists
             if cls_name in config['handlers']:
                 # Merge Handler config section
@@ -79,9 +84,8 @@ def load_handlers(config, handler_names):
 
             # Check for config file in config directory
             if 'handlers_config_path' in config['server']:
-                configfile = os.path.join(
-                    config['server']['handlers_config_path'],
-                    cls_name) + '.conf'
+                configfile = os.path.join(config['server']['handlers_config_path'], cls_name) + '.conf'
+
                 if os.path.exists(configfile):
                     # Merge Collector config file
                     handler_config.merge(configobj.ConfigObj(configfile))
@@ -92,9 +96,7 @@ def load_handlers(config, handler_names):
 
         except (ImportError, SyntaxError):
             # Log Error
-            logger.warning("Failed to load handler %s. %s",
-                           handler,
-                           traceback.format_exc())
+            logger.warning("Failed to load handler %s. %s", handler, traceback.format_exc())
             continue
 
     return handlers
@@ -106,6 +108,7 @@ def load_collectors(paths):
     """
     collectors = load_collectors_from_paths(paths)
     collectors.update(load_collectors_from_entry_point('diamond.collectors'))
+
     return collectors
 
 
@@ -135,11 +138,12 @@ def load_collectors_from_paths(paths):
 
         # Load all the files in path
         for f in os.listdir(path):
-
             # Are we a directory? If so process down the tree
             fpath = os.path.join(path, f)
+
             if os.path.isdir(fpath):
                 subcollectors = load_collectors_from_paths([fpath])
+
                 for key in subcollectors:
                     collectors[key] = subcollectors[key]
 
@@ -158,18 +162,15 @@ def load_collectors_from_paths(paths):
                     # Import the module
                     mod = imp.load_module(modname, fp, pathname, description)
                 except (KeyboardInterrupt, SystemExit) as err:
-                    logger.error(
-                        "System or keyboard interrupt "
-                        "while loading module %s"
-                        % modname)
+                    logger.error("System or keyboard interrupt while loading module %s" % modname)
+
                     if isinstance(err, SystemExit):
                         sys.exit(err.code)
+
                     raise KeyboardInterrupt
                 except Exception:
                     # Log error
-                    logger.error("Failed to import module: %s. %s",
-                                 modname,
-                                 traceback.format_exc())
+                    logger.error("Failed to import module: %s. %s", modname, traceback.format_exc())
                 else:
                     for name, cls in get_collectors_from_module(mod):
                         collectors[name] = cls
@@ -186,15 +187,15 @@ def load_collectors_from_entry_point(path):
     Load collectors that were installed into an entry_point.
     """
     collectors = {}
+
     for ep in pkg_resources.iter_entry_points(path):
         try:
             mod = ep.load()
         except Exception:
-            logger.error('Failed to import entry_point: %s. %s',
-                         ep.name,
-                         traceback.format_exc())
+            logger.error('Failed to import entry_point: %s. %s', ep.name, traceback.format_exc())
         else:
             collectors.update(get_collectors_from_module(mod))
+
     return collectors
 
 
@@ -204,25 +205,24 @@ def get_collectors_from_module(mod):
     """
     for attrname in dir(mod):
         attr = getattr(mod, attrname)
-        # Only attempt to load classes that are infact classes
-        # are Collectors but are not the base Collector class
-        if ((inspect.isclass(attr) and
-             issubclass(attr, Collector) and
-             attr != Collector)):
+
+        # Only attempt to load classes that are infact classes are Collectors but are not the base Collector class
+        if inspect.isclass(attr) and issubclass(attr, Collector) and attr != Collector:
             if attrname.startswith('parent_'):
                 continue
+
             # Get class name
             fqcn = '.'.join([mod.__name__, attrname])
+
             try:
                 # Load Collector class
                 cls = load_dynamic_class(fqcn, Collector)
+
                 # Add Collector class
                 yield cls.__name__, cls
             except Exception:
                 # Log error
-                logger.error(
-                    "Failed to load Collector: %s. %s",
-                    fqcn, traceback.format_exc())
+                logger.error("Failed to load Collector: %s. %s", fqcn, traceback.format_exc())
                 continue
 
 
@@ -237,8 +237,7 @@ def initialize_collector(cls, name=None, configfile=None, handlers=[]):
         collector = cls(name=name, configfile=configfile, handlers=handlers)
     except Exception:
         # Log error
-        logger.error("Failed to initialize Collector: %s. %s",
-                     cls.__name__, traceback.format_exc())
+        logger.error("Failed to initialize Collector: %s. %s", cls.__name__, traceback.format_exc())
 
     # Return collector
     return collector

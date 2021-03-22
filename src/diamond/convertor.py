@@ -7,9 +7,7 @@ _RE_SPAN_OF_CAPS = re.compile('([a-z0-9])([A-Z])')
 
 
 def camelcase_to_underscore(name):
-    return _RE_SPAN_OF_CAPS.sub(r'\1_\2',
-                                _RE_FIND_FIRST_CAP.sub(r'\1_\2', name)
-                                ).lower()
+    return _RE_SPAN_OF_CAPS.sub(r'\1_\2', _RE_FIND_FIRST_CAP.sub(r'\1_\2', name)).lower()
 
 
 class binary:
@@ -22,9 +20,10 @@ class binary:
         self.do(value=value, unit=unit)
 
     @staticmethod
-    def convert(value=None, oldUnit=None, newUnit=None):
-        convertor = binary(value=value, unit=oldUnit)
-        return convertor.get(unit=newUnit)
+    def convert(value=None, old_unit=None, new_unit=None):
+        convertor = binary(value=value, unit=old_unit)
+
+        return convertor.get(unit=new_unit)
 
     def set(self, value, unit=None):
         return self.do(value=value, unit=unit)
@@ -38,39 +37,55 @@ class binary:
 
         if unit in ['bit', 'b']:
             return self.bit(value=value)
+
         if unit in ['kilobit', 'kbit', 'Kibit']:
             return self.kilobit(value=value)
+
         if unit in ['megabit', 'Mbit', 'Mibit', 'Mbit']:
             return self.megabit(value=value)
+
         if unit in ['gigabit', 'Gbit', 'Gibit']:
             return self.gigabit(value=value)
+
         if unit in ['terabit', 'Tbit', 'Tibit']:
             return self.terabit(value=value)
+
         if unit in ['petabit', 'Pbit', 'Pibit']:
             return self.petabit(value=value)
+
         if unit in ['exabit', 'Ebit', 'Eibit']:
             return self.exabit(value=value)
+
         if unit in ['zettabit', 'Zbit', 'Zibit']:
             return self.zettabit(value=value)
+
         if unit in ['yottabit', 'Ybit', 'Yibit']:
             return self.yottabit(value=value)
 
         if unit in ['byte', 'B']:
             return self.byte(value=value)
+
         if unit in ['kilobyte', 'kB', 'KiB']:
             return self.kilobyte(value=value)
+
         if unit in ['megabyte', 'MB', 'MiB', 'Mbyte']:
             return self.megabyte(value=value)
+
         if unit in ['gigabyte', 'GB', 'GiB']:
             return self.gigabyte(value=value)
+
         if unit in ['terabyte', 'TB', 'TiB']:
             return self.terabyte(value=value)
+
         if unit in ['petabyte', 'PB', 'PiB']:
             return self.petabyte(value=value)
+
         if unit in ['exabyte', 'EB', 'EiB']:
             return self.exabyte(value=value)
+
         if unit in ['zettabyte', 'ZB', 'ZiB']:
             return self.zettabyte(value=value)
+
         if unit in ['yottabyte', 'YB', 'YiB']:
             return self.yottabyte(value=value)
 
@@ -153,9 +168,10 @@ class time:
         self.do(value=value, unit=unit)
 
     @staticmethod
-    def convert(value=None, oldUnit=None, newUnit=None):
-        convertor = time(value=value, unit=oldUnit)
-        return convertor.get(unit=newUnit)
+    def convert(value=None, old_unit=None, new_unit=None):
+        convertor = time(value=value, unit=old_unit)
+
+        return convertor.get(unit=new_unit)
 
     def set(self, value, unit=None):
         return self.do(value=value, unit=unit)

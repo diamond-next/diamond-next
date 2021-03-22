@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import sys
 import os
-from glob import glob
 import platform
+import sys
+from glob import glob
+
 from distro import linux_distribution
 
 
@@ -13,16 +14,20 @@ def running_under_virtualenv():
         return True
     elif sys.prefix != getattr(sys, "base_prefix", sys.prefix):
         return True
+
     if os.getenv('VIRTUAL_ENV', False):
         return True
+
     return False
 
 
 if os.environ.get('USE_SETUPTOOLS'):
     from setuptools import setup
+
     setup_kwargs = dict(zip_safe=0)
 else:
     from distutils.core import setup
+
     setup_kwargs = dict()
 
 if os.name == 'nt':
@@ -43,43 +48,34 @@ else:
 
     distro_name = linux_distribution()[0]
     distro_major_version = int(linux_distribution()[1].split('.')[0])
+
     if not distro_name:
         if 'amzn' in platform.uname()[2]:
             distro_name = 'centos'
 
     if running_under_virtualenv():
-        data_files.append(('etc/diamond',
-                           glob('conf/*.conf.*')))
-        data_files.append(('etc/diamond/collectors',
-                           glob('conf/collectors/*')))
-        data_files.append(('etc/diamond/handlers',
-                           glob('conf/handlers/*')))
+        data_files.append(('etc/diamond', glob('conf/*.conf.*')))
+        data_files.append(('etc/diamond/collectors', glob('conf/collectors/*')))
+        data_files.append(('etc/diamond/handlers', glob('conf/handlers/*')))
     else:
-        data_files.append(('/etc/diamond',
-                           glob('conf/*.conf.*')))
-        data_files.append(('/etc/diamond/collectors',
-                           glob('conf/collectors/*')))
-        data_files.append(('/etc/diamond/handlers',
-                           glob('conf/handlers/*')))
-        data_files.append(('/var/log/diamond',
-                           ['.keep']))
+        data_files.append(('/etc/diamond', glob('conf/*.conf.*')))
+        data_files.append(('/etc/diamond/collectors', glob('conf/collectors/*')))
+        data_files.append(('/etc/diamond/handlers', glob('conf/handlers/*')))
+        data_files.append(('/var/log/diamond', ['.keep']))
 
         if distro_name == 'Ubuntu':
             if distro_major_version >= 16:
-                data_files.append(('/usr/lib/systemd/system',
-                                   ['rpm/systemd/diamond.service']))
+                data_files.append(('/usr/lib/systemd/system', ['rpm/systemd/diamond.service']))
             else:
-                data_files.append(('/etc/init',
-                                   ['debian/diamond.upstart']))
+                data_files.append(('/etc/init', ['debian/diamond.upstart']))
+
         if distro_name in ['centos', 'redhat', 'debian', 'fedora', 'oracle']:
-            data_files.append(('/etc/init.d',
-                               ['bin/init.d/diamond']))
+            data_files.append(('/etc/init.d', ['bin/init.d/diamond']))
+
             if distro_major_version >= 7 and not distro_name == 'debian':
-                data_files.append(('/usr/lib/systemd/system',
-                                   ['rpm/systemd/diamond.service']))
+                data_files.append(('/usr/lib/systemd/system', ['rpm/systemd/diamond.service']))
             elif distro_major_version >= 6 and not distro_name == 'debian':
-                data_files.append(('/etc/init',
-                                   ['rpm/upstart/diamond.conf']))
+                data_files.append(('/etc/init', ['rpm/upstart/diamond.conf']))
 
 
 def get_version():
@@ -93,35 +89,45 @@ def get_version():
     except IOError:
         os.system("./version.sh > version.txt")
         f = open('version.txt')
-    version = ''.join(f.readlines()).rstrip()
+
+    version_name = ''.join(f.readlines()).rstrip()
     f.close()
-    return version
+
+    return version_name
 
 
-def pkgPath(root, path, rpath="/"):
+def pkg_path(root, path, rpath="/"):
     """
         Package up a path recursively
     """
     global data_files
+
     if not os.path.exists(path):
         return
+
     files = []
+
     for spath in os.listdir(path):
         # Ignore test directories
         if spath == 'test':
             continue
+
         subpath = os.path.join(path, spath)
         spath = os.path.join(rpath, spath)
+
         if os.path.isfile(subpath):
             files.append(subpath)
+
         if os.path.isdir(subpath):
-            pkgPath(root, subpath, spath)
+            pkg_path(root, subpath, spath)
+
     data_files.append((root + rpath, files))
 
+
 if os.name == 'nt':
-    pkgPath(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
+    pkg_path(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
 else:
-    pkgPath('share/diamond/collectors', 'src/collectors')
+    pkg_path('share/diamond/collectors', 'src/collectors')
 
 version = get_version()
 
@@ -143,5 +149,5 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
     ],
-    ** setup_kwargs
+    **setup_kwargs
 )

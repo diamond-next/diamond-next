@@ -2,38 +2,21 @@
 
 import logging
 import multiprocessing
-import os
 import signal
 import sys
 import time
 
+from diamond.handler.Handler import Handler
+from diamond.utils.classes import initialize_collector, load_collectors, load_dynamic_class, load_handlers, load_include_path
+from diamond.utils.config import load_config, str_to_bool
+from diamond.utils.scheduler import collector_process, handler_process
+from diamond.utils.signals import SIGHUPException, signal_to_exception
+
 try:
     from setproctitle import getproctitle, setproctitle
 except ImportError:
+    getproctitle = None
     setproctitle = None
-
-# Path Fix
-sys.path.append(
-    os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), "../")))
-
-from diamond.utils.classes import initialize_collector
-from diamond.utils.classes import load_collectors
-from diamond.utils.classes import load_dynamic_class
-from diamond.utils.classes import load_handlers
-from diamond.utils.classes import load_include_path
-
-from diamond.utils.config import load_config
-from diamond.utils.config import str_to_bool
-
-from diamond.utils.scheduler import collector_process
-from diamond.utils.scheduler import handler_process
-
-from diamond.handler.Handler import Handler
-
-from diamond.utils.signals import signal_to_exception
-from diamond.utils.signals import SIGHUPException
 
 
 class Server(object):
@@ -44,6 +27,7 @@ class Server(object):
     def __init__(self, configfile):
         # Initialize Logging
         self.log = logging.getLogger('diamond')
+
         # Initialize Members
         self.configfile = configfile
         self.config = None
@@ -52,12 +36,13 @@ class Server(object):
         self.modules = {}
         self.metric_queue = None
 
-        # We do this weird process title swap around to get the sync manager
-        # title correct for ps
+        # We do this weird process title swap around to get the sync manager title correct for ps
         if setproctitle:
             oldproctitle = getproctitle()
             setproctitle('%s - SyncManager' % getproctitle())
+
         self.manager = multiprocessing.Manager()
+
         if setproctitle:
             setproctitle(oldproctitle)
 
@@ -72,8 +57,7 @@ class Server(object):
         self.config = load_config(self.configfile)
 
         collectors = load_collectors(self.config['server']['collectors_path'])
-        metric_queue_size = int(self.config['server'].get('metric_queue_size',
-                                                          16384))
+        metric_queue_size = int(self.config['server'].get('metric_queue_size', 16384))
         self.metric_queue = self.manager.Queue(maxsize=metric_queue_size)
         self.log.debug('metric_queue_size: %d', metric_queue_size)
 
@@ -99,6 +83,7 @@ class Server(object):
             sys.exit(1)
 
         handlers = self.config['server'].get('handlers')
+
         if isinstance(handlers, str):
             handlers = [handlers]
 
@@ -108,20 +93,11 @@ class Server(object):
 
         self.handlers = load_handlers(self.config, handlers)
 
-        QueueHandler = load_dynamic_class(
-            'diamond.handler.queue.QueueHandler',
-            Handler
-        )
+        queue_handler = load_dynamic_class('diamond.handler.queue.QueueHandler', Handler)
 
-        self.handler_queue = QueueHandler(
-            config=self.config, queue=self.metric_queue, log=self.log)
+        self.handler_queue = queue_handler(config=self.config, queue=self.metric_queue, log=self.log)
 
-        handlers_process = multiprocessing.Process(
-            name="Handlers",
-            target=handler_process,
-            args=(self.handlers, self.metric_queue, self.log),
-        )
-
+        handlers_process = multiprocessing.Process(name="Handlers", target=handler_process, args=(self.handlers, self.metric_queue, self.log))
         handlers_process.daemon = True
         handlers_process.start()
 
@@ -138,8 +114,10 @@ class Server(object):
             try:
                 active_children = multiprocessing.active_children()
                 running_processes = []
+
                 for process in active_children:
                     running_processes.append(process.name)
+
                 running_processes = set(running_processes)
 
                 ##############################################################
@@ -147,16 +125,20 @@ class Server(object):
                 ##############################################################
 
                 running_collectors = []
+
                 for collector, config in self.config['collectors'].iteritems():
                     if config.get('enabled', False) is not True:
                         continue
+
                     running_collectors.append(collector)
+
                 running_collectors = set(running_collectors)
 
                 # Collectors that are running but shouldn't be
                 for process_name in running_processes - running_collectors:
                     if 'Collector' not in process_name:
                         continue
+
                     for process in active_children:
                         if process.name == process_name:
                             process.terminate()
@@ -166,8 +148,8 @@ class Server(object):
                     for cls in collectors.values()
                 )
 
-                load_delay = self.config['server'].get('collectors_load_delay',
-                                                       1.0)
+                load_delay = self.config['server'].get('collectors_load_delay', 1.0)
+
                 for process_name in running_collectors - running_processes:
                     # To handle running multiple collectors concurrently, we
                     # split on white space and use the first word as the
@@ -178,19 +160,18 @@ class Server(object):
                         continue
 
                     if collector_name not in collector_classes:
-                        self.log.error('Can not find collector %s',
-                                       collector_name)
+                        self.log.error('Can not find collector %s', collector_name)
                         continue
 
                     collector = initialize_collector(
                         collector_classes[collector_name],
                         name=process_name,
                         configfile=self.configfile,
-                        handlers=[self.handler_queue])
+                        handlers=[self.handler_queue]
+                    )
 
                     if collector is None:
-                        self.log.error('Failed to load collector %s',
-                                       process_name)
+                        self.log.error('Failed to load collector %s', process_name)
                         continue
 
                     # Splay the loads
@@ -206,8 +187,8 @@ class Server(object):
 
                 if not handlers_process.is_alive():
                     self.log.error('Handlers process exited')
-                    if (str_to_bool(self.config['server'].get(
-                            'abort_on_handlers_process_exit', 'False'))):
+
+                    if str_to_bool(self.config['server'].get('abort_on_handlers_process_exit', 'False')):
                         raise Exception('Handlers process exited')
 
                 ##############################################################
@@ -221,7 +202,7 @@ class Server(object):
 
                 self.log.info('Reloading state due to HUP')
                 self.config = load_config(self.configfile)
-                collectors = load_collectors(
-                    self.config['server']['collectors_path'])
+                collectors = load_collectors(self.config['server']['collectors_path'])
+
                 # restore SIGHUP handler
                 signal.signal(signal.SIGHUP, original_sighup_handler)

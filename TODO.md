@@ -24,3 +24,4 @@
 - [x] xmlrpclib > xmlrpc
 - [x] MySQLdb > mysqlclient
 - [ ] import imp > import importlib
+- [x] raw_input(…) > input(…)

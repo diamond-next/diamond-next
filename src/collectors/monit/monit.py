@@ -89,8 +89,8 @@ class MonitCollector(Collector):
                             metrics["%s.memory.%s_usage" % (name, unit)] = (
                                 binary.convert(
                                     value=mem,
-                                    oldUnit='kilobyte',
-                                    newUnit=unit
+                                    old_unit='kilobyte',
+                                    new_unit=unit
                                 )
                             )
 
@@ -103,8 +103,8 @@ class MonitCollector(Collector):
                                 metrics["%s.memory_total.%s_usage" % (name, unit)] = (
                                     binary.convert(
                                         value=mem_total,
-                                        oldUnit='kilobyte',
-                                        newUnit=unit
+                                        old_unit='kilobyte',
+                                        new_unit=unit
                                     )
                                 )
                     except:

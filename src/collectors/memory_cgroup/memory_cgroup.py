@@ -113,7 +113,7 @@ class MemoryCgroupCollector(diamond.collector.Collector):
                     continue
 
                 for unit in self.config['byte_unit']:
-                    value = diamond.convertor.binary.convert(value=value, oldUnit='B', newUnit=unit)
+                    value = diamond.convertor.binary.convert(value=value, old_unit='B', new_unit=unit)
                     results[match[0]][name] = value
                     # TODO: We only support one unit node here. Fix it!
                     break

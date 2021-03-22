@@ -182,12 +182,12 @@ class DiskUsageCollector(diamond.collector.Collector):
                         key = key.replace('sectors', unit)
                         value /= (1024 / int(self.config['sector_size']))
                         value = diamond.convertor.binary.convert(value=value,
-                                                                 oldUnit='kB',
-                                                                 newUnit=unit)
+                                                                 old_unit='kB',
+                                                                 new_unit=unit)
                         self.MAX_VALUES[key] = diamond.convertor.binary.convert(
                             value=diamond.collector.MAX_COUNTER,
-                            oldUnit='byte',
-                            newUnit=unit)
+                            old_unit='byte',
+                            new_unit=unit)
 
                     metric_name = '.'.join([info['device'], key])
                     # io_in_progress is a point in time counter, !derivative

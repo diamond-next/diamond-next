@@ -58,7 +58,7 @@ class SidekiqWebCollector(Collector):
                     value = float(value.replace('M', ''))
 
                     for unit in self.config['byte_unit']:
-                        unit_value = binary.convert(value=value, oldUnit='megabyte', newUnit=unit)
+                        unit_value = binary.convert(value=value, old_unit='megabyte', new_unit=unit)
 
                         self.publish("%s.%s_%s" % (k, item, unit), unit_value)
                 else:

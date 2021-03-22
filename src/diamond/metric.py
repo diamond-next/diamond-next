@@ -1,8 +1,9 @@
 # coding=utf-8
 
-import time
-import re
 import logging
+import re
+import time
+
 from diamond.error import DiamondException
 
 
@@ -11,13 +12,9 @@ class Metric(object):
     # due to the queue system that moves objects between processes and can end
     # up storing a large number of objects in the queue waiting for the
     # handlers to flush.
-    __slots__ = [
-        'path', 'value', 'raw_value', 'timestamp', 'precision',
-        'host', 'metric_type', 'ttl'
-        ]
+    __slots__ = ['path', 'value', 'raw_value', 'timestamp', 'precision', 'host', 'metric_type', 'ttl']
 
-    def __init__(self, path, value, raw_value=None, timestamp=None, precision=0,
-                 host=None, metric_type='COUNTER', ttl=None):
+    def __init__(self, path, value, raw_value=None, timestamp=None, precision=0, host=None, metric_type='COUNTER', ttl=None):
         """
         Create new instance of the Metric class
 
@@ -30,11 +27,8 @@ class Metric(object):
         """
 
         # Validate the path, value and metric_type submitted
-        if (None in [path, value] or metric_type not in ('COUNTER', 'GAUGE')):
-            raise DiamondException(("Invalid parameter when creating new "
-                                    "Metric with path: %r value: %r "
-                                    "metric_type: %r")
-                                   % (path, value, metric_type))
+        if None in [path, value] or metric_type not in ('COUNTER', 'GAUGE'):
+            raise DiamondException("Invalid parameter when creating new Metric with path: %r value: %r metric_type: %r" % (path, value, metric_type))
 
         # If no timestamp was passed in, set it to the current time
         if timestamp is None:
@@ -45,9 +39,7 @@ class Metric(object):
                 try:
                     timestamp = int(timestamp)
                 except ValueError as e:
-                    raise DiamondException(("Invalid timestamp when "
-                                            "creating new Metric %r: %s")
-                                           % (path, e))
+                    raise DiamondException("Invalid timestamp when creating new Metric %r: %s" % (path, e))
 
         # The value needs to be a float or an int.  If it is, great.  If not,
         # try to cast it to one of those.
@@ -58,8 +50,7 @@ class Metric(object):
                 else:
                     value = float(value)
             except ValueError as e:
-                raise DiamondException(("Invalid value when creating new "
-                                        "Metric %r: %s") % (path, e))
+                raise DiamondException("Invalid value when creating new Metric %r: %s" % (path, e))
 
         self.path = path
         self.value = value
@@ -74,9 +65,9 @@ class Metric(object):
         """
         Return the Metric as a string
         """
-        if not isinstance(self.precision, (int, long)):
+        if not isinstance(self.precision, int):
             log = logging.getLogger('diamond')
-            log.warn('Metric %s does not have a valid precision', self.path)
+            log.warning('Metric %s does not have a valid precision', self.path)
             self.precision = 0
 
         # Set the format string
@@ -101,19 +92,15 @@ class Metric(object):
         """
         Parse a string and create a metric
         """
-        match = re.match(r'^(?P<name>[A-Za-z0-9\.\-_]+)\s+' +
-                         '(?P<value>[0-9\.]+)\s+' +
-                         '(?P<timestamp>[0-9\.]+)(\n?)$',
-                         string)
+        match = re.match(r'^(?P<name>[A-Za-z0-9\.\-_]+)\s+(?P<value>[0-9\.]+)\s+(?P<timestamp>[0-9\.]+)(\n?)$', string)
+
         try:
             groups = match.groupdict()
+
             # TODO: get precision from value string
-            return Metric(groups['name'],
-                          groups['value'],
-                          float(groups['timestamp']))
+            return Metric(groups['name'], groups['value'], float(groups['timestamp']))
         except:
-            raise DiamondException(
-                "Metric could not be parsed from string: %s." % string)
+            raise DiamondException("Metric could not be parsed from string: %s." % string)
 
     def getPathPrefix(self):
         """
@@ -121,12 +108,13 @@ class Metric(object):
             servers.host.cpu.total.idle
             return "servers"
         """
-        # If we don't have a host name, assume it's just the first part of the
-        # metric path
+
+        # If we don't have a host name, assume it's just the first part of the metric path
         if self.host is None:
             return self.path.split('.')[0]
 
         offset = self.path.index(self.host) - 1
+
         return self.path[0:offset]
 
     def getCollectorPath(self):
@@ -135,14 +123,15 @@ class Metric(object):
             servers.host.cpu.total.idle
             return "cpu"
         """
-        # If we don't have a host name, assume it's just the third part of the
-        # metric path
+
+        # If we don't have a host name, assume it's just the third part of the metric path
         if self.host is None:
             return self.path.split('.')[2]
 
         offset = self.path.index(self.host)
         offset += len(self.host) + 1
         endoffset = self.path.index('.', offset)
+
         return self.path[offset:endoffset]
 
     def getMetricPath(self):
@@ -151,14 +140,14 @@ class Metric(object):
             servers.host.cpu.total.idle
             return "total.idle"
         """
-        # If we don't have a host name, assume it's just the fourth+ part of the
-        # metric path
+
+        # If we don't have a host name, assume it's just the fourth+ part of the metric path
         if self.host is None:
             path = self.path.split('.')[3:]
+
             return '.'.join(path)
 
-        prefix = '.'.join([self.getPathPrefix(), self.host,
-                           self.getCollectorPath()])
-
+        prefix = '.'.join([self.getPathPrefix(), self.host, self.getCollectorPath()])
         offset = len(prefix) + 1
+
         return self.path[offset:]

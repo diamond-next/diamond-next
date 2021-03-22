@@ -98,7 +98,7 @@ class MemoryCollector(diamond.collector.Collector):
                         memory_available = value
 
                     for unit in self.config['byte_unit']:
-                        value = diamond.convertor.binary.convert(value=value, oldUnit=units, newUnit=unit)
+                        value = diamond.convertor.binary.convert(value=value, old_unit=units, new_unit=unit)
                         self.publish(name, value, metric_type='GAUGE')
 
                         # TODO: We only support one unit node here. Fix it!
@@ -125,10 +125,10 @@ class MemoryCollector(diamond.collector.Collector):
             units = 'B'
 
             for unit in self.config['byte_unit']:
-                memory_total = value = diamond.convertor.binary.convert(value=phymem_usage.total, oldUnit=units, newUnit=unit)
+                memory_total = value = diamond.convertor.binary.convert(value=phymem_usage.total, old_unit=units, new_unit=unit)
                 self.publish('MemTotal', value, metric_type='GAUGE')
 
-                memory_available = value = diamond.convertor.binary.convert(value=phymem_usage.available, oldUnit=units, newUnit=unit)
+                memory_available = value = diamond.convertor.binary.convert(value=phymem_usage.available, old_unit=units, new_unit=unit)
                 self.publish('MemAvailable', value, metric_type='GAUGE')
 
                 memory_used = memory_total - memory_available
@@ -136,13 +136,13 @@ class MemoryCollector(diamond.collector.Collector):
                 memory_used_percent = Decimal(str(100.0 * memory_used / memory_total))
                 self.publish('MemUsedPercentage', round(memory_used_percent, 2), metric_type='GAUGE')
 
-                value = diamond.convertor.binary.convert(value=phymem_usage.free, oldUnit=units, newUnit=unit)
+                value = diamond.convertor.binary.convert(value=phymem_usage.free, old_unit=units, new_unit=unit)
                 self.publish('MemFree', value, metric_type='GAUGE')
 
-                value = diamond.convertor.binary.convert(value=virtmem_usage.total, oldUnit=units, newUnit=unit)
+                value = diamond.convertor.binary.convert(value=virtmem_usage.total, old_unit=units, new_unit=unit)
                 self.publish('SwapTotal', value, metric_type='GAUGE')
 
-                value = diamond.convertor.binary.convert(value=virtmem_usage.free, oldUnit=units, newUnit=unit)
+                value = diamond.convertor.binary.convert(value=virtmem_usage.free, old_unit=units, new_unit=unit)
                 self.publish('SwapFree', value, metric_type='GAUGE')
 
                 # TODO: We only support one unit node here. Fix it!

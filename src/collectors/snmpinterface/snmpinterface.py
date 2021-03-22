@@ -177,7 +177,7 @@ class SNMPInterfaceCollector(SNMPCollector):
                     for unit in self.config['byte_unit']:
                         # Convert Metric
                         metric_name = '.'.join([metric_if_descr, counterName.replace('Octets', unit)])
-                        metric_value = diamond.convertor.binary.convert(value=if_counter_value, oldUnit='byte', newUnit=unit)
+                        metric_value = diamond.convertor.binary.convert(value=if_counter_value, old_unit='byte', new_unit=unit)
 
                         # Get Metric Path
                         metric_path = '.'.join(['devices', device, self.config['path'], metric_name])

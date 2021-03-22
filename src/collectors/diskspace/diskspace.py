@@ -240,20 +240,20 @@ class DiskSpaceCollector(diamond.collector.Collector):
                 metric_value = float(block_size) * float(
                     blocks_total - blocks_free)
                 metric_value = diamond.convertor.binary.convert(
-                    value=metric_value, oldUnit='byte', newUnit=unit)
+                    value=metric_value, old_unit='byte', new_unit=unit)
                 self.publish_gauge(metric_name, metric_value, 2)
 
                 metric_name = '%s.%s_free' % (name, unit)
                 metric_value = float(block_size) * float(blocks_free)
                 metric_value = diamond.convertor.binary.convert(
-                    value=metric_value, oldUnit='byte', newUnit=unit)
+                    value=metric_value, old_unit='byte', new_unit=unit)
                 self.publish_gauge(metric_name, metric_value, 2)
 
                 if os.name != 'nt':
                     metric_name = '%s.%s_avail' % (name, unit)
                     metric_value = float(block_size) * float(blocks_avail)
                     metric_value = diamond.convertor.binary.convert(
-                        value=metric_value, oldUnit='byte', newUnit=unit)
+                        value=metric_value, old_unit='byte', new_unit=unit)
                     self.publish_gauge(metric_name, metric_value, 2)
 
             if os.name != 'nt':

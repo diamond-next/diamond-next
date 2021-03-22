@@ -67,8 +67,8 @@ class MemoryLxcCollector(Collector):
             for unit in self.config["byte_unit"]:
                 value = diamond.convertor.binary.convert(
                     collected[key],
-                    oldUnit="B",
-                    newUnit=unit)
+                    old_unit="B",
+                    new_unit=unit)
                 new_key = "%s_in_%ss" % (key, unit)
                 self.log.debug("Publishing '%s %s'", new_key, value)
                 self.publish(new_key, value, metric_type="GAUGE")

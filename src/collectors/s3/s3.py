@@ -74,7 +74,7 @@ class S3BucketCollector(diamond.collector.Collector):
                 for byte_unit in self.config['byte_unit']:
                     new_size = diamond.convertor.binary.convert(
                         value=total_size,
-                        oldUnit='byte',
-                        newUnit=byte_unit
+                        old_unit='byte',
+                        new_unit=byte_unit
                     )
                     self.publish("%s.size.%s" % (bucket_name, byte_unit), new_size)
