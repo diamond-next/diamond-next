@@ -24,13 +24,13 @@ TO use a unix socket, set a host string like this
 ```
 """
 
-import diamond.collector
-import socket
 import re
+import socket
+
+import diamond.collector
 
 
 class ZookeeperCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(ZookeeperCollector, self).get_default_config_help()
         config_help.update({
@@ -42,6 +42,7 @@ class ZookeeperCollector(diamond.collector.Collector):
                 "List of hosts, and ports to collect. Set an alias by " +
                 " prefixing the host:port with alias@",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -50,7 +51,7 @@ class ZookeeperCollector(diamond.collector.Collector):
         """
         config = super(ZookeeperCollector, self).get_default_config()
         config.update({
-            'path':     'zookeeper',
+            'path': 'zookeeper',
 
             # Which rows of 'status' you would like to publish.
             # 'telnet host port' and type mntr and hit enter to see the list of
@@ -61,10 +62,12 @@ class ZookeeperCollector(diamond.collector.Collector):
             # Connection settings
             'hosts': ['localhost:2181']
         })
+
         return config
 
     def get_raw_stats(self, host, port):
         data = ''
+
         # connect
         try:
             if port is None:
@@ -73,13 +76,15 @@ class ZookeeperCollector(diamond.collector.Collector):
             else:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect((host, int(port)))
+
             # request stats
             sock.send('mntr\n')
+
             # something big enough to get whatever is sent back
             data = sock.recv(4096)
         except socket.error:
-            self.log.exception('Failed to get stats from %s:%s',
-                               host, port)
+            self.log.exception('Failed to get stats from %s:%s', host, port)
+
         return data
 
     def get_stats(self, host, port):
@@ -97,17 +102,21 @@ class ZookeeperCollector(diamond.collector.Collector):
 
             if pieces[0] in ignored:
                 continue
+
             stats[pieces[0]] = pieces[1]
 
         # get max connection limit
         self.log.debug('pid %s', pid)
+
         try:
             cmdline = "/proc/%s/cmdline" % pid
             f = open(cmdline, 'r')
             m = re.search("-c\x00(\d+)", f.readline())
+
             if m is not None:
                 self.log.debug('limit connections %s', m.group(1))
                 stats['limit_maxconn'] = m.group(1)
+
             f.close()
         except:
             self.log.debug("Cannot parse command line options for zookeeper")
@@ -145,5 +154,4 @@ class ZookeeperCollector(diamond.collector.Collector):
 
                     # we don't, must be somehting configured in publish so we
                     # should log an error about it
-                    self.log.error("No such key '%s' available, issue 'stats' "
-                                   "for a full list", stat)
+                    self.log.error("No such key '%s' available, issue 'stats' for a full list", stat)

@@ -42,12 +42,13 @@ class SignalfxHandler(Handler):
         self.url = self.config['url']
         self.auth_token = self.config['auth_token']
         self.batch_max_interval = int(self.config['batch_max_interval'])
-        self.resetBatchTimeout()
+        self.reset_batch_timeout()
         self._compiled_filters = []
+
         for fltr in self.filter_metrics:
             collector, metric = fltr.split(":")
-            self._compiled_filters.append((collector,
-                                           re.compile(metric),))
+            self._compiled_filters.append((collector, re.compile(metric)))
+
         if self.auth_token == "":
             logging.error("Failed to load Signalfx module")
             return
@@ -58,14 +59,17 @@ class SignalfxHandler(Handler):
         """
         if len(self._compiled_filters) == 0:
             return True
+
         for (collector, filter_regex) in self._compiled_filters:
             if collector != metric.getCollectorPath():
                 continue
+
             if filter_regex.match(metric.getMetricPath()):
                 return True
+
         return False
 
-    def resetBatchTimeout(self):
+    def reset_batch_timeout(self):
         self.batch_max_timestamp = time.time() + self.batch_max_interval
 
     def get_default_config_help(self):
@@ -102,16 +106,16 @@ class SignalfxHandler(Handler):
 
     def process(self, metric):
         """
-        Queue a metric.  Flushing queue if batch size reached
+        Queue a metric. Flushing queue if batch size reached
         """
         if self._match_metric(metric):
             self.metrics.append(metric)
+
         if self.should_flush():
             self._send()
 
     def should_flush(self):
-        return len(self.metrics) >= self.batch_size or \
-            time.time() >= self.batch_max_timestamp
+        return len(self.metrics) >= self.batch_size or time.time() >= self.batch_max_timestamp
 
     def into_signalfx_point(self, metric):
         """
@@ -121,6 +125,7 @@ class SignalfxHandler(Handler):
             "collector": metric.getCollectorPath(),
             "prefix": metric.getPathPrefix(),
         }
+
         if metric.host is not None and metric.host != "":
             dims["host"] = metric.host
 
@@ -144,25 +149,26 @@ class SignalfxHandler(Handler):
 
     def _send(self):
         # Potentially use protobufs in the future
-        postDictionary = {}
+        post_dictionary = {}
+
         for metric in self.metrics:
             t = metric.metric_type.lower()
-            if t not in postDictionary:
-                postDictionary[t] = []
-            postDictionary[t].append(self.into_signalfx_point(metric))
+
+            if t not in post_dictionary:
+                post_dictionary[t] = []
+
+            post_dictionary[t].append(self.into_signalfx_point(metric))
 
         self.metrics = []
-        postBody = json.dumps(postDictionary)
-        logging.debug("Body is %s", postBody)
-        req = Request(self.url, postBody,
-                              {"Content-type": "application/json",
-                               "X-SF-TOKEN": self.auth_token,
-                               "User-Agent": self.user_agent()})
-        self.resetBatchTimeout()
+        post_body = json.dumps(post_dictionary)
+        logging.debug("Body is %s", post_body)
+        req = Request(self.url, post_body, {"Content-type": "application/json", "X-SF-TOKEN": self.auth_token, "User-Agent": self.user_agent()})
+        self.reset_batch_timeout()
 
         try:
             urlopen(req)
         except URLError as err:
             error_message = err.read()
             logging.exception("Unable to post signalfx metrics" + error_message)
+
             return

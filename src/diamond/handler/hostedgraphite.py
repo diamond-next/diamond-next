@@ -21,7 +21,6 @@ from diamond.handler.graphite import GraphiteHandler
 
 
 class HostedGraphiteHandler(Handler):
-
     def __init__(self, config=None):
         """
         Create a new instance of the HostedGraphiteHandler class

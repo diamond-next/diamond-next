@@ -6,6 +6,7 @@ Send metrics to a http endpoint via POST
 """
 
 from urllib.request import Request, urlopen
+
 from diamond.handler.Handler import Handler
 
 

@@ -28,6 +28,7 @@ of this handler.
 """
 
 import logging
+
 from diamond.handler.Handler import Handler
 
 try:
@@ -37,11 +38,11 @@ except ImportError:
 
 
 class StatsdHandler(Handler):
-
     def __init__(self, config=None):
         """
         Create a new instance of the StatsdHandler class
         """
+
         # Initialize Handler
         Handler.__init__(self, config)
         logging.debug("Initialized statsd handler.")
@@ -49,12 +50,11 @@ class StatsdHandler(Handler):
         if not statsd:
             self.log.error('statsd import failed. Handler disabled')
             self.enabled = False
+
             return
 
         if not hasattr(statsd, 'StatsClient'):
-            self.log.warn('python-statsd support is deprecated '
-                          'and will be removed in the future. '
-                          'Please use https://pypi.python.org/pypi/statsd/')
+            self.log.warn('python-statsd support is deprecated and will be removed in the future. Please use https://pypi.python.org/pypi/statsd/')
 
         # Initialize Options
         self.host = self.config['host']
@@ -110,8 +110,8 @@ class StatsdHandler(Handler):
         """
         if not statsd:
             return
-        for metric in self.metrics:
 
+        for metric in self.metrics:
             # Split the path into a prefix and a name
             # to work with the statsd module's view of the world.
             # It will get re-joined by the python-statsd module.
@@ -125,24 +125,25 @@ class StatsdHandler(Handler):
                 if hasattr(statsd, 'StatsClient'):
                     self.connection.gauge(metric.path, metric.value)
                 else:
-                    statsd.Gauge(prefix, self.connection).send(
-                        name, metric.value)
+                    statsd.Gauge(prefix, self.connection).send(name, metric.value)
             else:
                 # To send a counter, we need to just send the delta
                 # but without any time delta changes
                 value = metric.raw_value
+
                 if metric.path in self.old_values:
                     value = value - self.old_values[metric.path]
+
                 self.old_values[metric.path] = metric.raw_value
 
                 if hasattr(statsd, 'StatsClient'):
                     self.connection.incr(metric.path, value)
                 else:
-                    statsd.Counter(prefix, self.connection).increment(
-                        name, value)
+                    statsd.Counter(prefix, self.connection).increment(name, value)
 
         if hasattr(statsd, 'StatsClient'):
             self.connection.send()
+
         self.metrics = []
 
     def flush(self):
@@ -157,14 +158,7 @@ class StatsdHandler(Handler):
             return
 
         if hasattr(statsd, 'StatsClient'):
-            self.connection = statsd.StatsClient(
-                host=self.host,
-                port=self.port
-            ).pipeline()
+            self.connection = statsd.StatsClient(host=self.host, port=self.port).pipeline()
         else:
             # Create socket
-            self.connection = statsd.Connection(
-                host=self.host,
-                port=self.port,
-                sample_rate=1.0
-            )
+            self.connection = statsd.Connection(host=self.host, port=self.port, sample_rate=1.0)

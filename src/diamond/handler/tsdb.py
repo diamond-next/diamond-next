@@ -94,15 +94,16 @@ class TSDBHandler(Handler):
     """
     Implements the abstract Handler class, sending data to OpenTSDB
     """
-
     def __init__(self, config=None):
         """
         Create a new instance of the TSDBHandler class
         """
+
         # Initialize Handler
         Handler.__init__(self, config)
 
         # Initialize Options
+
         # host
         self.host = str(self.config['host'])
         self.port = int(self.config['port'])
@@ -205,11 +206,11 @@ class TSDBHandler(Handler):
         if self.cleanMetrics:
             metric = MetricWrapper(metric, self.log)
 
-            if self.skipAggregates and metric.isAggregate():
+            if self.skipAggregates and metric.is_aggregate():
                 return
 
-            for tagKey in metric.getTags():
-                entry["tags"][tagKey] = metric.getTags()[tagKey]
+            for tagKey in metric.get_tags():
+                entry["tags"][tagKey] = metric.get_tags()[tagKey]
 
         entry['metric'] = (self.prefix + metric.getCollectorPath() + '.' + metric.getMetricPath())
 
@@ -219,7 +220,7 @@ class TSDBHandler(Handler):
         self.entrys.append(entry)
 
         # send data if list is long enough
-        if (len(self.entrys) >= self.batch):
+        if len(self.entrys) >= self.batch:
             # Compress data
             if self.compression >= 1:
                 data = StringIO()
@@ -270,17 +271,16 @@ This class wraps a metric and applies the additonal OpenTSDB tagging logic.
 
 
 class MetricWrapper(Metric):
-    def isAggregate(self):
+    def is_aggregate(self):
         return self.aggregate
 
-    def getTags(self):
+    def get_tags(self):
         return self.tags
 
     """
     This method does nothing and therefore keeps the existing metric unchanged.
     """
-
-    def processDefaultMetric(self):
+    def process_default_metric(self):
         self.tags = {}
         self.aggregate = False
 
@@ -289,22 +289,20 @@ class MetricWrapper(Metric):
     marks all metrics with 'total' as aggregates, so they can be skipped if
     the skipAggregates feature is active.
     """
-
-    def processCpuMetric(self):
+    def process_cpu_metric(self):
         if len(self.getMetricPath().split('.')) > 1:
             self.aggregate = self.getMetricPath().split('.')[0] == 'total'
 
-            cpuId = self.delegate.getMetricPath().split('.')[0]
-            self.tags["cpuId"] = cpuId
-            self.path = self.path.replace("." + cpuId + ".", ".")
+            cpu_id = self.delegate.getMetricPath().split('.')[0]
+            self.tags["cpu_id"] = cpu_id
+            self.path = self.path.replace("." + cpu_id + ".", ".")
 
     """
     Processes metrics of the HaProxyCollector. It stores the backend and the
     server to which the backends send as tags. Counters with 'backend' as
     backend name are considered aggregates.
     """
-
-    def processHaProxyMetric(self):
+    def process_ha_proxy_metric(self):
         if len(self.getMetricPath().split('.')) == 3:
             self.aggregate = self.getMetricPath().split('.')[1] == 'backend'
 
@@ -319,8 +317,7 @@ class MetricWrapper(Metric):
     Processes metrics of the DiskspaceCollector. It stores the mountpoint as a
     tag. There are no aggregates in this collector.
     """
-
-    def processDiskspaceMetric(self):
+    def process_diskspace_metric(self):
         if len(self.getMetricPath().split('.')) == 2:
 
             mountpoint = self.delegate.getMetricPath().split('.')[0]
@@ -332,8 +329,7 @@ class MetricWrapper(Metric):
     Processes metrics of the DiskusageCollector. It stores the device as a
     tag. There are no aggregates in this collector.
     """
-
-    def processDiskusageMetric(self):
+    def process_diskusage_metric(self):
         if len(self.getMetricPath().split('.')) == 2:
             device = self.delegate.getMetricPath().split('.')[0]
 
@@ -344,15 +340,14 @@ class MetricWrapper(Metric):
     Processes metrics of the NetworkCollector. It stores the interface as a
     tag. There are no aggregates in this collector.
     """
-
-    def processNetworkMetric(self):
+    def process_network_metric(self):
         if len(self.getMetricPath().split('.')) == 2:
             interface = self.delegate.getMetricPath().split('.')[0]
 
             self.tags["interface"] = interface
             self.path = self.path.replace("." + interface + ".", ".")
 
-    def processMattermostMetric(self):
+    def process_mattermost_metric(self):
         split = self.getMetricPath().split('.')
 
         if len(split) > 2:
@@ -379,13 +374,13 @@ class MetricWrapper(Metric):
                 self.path = self.path.replace("." + channel + ".", ".")
 
     handlers = {
-        'cpu': processCpuMetric,
-        'haproxy': processHaProxyMetric,
-        'mattermost': processMattermostMetric,
-        'diskspace': processDiskspaceMetric,
-        'iostat': processDiskusageMetric,
-        'network': processNetworkMetric,
-        'default': processDefaultMetric
+        'cpu': process_cpu_metric,
+        'haproxy': process_ha_proxy_metric,
+        'mattermost': process_mattermost_metric,
+        'diskspace': process_diskspace_metric,
+        'iostat': process_diskusage_metric,
+        'network': process_network_metric,
+        'default': process_default_metric
     }
 
     def __init__(self, delegate, logger):

@@ -35,7 +35,6 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_no_prefix(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
         config['collectors']['default'] = {}
@@ -50,7 +49,6 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_no_prefix_no_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
         config['collectors']['default'] = {}
@@ -65,7 +63,6 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_no_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
         config['collectors']['default'] = {}
@@ -80,7 +77,6 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_dot_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
         config['collectors']['default'] = {}
@@ -95,7 +91,6 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
         config['collectors']['default'] = {}

@@ -30,7 +30,9 @@ min = 66020000
 
 import logging
 import re
+
 from configobj import Section
+
 from diamond.collector import get_hostname
 from diamond.handler.Handler import Handler
 
@@ -67,8 +69,7 @@ class BaseResult(object):
         self.threshold = threshold
 
         if not raven:
-            self.log.error('raven.handlers.logging import failed. '
-                           'Handler disabled')
+            self.log.error('raven.handlers.logging import failed. Handler disabled')
             self.enabled = False
             return
 
@@ -77,9 +78,8 @@ class BaseResult(object):
         """return more complete message"""
         if self.threshold is None:
             return 'No threshold'
-        return '%.1f is %s than %.1f' % (self.value,
-                                         self.adjective,
-                                         self.threshold)
+
+        return '%.1f is %s than %.1f' % (self.value, self.adjective, self.threshold)
 
     @property
     def _is_error(self):
@@ -95,14 +95,18 @@ class BaseResult(object):
         False
         so we just check if min/max is not None before return _is_error
         """
+
         if self.threshold is None:
             return False
+
         return self._is_error
 
     def __str__(self):
         name = self.__class__.__name__.lower()
+
         if self.threshold is None:
             return '%s: %.1f no threshold' % (name, self.value)
+
         return '%.1f (%s: %.1f)' % (self.value, name, self.threshold)
 
 
@@ -134,7 +138,6 @@ class Rule(object):
     """
     Alert rule
     """
-
     def __init__(self, name, path, min=None, max=None):
         """
         @type name: string
@@ -149,6 +152,7 @@ class Rule(object):
             an alert to Sentry
         """
         self.name = name
+
         # counters that can be used to debug rule
         self.counter_errors = 0
         self.counter_pass = 0
@@ -158,19 +162,18 @@ class Rule(object):
             self.min = float(min)
         except TypeError:
             self.min = None
+
         try:
             self.max = float(max)
         except TypeError:
             self.max = None
 
         if self.min is None and self.max is None:
-            raise InvalidRule("%s: %s: both min and max are unset or invalid"
-                              % (name, path))
+            raise InvalidRule("%s: %s: both min and max are unset or invalid" % (name, path))
 
         if self.min is not None and self.max is not None:
             if self.min > self.max:
-                raise InvalidRule("min %.1f is larger than max %.1f" % (
-                    self.min, self.max))
+                raise InvalidRule("min %.1f is larger than max %.1f" % (self.min, self.max))
 
         # compile path regular expression
         self.regexp = re.compile(r'(?P<prefix>.*)\.(?P<path>%s)$' % path)
@@ -185,42 +188,42 @@ class Rule(object):
         @rtype None
         """
         match = self.regexp.match(metric.path)
+
         if match:
             minimum = Minimum(metric.value, self.min)
             maximum = Maximum(metric.value, self.max)
 
             if minimum.is_error or maximum.is_error:
                 self.counter_errors += 1
-                message = "%s Warning on %s: %.1f" % (self.name,
-                                                      handler.hostname,
-                                                      metric.value)
+                message = "%s Warning on %s: %.1f" % (self.name, handler.hostname, metric.value)
                 culprit = "%s %s" % (handler.hostname, match.group('path'))
-                handler.raven_logger.error(message, extra={
-                    'culprit': culprit,
-                    'data': {
-                        'metric prefix': match.group('prefix'),
-                        'metric path': match.group('path'),
-                        'minimum check': minimum.verbose_message,
-                        'maximum check': maximum.verbose_message,
-                        'metric original path': metric.path,
-                        'metric value': metric.value,
-                        'metric precision': metric.precision,
-                        'metric timestamp': metric.timestamp,
-                        'minimum threshold': self.min,
-                        'maximum threshold': self.max,
-                        'path regular expression': self.regexp.pattern,
-                        'total errors': self.counter_errors,
-                        'total pass': self.counter_pass,
-                        'hostname': handler.hostname
+                handler.raven_logger.error(
+                    message,
+                    extra={
+                        'culprit': culprit,
+                        'data': {
+                            'metric prefix': match.group('prefix'),
+                            'metric path': match.group('path'),
+                            'minimum check': minimum.verbose_message,
+                            'maximum check': maximum.verbose_message,
+                            'metric original path': metric.path,
+                            'metric value': metric.value,
+                            'metric precision': metric.precision,
+                            'metric timestamp': metric.timestamp,
+                            'minimum threshold': self.min,
+                            'maximum threshold': self.max,
+                            'path regular expression': self.regexp.pattern,
+                            'total errors': self.counter_errors,
+                            'total pass': self.counter_pass,
+                            'hostname': handler.hostname
+                        }
                     }
-                }
                 )
             else:
                 self.counter_pass += 1
 
     def __repr__(self):
-        return '%s: min:%s max:%s %s' % (self.name, self.min, self.max,
-                                         self.regexp.pattern)
+        return '%s: min:%s max:%s %s' % (self.name, self.min, self.max, self.regexp.pattern)
 
 
 class SentryHandler(Handler):
@@ -236,16 +239,18 @@ class SentryHandler(Handler):
         @type config: configobj.ConfigObj
         """
         Handler.__init__(self, config)
+
         if not raven:
             return
+
         # init sentry/raven
-        self.sentry_log_handler = raven.handlers.logging.SentryHandler(
-            self.config['dsn'])
+        self.sentry_log_handler = raven.handlers.logging.SentryHandler(self.config['dsn'])
         self.raven_logger = logging.getLogger(self.__class__.__name__)
         self.raven_logger.addHandler(self.sentry_log_handler)
         self.configure_sentry_errors()
         self.rules = self.compile_rules()
         self.hostname = get_hostname(self.config)
+
         if not len(self.rules):
             self.log.warning("No rules, this graphite handler is unused")
 
@@ -279,11 +284,14 @@ class SentryHandler(Handler):
         @rtype list of Rules
         """
         output = []
+
         # validate configuration, skip invalid section
         for key_name, section in self.config.items():
             rule = self.compile_section(section)
+
             if rule is not None:
                 output.append(rule)
+
         return output
 
     def compile_section(self, section):
@@ -300,22 +308,20 @@ class SentryHandler(Handler):
 
         # name and path are mandatory
         keys = section.keys()
+
         for key in ('name', 'path'):
             if key not in keys:
-                self.log.warning("section %s miss key '%s' ignore", key,
-                                 section.name)
+                self.log.warning("section %s miss key '%s' ignore", key, section.name)
                 return
 
         # just warn if invalid key in section
         for key in keys:
             if key not in self.VALID_RULES_KEYS:
-                self.log.warning("invalid key %s in section %s",
-                                 key, section.name)
+                self.log.warning("invalid key %s in section %s", key, section.name)
 
         # need at least a min or a max
         if 'min' not in keys and 'max' not in keys:
-            self.log.warning("either 'min' or 'max' is defined in %s",
-                             section.name)
+            self.log.warning("either 'min' or 'max' is defined in %s", section.name)
             return
 
         # add rule to the list
@@ -323,6 +329,7 @@ class SentryHandler(Handler):
             'name': section['name'],
             'path': section['path']
         }
+
         for argument in ('min', 'max'):
             try:
                 kwargs[argument] = section[argument]
@@ -342,6 +349,7 @@ class SentryHandler(Handler):
         """
         sentry_errors_logger = logging.getLogger('sentry.errors')
         root_logger = logging.getLogger()
+
         for handler in root_logger.handlers:
             sentry_errors_logger.addHandler(handler)
 
@@ -356,5 +364,4 @@ class SentryHandler(Handler):
             rule.process(metric, self)
 
     def __repr__(self):
-        return "SentryHandler '%s' %d rules" % (
-            self.sentry_log_handler.client.servers, len(self.rules))
+        return "SentryHandler '%s' %d rules" % (self.sentry_log_handler.client.servers, len(self.rules))

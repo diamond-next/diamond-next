@@ -9,11 +9,11 @@ Collects data from squid servers
 
 import re
 import socket
+
 import diamond.collector
 
 
 class SquidCollector(diamond.collector.Collector):
-
     def __init__(self, *args, **kwargs):
         self.host_pattern = re.compile("(([^@]+)@)?([^:]+)(:([0-9]+))?")
         self.stat_pattern = re.compile("^([^ ]+) = ([0-9\.]+)$")
@@ -90,15 +90,13 @@ class SquidCollector(diamond.collector.Collector):
         for nickname in self.squid_hosts.keys():
             squid_host = self.squid_hosts[nickname]
 
-            fulldata = self._getData(squid_host['host'],
-                                     squid_host['port'])
+            fulldata = self._getData(squid_host['host'], squid_host['port'])
 
             if fulldata is not None:
                 fulldata = fulldata.splitlines()
 
                 for data in fulldata:
                     matches = self.stat_pattern.match(data)
+
                     if matches:
-                        self.publish_counter("%s.%s" % (nickname,
-                                                        matches.group(1)),
-                                             float(matches.group(2)))
+                        self.publish_counter("%s.%s" % (nickname, matches.group(1)), float(matches.group(2)))

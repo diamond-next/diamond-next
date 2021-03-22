@@ -124,15 +124,12 @@ class TestVarnishCollector(CollectorTestCase):
             'n_gunzip': 11982,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data_4_dot_0(self, publish_mock):
-        collector_mock = patch.object(VarnishCollector, 'poll', Mock(
-            return_value=self.getFixture('4.0/varnish_stats').getvalue()))
+        collector_mock = patch.object(VarnishCollector, 'poll', Mock(return_value=self.getFixture('4.0/varnish_stats').getvalue()))
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()

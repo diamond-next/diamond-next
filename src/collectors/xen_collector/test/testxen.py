@@ -23,8 +23,7 @@ def run_only_if_libvirt_is_available(func):
 
 class TestXENCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('XENCollector', {
-        })
+        config = get_collector_config('XENCollector', {})
         self.collector = XENCollector(config, None)
 
     def test_import(self):
@@ -42,12 +41,16 @@ class TestXENCollector(CollectorTestCase):
             def info(self):
                 if self.id == 0:
                     return [1, 49420888, 49420888, 8, 911232000000000]
+
                 if self.id == 1:
                     return [1, 2097152,  2097152,  2, 310676150000000]
+
                 if self.id == 2:
                     return [1, 2097152,  2097152,  2, 100375300000000]
+
                 if self.id == 3:
                     return [1, 10485760, 10485760, 2, 335312040000000]
+
                 if self.id == 4:
                     return [1, 10485760, 10485760, 2, 351313480000000]
 
@@ -55,12 +58,12 @@ class TestXENCollector(CollectorTestCase):
         libvirt_m.getInfo.return_value = ['x86_64', 48262, 8, 1200, 2, 1, 4, 1]
         libvirt_m.listDomainsID.return_value = [0, 2, 1, 4, 3]
 
-        def lookupByIdMock(id):
+        def lookup_by_id_mock(id):
             lookup = info(id)
 
             return lookup
 
-        libvirt_m.lookupByID = lookupByIdMock
+        libvirt_m.lookupByID = lookup_by_id_mock
 
         libvirt_mock.return_value = libvirt_m
 

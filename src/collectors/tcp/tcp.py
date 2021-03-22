@@ -176,12 +176,12 @@ flag.</td></tr>
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class TCPCollector(diamond.collector.Collector):
-
     PROC = [
         '/proc/net/netstat',
         '/proc/net/snmp'
@@ -264,11 +264,10 @@ class TCPCollector(diamond.collector.Collector):
                 metrics[header[i]] = data[i]
 
         for metric_name in metrics.keys():
-            if ((len(self.config['allowed_names']) > 0 and
-                 metric_name not in self.config['allowed_names'])):
+            if len(self.config['allowed_names']) > 0 and metric_name not in self.config['allowed_names']:
                 continue
 
-            value = long(metrics[metric_name])
+            value = int(metrics[metric_name])
 
             # Publish the metric
             if metric_name in self.config['gauges']:

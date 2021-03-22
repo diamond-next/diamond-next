@@ -15,6 +15,7 @@ operations more fun and efficient.
 import logging
 import re
 import time
+
 from diamond.handler.Handler import Handler
 
 try:
@@ -24,11 +25,11 @@ except ImportError:
 
 
 class LibratoHandler(Handler):
-
     def __init__(self, config=None):
         """
         Create a new instance of the LibratoHandler class
         """
+
         # Initialize Handler
         Handler.__init__(self, config)
         logging.debug("Initialized Librato handler.")
@@ -38,8 +39,7 @@ class LibratoHandler(Handler):
             return
 
         # Initialize Options
-        api = librato.connect(self.config['user'],
-                              self.config['apikey'])
+        api = librato.connect(self.config['user'], self.config['apikey'])
         self.queue = api.new_queue()
         self.queue_max_size = int(self.config['queue_max_size'])
         self.queue_max_interval = int(self.config['queue_max_interval'])
@@ -48,6 +48,7 @@ class LibratoHandler(Handler):
 
         # If a user leaves off the ending comma, cast to a array for them
         include_filters = self.config['include_filters']
+
         if isinstance(include_filters, str):
             include_filters = [include_filters]
 
@@ -102,6 +103,7 @@ class LibratoHandler(Handler):
         path = metric.getCollectorPath()
         path += '.'
         path += metric.getMetricPath()
+
         if self.config['apply_metric_prefix']:
             path = metric.getPathPrefix() + '.' + path
 
@@ -110,20 +112,20 @@ class LibratoHandler(Handler):
                 m_type = 'gauge'
             else:
                 m_type = 'counter'
-            self.queue.add(path,                # name
-                           float(metric.value),  # value
-                           type=m_type,
-                           source=metric.host,
-                           measure_time=metric.timestamp)
+
+            self.queue.add(
+                path,  # name
+                float(metric.value),  # value
+                type=m_type,
+                source=metric.host,
+                measure_time=metric.timestamp
+            )
             self.current_n_measurements += 1
         else:
-            self.log.debug("LibratoHandler: Skip %s, no include_filters match",
-                           path)
+            self.log.debug("LibratoHandler: Skip %s, no include_filters match", path)
 
-        if (self.current_n_measurements >= self.queue_max_size or
-                time.time() >= self.queue_max_timestamp):
-            self.log.debug("LibratoHandler: Sending batch size: %d",
-                           self.current_n_measurements)
+        if self.current_n_measurements >= self.queue_max_size or time.time() >= self.queue_max_timestamp:
+            self.log.debug("LibratoHandler: Sending batch size: %d", self.current_n_measurements)
             self._send()
 
     def flush(self):

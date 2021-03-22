@@ -9,14 +9,15 @@ Uses /proc/vmstat to collect data on virtual memory manager
 
 """
 
-import diamond.collector
 import os
 import re
 
+import diamond.collector
+
 
 class VMStatCollector(diamond.collector.Collector):
-
     PROC = '/proc/vmstat'
+
     MAX_VALUES = {
         'pgfault': diamond.collector.MAX_COUNTER,
         'pgmajfault': diamond.collector.MAX_COUNTER,
@@ -28,8 +29,8 @@ class VMStatCollector(diamond.collector.Collector):
 
     def get_default_config_help(self):
         config_help = super(VMStatCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -38,7 +39,7 @@ class VMStatCollector(diamond.collector.Collector):
         """
         config = super(VMStatCollector, self).get_default_config()
         config.update({
-            'path':     'vmstat'
+            'path': 'vmstat'
         })
         return config
 
@@ -50,9 +51,11 @@ class VMStatCollector(diamond.collector.Collector):
         file = open(self.PROC)
         exp = '^(pgfault|pgmajfault|pgpgin|pgpgout|pswpin|pswpout)\s(\d+)'
         reg = re.compile(exp)
+
         # Build regex
         for line in file:
             match = reg.match(line)
+
             if match:
                 name = match.group(1)
                 value = match.group(2)

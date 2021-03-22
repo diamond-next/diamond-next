@@ -9,16 +9,17 @@ VarnishCollector grabs stats from Varnish and submits them the Graphite
 
 """
 
-import diamond.collector
 import re
 import subprocess
+
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class VarnishCollector(diamond.collector.Collector):
-
     _RE = re.compile("^(?P<stat>[\w_.,]*)\s+(?P<psa>\d*)\s+"
                      "(?P<psan>[\d.]*)\s+(?P<desc>.*)$", re.M)
+
     _KEYS_v3 = frozenset([
         'client_conn', 'client_drop', 'client_req', 'cache_hit',
         'cache_hitpass', 'cache_miss', 'backend_conn', 'backend_unhealthy',
@@ -125,10 +126,11 @@ class VarnishCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(VarnishCollector, self).get_default_config_help()
         config_help.update({
-            'bin':         'The path to the varnishstat binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
+            'bin': 'The path to the varnishstat binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -137,18 +139,19 @@ class VarnishCollector(diamond.collector.Collector):
         """
         config = super(VarnishCollector, self).get_default_config()
         config.update({
-            'path':             'varnish',
-            'bin':             '/usr/bin/varnishstat',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
+            'path': 'varnish',
+            'bin': '/usr/bin/varnishstat',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
         })
+
         return config
 
     def collect(self):
         data = {}
         output = self.poll()
-
         matches = self._RE.findall(output)
+
         # No matches at all, bail out
         if not matches:
             return
@@ -174,8 +177,7 @@ class VarnishCollector(diamond.collector.Collector):
             if str_to_bool(self.config['use_sudo']):
                 command.insert(0, self.config['sudo_cmd'])
 
-            output = subprocess.Popen(command,
-                                      stdout=subprocess.PIPE).communicate()[0]
+            output = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
         except OSError:
             output = ""
 

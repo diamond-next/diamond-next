@@ -24,7 +24,7 @@ GRANT PROCESS ON *.* TO 'user'@'hostname' IDENTIFIED BY
 
 #### Dependencies
 
- * MySQLdb
+ * mysqlclient
 
 """
 
@@ -35,10 +35,10 @@ import diamond.collector
 from diamond.collector import str_to_bool
 
 try:
-    import MySQLdb
-    from MySQLdb import MySQLError
+    import mysqlclient
+    from mysqlclient import MySQLError
 except ImportError:
-    MySQLdb = None
+    mysqlclient = None
     MySQLError = ValueError
 
 
@@ -292,7 +292,7 @@ class MySQLCollector(diamond.collector.Collector):
         return config
 
     def get_db_stats(self, query):
-        cursor = self.db.cursor(cursorclass=MySQLdb.cursors.DictCursor)
+        cursor = self.db.cursor(cursorclass=mysqlclient.cursors.DictCursor)
 
         try:
             cursor.execute(query)
@@ -303,7 +303,7 @@ class MySQLCollector(diamond.collector.Collector):
 
     def connect(self, params):
         try:
-            self.db = MySQLdb.connect(**params)
+            self.db = mysqlclient.connect(**params)
             self.log.debug('MySQLCollector: Connected to database.')
         except MySQLError as e:
             self.log.error('MySQLCollector couldnt connect to database %s', e)
@@ -442,8 +442,8 @@ class MySQLCollector(diamond.collector.Collector):
                     self.publish(nickname + metric_name, metric_value)
 
     def collect(self):
-        if MySQLdb is None:
-            self.log.error('Unable to import MySQLdb')
+        if mysqlclient is None:
+            self.log.error('Unable to import mysqlclient')
             return False
 
         for host in self.config['hosts']:
@@ -477,7 +477,7 @@ class MySQLCollector(diamond.collector.Collector):
             except Exception as e:
                 try:
                     self.disconnect()
-                except MySQLdb.ProgrammingError:
+                except mysqlclient.ProgrammingError:
                     pass
 
                 self.log.error('Collection failed for %s %s', nickname, e)

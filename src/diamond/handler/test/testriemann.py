@@ -20,6 +20,7 @@ except ImportError:
 def run_only_if_riemann_client_is_available(func):
     def pred():
         return riemann_client is not None
+
     return run_only(func, pred)
 
 
@@ -46,10 +47,7 @@ class TestRiemannHandler(unittest.TestCase):
         config['port'] = 5555
         handler = mod.RiemannHandler(config)
 
-        metric = Metric('servers.com.example.www.cpu.total.idle',
-                        0,
-                        timestamp=1234567,
-                        host='com.example.www')
+        metric = Metric('servers.com.example.www.cpu.total.idle', 0, timestamp=1234567, host='com.example.www')
 
         handler.process(metric)
 

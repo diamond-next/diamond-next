@@ -9,22 +9,21 @@ Collect stats from the unbound resolver
 
 """
 
+import diamond.collector
+from diamond.collector import str_to_bool
+
 try:
     from collections import defaultdict
 except ImportError:
     from kitchen.pycompat25.collections import defaultdict
 
-import diamond.collector
-from diamond.collector import str_to_bool
-
 
 class UnboundCollector(diamond.collector.ProcessCollector):
-
     def get_default_config_help(self):
         config_help = super(UnboundCollector, self).get_default_config_help()
         config_help.update({
-            'bin':          'Path to unbound-control binary',
-            'histogram':    'Include histogram in collection',
+            'bin': 'Path to unbound-control binary',
+            'histogram': 'Include histogram in collection',
         })
         return config_help
 
@@ -34,9 +33,9 @@ class UnboundCollector(diamond.collector.ProcessCollector):
         """
         config = super(UnboundCollector, self).get_default_config()
         config.update({
-            'path':         'unbound',
-            'bin':          self.find_binary('/usr/sbin/unbound-control'),
-            'histogram':    True,
+            'path': 'unbound',
+            'bin': self.find_binary('/usr/sbin/unbound-control'),
+            'histogram': True,
         })
         return config
 
@@ -66,14 +65,14 @@ class UnboundCollector(diamond.collector.ProcessCollector):
 
     def collect(self):
         stats_output = self.run_command([' stats'])
+
         if stats_output is None:
             return
 
         stats_output = stats_output[0]
-
         raw_histogram = {}
-
         include_hist = str_to_bool(self.config['histogram'])
+
         for line in stats_output.splitlines():
             stat_name, stat_value = line.split('=')
 

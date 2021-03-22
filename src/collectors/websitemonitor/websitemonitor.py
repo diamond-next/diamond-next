@@ -45,7 +45,7 @@ class WebsiteMonitorCollector(Collector):
         try:
             # human-readable time e.g November 25, 2013 18:15:56
             st = datetime.fromtimestamp(start_time).strftime('%B %d, %Y %H:%M:%S')
-            self.log.debug('Start time: %s' % (st))
+            self.log.debug('Start time: %s' % st)
 
             resp = urlopen(req)
 
@@ -54,25 +54,26 @@ class WebsiteMonitorCollector(Collector):
 
             # human-readable end time e.eg. November 25, 2013 18:15:56
             et = datetime.fromtimestamp(end_time).strftime('%B %d, %Y %H:%M%S')
-            self.log.debug('End time: %s' % (et))
+            self.log.debug('End time: %s' % et)
 
             # Response time in milliseconds
             rt = int(format((end_time - start_time) * 1000, '.0f'))
 
             # Publish metrics
-            self.publish('response_time.%s' % (resp.code), rt, metric_type='COUNTER')
+            self.publish('response_time.%s' % resp.code, rt, metric_type='COUNTER')
         # urllib will puke on non HTTP 200/OK URLs
         except URLError as e:
             if e.code != 200:
                 # time in seconds since epoch as a floating number
                 end_time = time.time()
+
                 # Response time in milliseconds
                 rt = int(format((end_time - start_time) * 1000, '.0f'))
-                # Publish metrics -- this is recording a failure, rt will
-                # likely be 0 but does capture HTTP Status Code
-                self.publish('response_time.%s' % (e.code), rt, metric_type='COUNTER')
 
-        except IOError as e:
+                # Publish metrics -- this is recording a failure, rt will likely be 0 but does capture HTTP Status Code
+                self.publish('response_time.%s' % e.code, rt, metric_type='COUNTER')
+
+        except IOError:
             self.log.error('Unable to open %s' % (self.config['URL']))
 
         except Exception as e:

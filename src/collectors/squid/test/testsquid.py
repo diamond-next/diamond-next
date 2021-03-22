@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # coding=utf-8
 
-from diamond.testing import CollectorTestCase
-from test import get_collector_config
 import unittest
 from unittest.mock import Mock, patch
-from diamond.collector import Collector
+
 from collectors.squid.squid import SquidCollector
+from diamond.collector import Collector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestSquidCollector(CollectorTestCase):

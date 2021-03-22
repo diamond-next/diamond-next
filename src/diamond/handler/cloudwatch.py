@@ -1,4 +1,5 @@
 # coding=utf-8
+
 """
 Output the collected values to AWS CloudWatch
 
@@ -40,7 +41,9 @@ unit = None
 
 import datetime
 import sys
+
 from configobj import Section
+
 from diamond.handler.Handler import Handler
 
 try:
@@ -56,7 +59,6 @@ class cloudwatchHandler(Handler):
       Implements the abstract Handler class
       Sending data to a AWS CloudWatch
     """
-
     def __init__(self, config=None):
         """
           Create a new instance of cloudwatchHandler class
@@ -66,8 +68,7 @@ class cloudwatchHandler(Handler):
         Handler.__init__(self, config)
 
         if not boto:
-            self.log.error(
-                "CloudWatch: Boto is not installed, please install boto.")
+            self.log.error("CloudWatch: Boto is not installed, please install boto.")
             return
 
         # Initialize Data
@@ -77,6 +78,7 @@ class cloudwatchHandler(Handler):
         self.region = self.config['region']
 
         instance_metadata = boto.utils.get_instance_metadata()
+
         if 'instance-id' in instance_metadata:
             self.instance_id = instance_metadata['instance-id']
             self.log.debug("Setting InstanceId: " + self.instance_id)
@@ -84,19 +86,17 @@ class cloudwatchHandler(Handler):
             self.instance_id = None
             self.log.error('CloudWatch: Failed to load instance metadata')
 
-        self.valid_config = ('region', 'collector', 'metric', 'namespace',
-                             'name', 'unit', 'collect_by_instance',
-                             'collect_without_dimension')
-
+        self.valid_config = ('region', 'collector', 'metric', 'namespace', 'name', 'unit', 'collect_by_instance', 'collect_without_dimension')
         self.rules = []
+
         for key_name, section in self.config.items():
             if section.__class__ is Section:
                 keys = section.keys()
                 rules = self.get_default_rule_config()
+
                 for key in keys:
                     if key not in self.valid_config:
-                        self.log.warning("invalid key %s in section %s",
-                                         key, section.name)
+                        self.log.warning("invalid key %s in section %s", key, section.name)
                     else:
                         rules[key] = section[key]
 
@@ -119,6 +119,7 @@ class cloudwatchHandler(Handler):
             'collect_by_instance': True,
             'collect_without_dimension': False
         })
+
         return config
 
     def get_default_config_help(self):
@@ -164,15 +165,11 @@ class cloudwatchHandler(Handler):
            Create CloudWatch Connection
         """
 
-        self.log.debug(
-            "CloudWatch: Attempting to connect to CloudWatch at Region: %s",
-            self.region)
+        self.log.debug("CloudWatch: Attempting to connect to CloudWatch at Region: %s", self.region)
+
         try:
-            self.connection = boto.ec2.cloudwatch.connect_to_region(
-                self.region)
-            self.log.debug(
-                "CloudWatch: Succesfully Connected to CloudWatch at Region: %s",
-                self.region)
+            self.connection = boto.ec2.cloudwatch.connect_to_region(self.region)
+            self.log.debug("CloudWatch: Succesfully Connected to CloudWatch at Region: %s", self.region)
         except boto.exception.EC2ResponseError:
             self.log.error('CloudWatch: CloudWatch Exception Handler: ')
 
@@ -207,20 +204,12 @@ class cloudwatchHandler(Handler):
                 metricname
             )
 
-            if ((str(rule['collector']) == collector and
-                 str(rule['metric']) == metricname)):
-
+            if str(rule['collector']) == collector and str(rule['metric']) == metricname:
                 if rule['collect_by_instance'] and self.instance_id:
-                    self.send_metrics_to_cloudwatch(
-                        rule,
-                        metric,
-                        {'InstanceId': self.instance_id})
+                    self.send_metrics_to_cloudwatch(rule, metric, {'InstanceId': self.instance_id})
 
                 if rule['collect_without_dimension']:
-                    self.send_metrics_to_cloudwatch(
-                        rule,
-                        metric,
-                        {})
+                    self.send_metrics_to_cloudwatch(rule, metric, {})
 
     def send_metrics_to_cloudwatch(self, rule, metric, dimensions):
         """
@@ -230,8 +219,7 @@ class cloudwatchHandler(Handler):
         timestamp = datetime.datetime.utcfromtimestamp(metric.timestamp)
 
         self.log.debug(
-            "CloudWatch: Attempting to publish metric: %s to %s "
-            "with value (%s) for dimensions %s @%s",
+            "CloudWatch: Attempting to publish metric: %s to %s with value (%s) for dimensions %s @%s",
             rule['name'],
             rule['namespace'],
             str(metric.value),
@@ -245,20 +233,17 @@ class cloudwatchHandler(Handler):
                 str(rule['name']),
                 str(metric.value),
                 timestamp, str(rule['unit']),
-                dimensions)
+                dimensions
+            )
             self.log.debug(
-                "CloudWatch: Successfully published metric: %s to"
-                " %s with value (%s) for dimensions %s",
+                "CloudWatch: Successfully published metric: %s to %s with value (%s) for dimensions %s",
                 rule['name'],
                 rule['namespace'],
                 str(metric.value),
-                str(dimensions))
+                str(dimensions)
+            )
         except AttributeError as e:
-            self.log.error(
-                "CloudWatch: Failed publishing - %s ", str(e))
+            self.log.error("CloudWatch: Failed publishing - %s ", str(e))
         except Exception as e:  # Rough connection re-try logic.
-            self.log.error(
-                "CloudWatch: Failed publishing - %s\n%s ",
-                str(e),
-                str(sys.exc_info()[0]))
+            self.log.error("CloudWatch: Failed publishing - %s\n%s ", str(e), str(sys.exc_info()[0]))
             self._bind()

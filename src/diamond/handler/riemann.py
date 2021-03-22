@@ -19,6 +19,7 @@ It has these options:
 """
 
 import logging
+
 from diamond.handler.Handler import Handler
 
 try:
@@ -30,7 +31,6 @@ except ImportError:
 
 
 class RiemannHandler(Handler):
-
     def __init__(self, config=None):
         # Initialize Handler
         Handler.__init__(self, config)
@@ -49,6 +49,7 @@ class RiemannHandler(Handler):
             self.transport = TCPTransport(self.host, self.port)
         else:
             self.transport = UDPTransport(self.host, self.port)
+
         self.client = Client(self.transport)
         self._connect()
 
@@ -85,16 +86,17 @@ class RiemannHandler(Handler):
         Send a metric to Riemann.
         """
         event = self._metric_to_riemann_event(metric)
+
         try:
             self.client.send_event(event)
         except Exception as e:
-            self.log.error(
-                "RiemannHandler: Error sending event to Riemann: %s", e)
+            self.log.error("RiemannHandler: Error sending event to Riemann: %s", e)
 
     def _metric_to_riemann_event(self, metric):
         """
         Convert a metric to a dictionary representing a Riemann event.
         """
+
         # Riemann has a separate "host" field, so remove from the path.
         path = '%s.%s.%s' % (
             metric.getPathPrefix(),

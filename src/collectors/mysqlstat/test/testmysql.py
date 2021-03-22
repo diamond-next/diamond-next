@@ -10,13 +10,13 @@ from diamond.testing import CollectorTestCase
 from test import get_collector_config, run_only
 
 
-def run_only_if_MySQLdb_is_available(func):
+def run_only_if_mysqlclient_is_available(func):
     try:
-        import MySQLdb
+        import mysqlclient
     except ImportError:
-        MySQLdb = None
+        mysqlclient = None
 
-    pred = lambda: MySQLdb is not None
+    pred = lambda: mysqlclient is not None
 
     return run_only(func, pred)
 
@@ -36,7 +36,7 @@ class TestMySQLCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(MySQLCollector)
 
-    @run_only_if_MySQLdb_is_available
+    @run_only_if_mysqlclient_is_available
     @patch.object(MySQLCollector, 'connect', Mock(return_value=True))
     @patch.object(MySQLCollector, 'disconnect', Mock(return_value=True))
     @patch.object(Collector, 'publish')

@@ -14,7 +14,7 @@ For now only monitors replication load
 
 #### Dependencies
 
- * MySQLdb
+ * mysqlclient
  * MySQL 5.5.3+
 
 

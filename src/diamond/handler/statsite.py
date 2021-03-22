@@ -53,6 +53,7 @@ store only a fraction of the samples.
 """
 
 import socket
+
 from diamond.handler.Handler import Handler
 
 
@@ -66,6 +67,7 @@ class StatsiteHandler(Handler):
         """
         Create a new instance of the StatsiteHandler class
         """
+
         # Initialize Handler
         Handler.__init__(self, config)
 
@@ -121,6 +123,7 @@ class StatsiteHandler(Handler):
         """
         Process a metric by sending it to statsite
         """
+
         # Just send the data as a string
         self._send(str(metric))
 
@@ -129,16 +132,20 @@ class StatsiteHandler(Handler):
         Send data to statsite. Data that can not be sent will be queued.
         """
         retry = self.RETRY
+
         # Attempt to send any data in the queue
         while retry > 0:
             # Check socket
             if not self.socket:
                 # Log Error
                 self.log.error("StatsiteHandler: Socket unavailable.")
+
                 # Attempt to restablish connection
                 self._connect()
+
                 # Decrement retry
                 retry -= 1
+
                 # Try again
                 continue
             try:
@@ -146,15 +153,19 @@ class StatsiteHandler(Handler):
                 data = data.split()
                 data = data[0] + ":" + data[1] + "|kv\n"
                 self.socket.sendall(data)
+
                 # Done
                 break
             except socket.error as e:
                 # Log Error
                 self.log.error("StatsiteHandler: Failed sending data. %s.", e)
+
                 # Attempt to restablish connection
                 self._close()
+
                 # Decrement retry
                 retry -= 1
+
                 # try again
                 continue
 
@@ -169,26 +180,32 @@ class StatsiteHandler(Handler):
         elif self.tcpport > 0:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.port = self.tcpport
+
         if socket is None:
             # Log Error
             self.log.error("StatsiteHandler: Unable to create socket.")
+
             # Close Socket
             self._close()
+
             return
+
         # Set socket timeout
         self.socket.settimeout(self.timeout)
+
         # Connect to statsite server
         try:
             self.socket.connect((self.host, self.port))
+
             # Log
-            self.log.debug("Established connection to statsite server %s:%d",
-                           self.host, self.port)
+            self.log.debug("Established connection to statsite server %s:%d", self.host, self.port)
         except Exception as ex:
             # Log Error
-            self.log.error("StatsiteHandler: Failed to connect to %s:%i. %s",
-                           self.host, self.port, ex)
+            self.log.error("StatsiteHandler: Failed to connect to %s:%i. %s", self.host, self.port, ex)
+
             # Close Socket
             self._close()
+
             return
 
     def _close(self):
@@ -197,4 +214,5 @@ class StatsiteHandler(Handler):
         """
         if self.socket is not None:
             self.socket.close()
+
         self.socket = None

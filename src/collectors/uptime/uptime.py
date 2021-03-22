@@ -9,10 +9,10 @@ Collect Uptime metrics
 
 """
 
-from diamond.collector import Collector
-from diamond import convertor
-
 import os
+
+from diamond import convertor
+from diamond.collector import Collector
 
 
 class UptimeCollector(Collector):
@@ -32,6 +32,7 @@ class UptimeCollector(Collector):
             return {}
 
         v = self.read()
+
         if v is not None:
             self.publish(self.config['metric_name'], v)
 
@@ -41,8 +42,8 @@ class UptimeCollector(Collector):
             uptime = fd.readline()
             fd.close()
             v = float(uptime.split()[0].strip())
+
             return convertor.time.convert(v, 's', self.config['metric_name'])
         except Exception as e:
-            self.log.error('Unable to read uptime from %s: %s' % (self.PROC,
-                                                                  e))
+            self.log.error('Unable to read uptime from %s: %s' % (self.PROC, e))
             return None

@@ -31,10 +31,7 @@ class TestStatsdHandler(unittest.TestCase):
         config['port'] = '9999'
         config['batch'] = 1
 
-        metric = Metric('servers.com.example.www.cpu.total.idle',
-                        123, raw_value=123, timestamp=1234567,
-                        host='will-be-ignored', metric_type='GAUGE')
-
+        metric = Metric('servers.com.example.www.cpu.total.idle', 123, raw_value=123, timestamp=1234567, host='will-be-ignored', metric_type='GAUGE')
         expected_data = ('servers.com.example.www.cpu.total.idle', 123)
 
         handler = StatsdHandler(config)
@@ -51,10 +48,7 @@ class TestStatsdHandler(unittest.TestCase):
         config['port'] = '9999'
         config['batch'] = 1
 
-        metric = Metric('servers.com.example.www.cpu.total.idle',
-                        5, raw_value=123, timestamp=1234567,
-                        host='will-be-ignored', metric_type='COUNTER')
-
+        metric = Metric('servers.com.example.www.cpu.total.idle', 5, raw_value=123, timestamp=1234567, host='will-be-ignored', metric_type='COUNTER')
         expected_data = ('servers.com.example.www.cpu.total.idle', 123)
 
         handler = StatsdHandler(config)
@@ -71,13 +65,8 @@ class TestStatsdHandler(unittest.TestCase):
         config['port'] = '9999'
         config['batch'] = 1
 
-        metric1 = Metric('servers.com.example.www.cpu.total.idle',
-                         5, raw_value=123, timestamp=1234567,
-                         host='will-be-ignored', metric_type='COUNTER')
-
-        metric2 = Metric('servers.com.example.www.cpu.total.idle',
-                         7, raw_value=128, timestamp=1234567,
-                         host='will-be-ignored', metric_type='COUNTER')
+        metric1 = Metric('servers.com.example.www.cpu.total.idle', 5, raw_value=123, timestamp=1234567, host='will-be-ignored', metric_type='COUNTER')
+        metric2 = Metric('servers.com.example.www.cpu.total.idle', 7, raw_value=128, timestamp=1234567, host='will-be-ignored', metric_type='COUNTER')
 
         expected_data1 = ('servers.com.example.www.cpu.total.idle', 123)
         expected_data2 = ('servers.com.example.www.cpu.total.idle', 5)

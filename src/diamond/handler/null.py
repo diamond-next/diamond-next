@@ -24,8 +24,7 @@ class NullHandler(Handler):
         """
         config = super(NullHandler, self).get_default_config_help()
 
-        config.update({
-        })
+        config.update({})
 
         return config
 
@@ -35,7 +34,6 @@ class NullHandler(Handler):
         """
         config = super(NullHandler, self).get_default_config()
 
-        config.update({
-        })
+        config.update({})
 
         return config

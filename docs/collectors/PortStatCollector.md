@@ -6,7 +6,7 @@ PortStatCollector
 
 The PortStatCollector collects metrics about ports listed in config file.
 
-##### Dependencies
+#### Dependencies
 
 * psutil
 

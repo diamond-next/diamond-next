@@ -7,6 +7,7 @@ Specify them as a list of hosts divided by comma.
 """
 
 from copy import deepcopy
+
 from diamond.handler.Handler import Handler
 from diamond.handler.graphite import GraphiteHandler
 
@@ -28,6 +29,7 @@ class MultiGraphiteHandler(Handler):
 
         # Initialize Options
         hosts = self.config['host']
+
         for host in hosts:
             config = deepcopy(self.config)
             config['host'] = host

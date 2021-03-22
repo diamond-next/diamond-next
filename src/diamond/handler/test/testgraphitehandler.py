@@ -139,6 +139,7 @@ class TestGraphiteHandler(unittest.TestCase):
 
         # start trimming after X batchsizes in buffer
         config['max_backlog_multiplier'] = 4
+
         # when trimming: keep last X batchsizes
         config['trim_backlog_multiplier'] = 3
 

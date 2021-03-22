@@ -3,6 +3,7 @@
 
 
 import unittest
+
 from diamond.metric import Metric
 
 

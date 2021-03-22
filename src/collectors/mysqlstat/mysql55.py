@@ -11,7 +11,7 @@ For now only monitors replication load
 
 #### Dependencies
 
- * MySQLdb
+ * mysqlclient
  * MySQL 5.5.3+
 
 """
@@ -24,10 +24,10 @@ import time
 import diamond.collector
 
 try:
-    import MySQLdb
-    from MySQLdb import MySQLError
+    import mysqlclient
+    from mysqlclient import MySQLError
 except ImportError:
-    MySQLdb = None
+    mysqlclient = None
 
 
 class MySQLPerfCollector(diamond.collector.Collector):
@@ -128,12 +128,12 @@ class MySQLPerfCollector(diamond.collector.Collector):
         return config
 
     def connect(self, params):
-        if MySQLdb is None:
-            self.log.error('Unable to import MySQLdb')
+        if mysqlclient is None:
+            self.log.error('Unable to import mysqlclient')
             return
 
         try:
-            self.db = MySQLdb.connect(**params)
+            self.db = mysqlclient.connect(**params)
         except MySQLError as e:
             self.log.error('MySQLPerfCollector couldnt connect to database %s', e)
             return {}

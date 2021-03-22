@@ -60,6 +60,7 @@ which subscribes to an MQTT broker and sends metrics off to Graphite.
 """
 
 import os
+
 from diamond.collector import get_hostname
 from diamond.handler.Handler import Handler
 
@@ -80,9 +81,6 @@ __email__ = 'jpmens@gmail.com'
 
 
 class MQTTHandler(Handler):
-    """
-    """
-
     def __init__(self, config=None):
         """
         Create a new instance of the MQTTHandler class
@@ -102,6 +100,7 @@ class MQTTHandler(Handler):
         self.prefix = self.config.get('prefix', "")
         self.tls = self.config.get('tls', False)
         self.timestamp = 0
+
         try:
             self.timestamp = self.config['timestamp']
             if not self.timestamp:
@@ -114,6 +113,7 @@ class MQTTHandler(Handler):
         if not mosquitto:
             self.log.error('mosquitto import failed. Handler disabled')
             self.enabled = False
+
             return
 
         # Initialize
@@ -141,13 +141,12 @@ class MQTTHandler(Handler):
                     keyfile=self.keyfile,
                     cert_reqs=ssl.CERT_REQUIRED,
                     tls_version=3,
-                    ciphers=None)
+                    ciphers=None
+                )
             except:
-                self.log.error("MQTTHandler: Cannot set up TLS " +
-                               "configuration. Files missing?")
+                self.log.error("MQTTHandler: Cannot set up TLS configuration. Files missing?")
 
-        self.mqttc.will_set("clients/diamond/%s" % (self.hostname),
-                            payload="Adios!", qos=0, retain=False)
+        self.mqttc.will_set("clients/diamond/%s" % self.hostname, payload="Adios!", qos=0, retain=False)
         self.mqttc.connect(self.host, self.port, 60)
 
         self.mqttc.on_disconnect = self._disconnect
@@ -158,8 +157,7 @@ class MQTTHandler(Handler):
         """
         config = super(MQTTHandler, self).get_default_config_help()
 
-        config.update({
-        })
+        config.update({})
 
         return config
 
@@ -169,8 +167,7 @@ class MQTTHandler(Handler):
         """
         config = super(MQTTHandler, self).get_default_config()
 
-        config.update({
-        })
+        config.update({})
 
         return config
 
@@ -185,13 +182,15 @@ class MQTTHandler(Handler):
 
         line = str(metric)
         topic, value, timestamp = line.split()
+
         if len(self.prefix):
             topic = "%s/%s" % (self.prefix, topic)
+
         topic = topic.replace('.', '/')
-        topic = topic.replace('#', '&')     # Topic must not contain wildcards
+        topic = topic.replace('#', '&')  # Topic must not contain wildcards
 
         if self.timestamp == 0:
-            self.mqttc.publish(topic, "%s" % (value), self.qos)
+            self.mqttc.publish(topic, "%s" % value, self.qos)
         else:
             self.mqttc.publish(topic, "%s %s" % (value, timestamp), self.qos)
 

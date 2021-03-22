@@ -24,6 +24,7 @@ class TestTSDBdHandler(TestCase):
     def decompress(self, input):
         infile = StringIO()
         infile.write(input)
+
         with contextlib.closing(gzip.GzipFile(fileobj=infile, mode="r")) as f:
             f.rewind()
             out = f.read()

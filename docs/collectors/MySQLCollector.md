@@ -27,7 +27,7 @@ GRANT PROCESS ON *.* TO 'user'@'hostname' IDENTIFIED BY
 
 #### Dependencies
 
- * MySQLdb
+ * mysqlclient
 
 
 #### Options

@@ -7,6 +7,7 @@ servers. Specify them as a list of hosts divided by comma.
 """
 
 from copy import deepcopy
+
 from diamond.handler.Handler import Handler
 from diamond.handler.graphitepickle import GraphitePickleHandler
 
@@ -28,6 +29,7 @@ class MultiGraphitePickleHandler(Handler):
 
         # Initialize Options
         hosts = self.config['host']
+
         for host in hosts:
             config = deepcopy(self.config)
             config['host'] = host
@@ -37,8 +39,7 @@ class MultiGraphitePickleHandler(Handler):
         """
         Returns the help text for the configuration options for this handler
         """
-        config = super(MultiGraphitePickleHandler,
-                       self).get_default_config_help()
+        config = super(MultiGraphitePickleHandler, self).get_default_config_help()
 
         config.update({
             'host': 'Hostname, Hostname, Hostname',

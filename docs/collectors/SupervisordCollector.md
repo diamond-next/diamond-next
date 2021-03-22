@@ -12,7 +12,7 @@ basic stats on each registered process.
 
 #### Dependencies
 
- * xmlrpclib
+ * xmlrpc
  * supervisor
  * diamond
 
