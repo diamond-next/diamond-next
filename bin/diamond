@@ -84,7 +84,7 @@ def main():
         log = setup_logging(options.configfile, options.log_stdout)
 
     # Pass the exit up stream rather then handle it as an general exception
-    except SystemExit as e:
+    except SystemExit:
         raise SystemExit
 
     except Exception as e:
@@ -235,6 +235,7 @@ def main():
 
                 pf.write("%s\n" % pid)
                 pf.close()
+
                 # Log
                 log.debug("Wrote child PID file: %s" % options.pidfile)
 
