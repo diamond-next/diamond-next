@@ -37,6 +37,7 @@ class CassandraJolokiaCollector(JolokiaCollector):
             'histogram_regex':
             'Filter to only process attributes that match this regex'
         })
+
         return config_help
 
     # override to allow setting which percentiles will be collected
@@ -46,6 +47,7 @@ class CassandraJolokiaCollector(JolokiaCollector):
             'percentiles': ['50', '95', '99'],
             'histogram_regex': '.*HistogramMicros$'
         })
+
         return config
 
     def __init__(self, *args, **kwargs):
@@ -56,6 +58,7 @@ class CassandraJolokiaCollector(JolokiaCollector):
     def update_config(self, config):
         if 'percentiles' in config:
             self.percentiles = map(int, config['percentiles'])
+
         if 'histogram_regex' in config:
             self.histogram_regex = re.compile(config['histogram_regex'])
 
@@ -67,6 +70,7 @@ class CassandraJolokiaCollector(JolokiaCollector):
 
         buckets = values
         offsets = self.offsets
+
         for percentile in self.percentiles:
             value = self.compute_percentile(offsets, buckets, percentile)
             cleaned_key = self.clean_up("%s.p%s" % (prefix, percentile))
@@ -83,14 +87,16 @@ class CassandraJolokiaCollector(JolokiaCollector):
     # million, with less precision as the offsets get larger.
     def compute_percentile(self, offsets, buckets, percentile_int):
         non_zero_points_sum = sum(buckets)
-        if non_zero_points_sum is 0:
-            return 0
-        middle_point_index = math.floor(
-            non_zero_points_sum * (percentile_int / float(100)))
 
+        if non_zero_points_sum == 0:
+            return 0
+
+        middle_point_index = math.floor(non_zero_points_sum * (percentile_int / float(100)))
         points_seen = 0
+
         for index, bucket in enumerate(buckets):
             points_seen += bucket
+
             if points_seen >= middle_point_index:
                 return round((offsets[index] - offsets[index - 1]) / 2)
 
@@ -101,8 +107,10 @@ class CassandraJolokiaCollector(JolokiaCollector):
 
         for index in range(bucket_count):
             next_num = round(last_num * 1.2)
+
             if next_num == last_num:
                 next_num += 1
+
             offsets.append(next_num)
             last_num = next_num
 

@@ -29,7 +29,9 @@ Additionally, it features an API for implementing custom collectors for gatherin
 
 ## Huh, -next ?
 
-This is fork of [python-diamond/Diamond](https://github.com/python-diamond/Diamond). Unfortunately development of Diamond is stuck, let's face it - project is abandoned. Diamond-next is an effort to continue the work. Besides the name of the package, under the hood, from user perspective, everything will be the same.
+This is fork of [python-diamond/Diamond](https://github.com/python-diamond/Diamond).
+Unfortunately development of Diamond is stuck, let's face it - project is abandoned.
+Diamond-next is an effort to continue the work. Besides the name of the package, under the hood, from user perspective, everything will be the same.
 
 ## Getting Started
 
@@ -60,6 +62,7 @@ BrightcoveOS updated and still honor issues/tickets cut on that repo. Unfortunat
 let's face it - project is abandoned. Diamond-next is an effort to continue development.
 
 ## Diamond Related Projects
+
  * [Related Projects](Related-Projects.md)
 
 

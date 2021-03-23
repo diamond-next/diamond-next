@@ -2,6 +2,7 @@
 
 - [x] basestring > str
 - [x] long > int
+- [x] file > open
 - [x] base64.encodestring > base64.b64encode
 - [x] urllib2 > urllib
 - [x] urlparse > urllib.parse
