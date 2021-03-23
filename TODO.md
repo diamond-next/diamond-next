@@ -25,3 +25,4 @@
 - [x] import MySQLdb > import mysqlclient
 - [x] import imp > import importlib
 - [x] raw_input(…) > input(…)
+- [x] __builtin__ > builtins

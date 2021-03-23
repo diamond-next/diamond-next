@@ -22,7 +22,7 @@ class TestSlabInfoCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(SlabInfoCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_stat(self, publish_mock, open_mock):

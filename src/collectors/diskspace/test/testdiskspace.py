@@ -28,8 +28,7 @@ class TestDiskSpaceCollector(CollectorTestCase):
     def run_collection(self, statvfs_mock, os_major, os_minor):
         os_stat_mock = patch('os.stat')
         os_path_isdir_mock = patch('os.path.isdir', Mock(return_value=False))
-        open_mock = patch('__builtin__.open',
-                          Mock(return_value=self.getFixture('proc_mounts')))
+        open_mock = patch('builtins.open', Mock(return_value=self.getFixture('proc_mounts')))
         os_statvfs_mock = patch('os.statvfs', Mock(return_value=statvfs_mock))
 
         os_stat_mock.start()
@@ -48,7 +47,7 @@ class TestDiskSpaceCollector(CollectorTestCase):
 
         os_stat_mock = patch('os.stat')
         os_realpath_mock = patch('os.path.realpath')
-        open_mock = patch('__builtin__.open', Mock(return_value=self.getFixture('proc_mounts')))
+        open_mock = patch('builtins.open', Mock(return_value=self.getFixture('proc_mounts')))
 
         stat_mock = os_stat_mock.start()
         stat_mock.return_value.st_dev = 42

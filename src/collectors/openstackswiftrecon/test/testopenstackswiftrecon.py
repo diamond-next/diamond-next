@@ -27,7 +27,7 @@ class TestOpenstackSwiftReconCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(OpenstackSwiftReconCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=False))
     @patch.object(Collector, 'publish')
     def test_recon_no_access(self, publish_mock, open_mock):

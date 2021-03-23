@@ -22,7 +22,7 @@ class TestSoftInterruptCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(SoftInterruptCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_stat(self, publish_mock, open_mock):
@@ -32,9 +32,7 @@ class TestSoftInterruptCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
-            'softirq 0 0 0 0 0 0 0 0 0 0 0'
-        )))
+        patch_open = patch('builtins.open', Mock(return_value=StringIO('softirq 0 0 0 0 0 0 0 0 0 0 0')))
 
         patch_open.start()
         self.collector.collect()
@@ -42,9 +40,7 @@ class TestSoftInterruptCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
-            'softirq 55 1 2 3 4 5 6 7 8 9 10'
-        )))
+        patch_open = patch('builtins.open', Mock(return_value=StringIO('softirq 55 1 2 3 4 5 6 7 8 9 10')))
 
         patch_open.start()
         self.collector.collect()

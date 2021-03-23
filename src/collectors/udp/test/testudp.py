@@ -26,7 +26,7 @@ class TestUDPCollector(CollectorTestCase):
         self.assertTrue(UDPCollector)
 
     @patch('os.access', Mock(return_value=True))
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch.object(Collector, 'publish')
     def test_should_open_proc_net_snmp(self, publish_mock, open_mock):
         UDPCollector.PROC = ['/proc/net/snmp']

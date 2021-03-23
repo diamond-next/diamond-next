@@ -211,6 +211,7 @@ class NetAppCollector(diamond.collector.Collector):
             return
 
         newpath = path
+
         # Change metric name before publish if needed.
         newpath = ".".join([".".join(path.split(".")[:-1]), prettyname])
         metric = Metric(newpath, value, precision=4, host=device)
@@ -228,12 +229,12 @@ class NetAppCollector(diamond.collector.Collector):
         secondary_delta = None
 
         if basename in self.DIVIDERS.keys():
-            mateKey = ".".join([shortpath, self.DIVIDERS[basename]])
+            mate_key = ".".join([shortpath, self.DIVIDERS[basename]])
         else:
             return
 
-        if mateKey in derivative.keys():
-            secondary_delta = derivative[mateKey]
+        if mate_key in derivative.keys():
+            secondary_delta = derivative[mate_key]
         else:
             return
 
@@ -274,34 +275,33 @@ class NetAppCollector(diamond.collector.Collector):
         server.set_style('LOGIN')
         server.set_admin_user(user, password)
 
-        # We're only able to query a single object at a time,
-        # so we'll loop over the objects.
+        # We're only able to query a single object at a time, so we'll loop over the objects.
         for na_object in self.METRICS.keys():
 
             # For easy reference later, generate a new dict for this object
-            LOCALMETRICS = {}
+            local_metrics = {}
 
             for metric in self.METRICS[na_object]:
                 metricname, prettyname, multiplier = metric
-                LOCALMETRICS[metricname] = {}
-                LOCALMETRICS[metricname]["prettyname"] = prettyname
-                LOCALMETRICS[metricname]["multiplier"] = multiplier
+                local_metrics[metricname] = {}
+                local_metrics[metricname]["prettyname"] = prettyname
+                local_metrics[metricname]["multiplier"] = multiplier
 
             # Keep track of how long has passed since we checked last
-            CollectTime = time.time()
+            collect_time = time.time()
             time_delta = None
 
             if na_object in self.LastCollectTime.keys():
-                time_delta = CollectTime - self.LastCollectTime[na_object]
+                time_delta = collect_time - self.LastCollectTime[na_object]
 
-            self.LastCollectTime[na_object] = CollectTime
+            self.LastCollectTime[na_object] = collect_time
 
             self.log.debug("Collecting metric of object %s" % na_object)
             query = NaServer.NaElement("perf-object-get-instances-iter-start")
             query.child_add_string("objectname", na_object)
             counters = NaServer.NaElement("counters")
 
-            for metric in LOCALMETRICS.keys():
+            for metric in local_metrics.keys():
                 counters.child_add_string("counter", metric)
 
             query.child_add(counters)
@@ -339,10 +339,9 @@ class NetAppCollector(diamond.collector.Collector):
 
                     for instance in instances:
                         raw_name = unicodedata.normalize('NFKD', instance.child_get_string("name")).encode('ascii', 'ignore')
-                        # Shorten the name for disks as they are very long and
-                        # padded with zeroes, eg:
-                        # 5000C500:3A236B0B:00000000:00000000:00000000:...
-                        if na_object is "disk":
+
+                        # Shorten the name for disks as they are very long and padded with zeroes, eg: 5000C500:3A236B0B:00000000:00000000:00000000:...
+                        if na_object == "disk":
                             non_zero_blocks = [
                                 block for block in raw_name.split(":")
                                 if block != "00000000"
@@ -356,8 +355,8 @@ class NetAppCollector(diamond.collector.Collector):
                         for counter in counters:
                             metricname = unicodedata.normalize('NFKD', counter.child_get_string("name")).encode('ascii', 'ignore')
                             metricvalue = counter.child_get_string("value")
-                            # We'll need a long complete pathname to not
-                            # confuse self.derivative
+
+                            # We'll need a long complete pathname to not confuse self.derivative
                             pathname = ".".join([self.config["path_prefix"], device, na_object, instance_name, metricname])
                             raw[pathname] = int(metricvalue)
 
@@ -368,13 +367,14 @@ class NetAppCollector(diamond.collector.Collector):
             # and saves a new point, we'll need to store all derivatives
             # for local reference.
             derivative = {}
+
             for key in raw.keys():
                 derivative[key] = self.derivative(key, raw[key])
 
             for key in raw.keys():
                 metricname = key.split(".")[-1]
-                prettyname = LOCALMETRICS[metricname]["prettyname"]
-                multiplier = LOCALMETRICS[metricname]["multiplier"]
+                prettyname = local_metrics[metricname]["prettyname"]
+                multiplier = local_metrics[metricname]["multiplier"]
 
                 if metricname in self.DROPMETRICS:
                     continue

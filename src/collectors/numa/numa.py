@@ -16,7 +16,7 @@ from subprocess import PIPE, Popen
 
 import diamond.collector
 
-node_re = re_compile('(?P<node>^node \d+ (free|size)): (?P<size>\d+) \MB')
+node_re = re_compile('(?P<node>^node d+ (free|size)): (?P<size>d+) MB')
 
 
 class NumaCollector(diamond.collector.Collector):

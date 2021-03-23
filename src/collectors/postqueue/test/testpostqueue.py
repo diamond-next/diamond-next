@@ -34,19 +34,13 @@ class TestPostqueueCollector(CollectorTestCase):
             'count': 3
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_empty_queue(self, publish_mock):
-        patch_collector = patch.object(
-            PostqueueCollector,
-            'get_postqueue_output',
-            Mock(return_value=self.getFixture(
-                'postqueue_empty').getvalue()))
+        patch_collector = patch.object(PostqueueCollector, 'get_postqueue_output', Mock(return_value=self.getFixture('postqueue_empty').getvalue()))
         patch_collector.start()
         self.collector.collect()
         patch_collector.stop()

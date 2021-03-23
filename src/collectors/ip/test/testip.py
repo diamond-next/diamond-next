@@ -24,7 +24,7 @@ class TestIPCollector(CollectorTestCase):
         self.assertTrue(IPCollector)
 
     @patch('os.access', Mock(return_value=True))
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('diamond.collector.Collector.publish')
     def test_should_open_proc_net_snmp(self, publish_mock, open_mock):
         IPCollector.PROC = ['/proc/net/snmp']
@@ -33,7 +33,7 @@ class TestIPCollector(CollectorTestCase):
         open_mock.assert_called_once_with('/proc/net/snmp')
 
     @patch('os.access', Mock(return_value=True))
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('diamond.collector.Collector.publish')
     def test_should_work_with_synthetic_data(self, publish_mock, open_mock):
         IPCollector.PROC = ['/proc/net/snmp']

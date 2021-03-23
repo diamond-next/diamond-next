@@ -96,8 +96,7 @@ if __name__ == "__main__":
     get_collector_tests(cPath, options.verbose)
 
     if not options.collector:
-        # Only pull in diamond tests when a specific collector
-        # hasn't been specified
+        # Only pull in diamond tests when a specific collector hasn't been specified
         get_collector_tests(dPath)
 
     loader = unittest.TestLoader()
@@ -123,6 +122,7 @@ if __name__ == "__main__":
 
     if resobj['failures'] > 0:
         sys.exit(1)
+
     if resobj['errors'] > 0:
         sys.exit(2)
 

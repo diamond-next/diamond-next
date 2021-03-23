@@ -42,9 +42,11 @@ class DropwizardCollector(diamond.collector.Collector):
     def collect(self):
         if json is None:
             self.log.error('Unable to import json')
+
             return {}
-        url = 'http://%s:%i/metrics' % (
-            self.config['host'], int(self.config['port']))
+
+        url = 'http://%s:%i/metrics' % (self.config['host'], int(self.config['port']))
+
         try:
             response = urlopen(url)
         except HTTPError as err:

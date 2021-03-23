@@ -15,8 +15,8 @@ from diamond.handler.tsdb import TSDBHandler
 from diamond.metric import Metric
 
 
-@patch('diamond.handler.tsdb.urllib.request.urlopen')
-@patch('diamond.handler.tsdb.urllib.request.Request')
+@patch('urllib.request.urlopen')
+@patch('urllib.request.Request')
 class TestTSDBdHandler(TestCase):
     def setUp(self):
         self.url = 'http://127.0.0.1:4242/api/put'

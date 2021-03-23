@@ -89,7 +89,7 @@ class TestMesosCGroupCollector(CollectorTestCase):
         patch_urlopen = patch('urllib.request.urlopen', Mock(side_effect=urlopen_se))
         patch_listdir = patch('os.listdir', Mock(side_effect=listdir_se))
         patch_isdir = patch('os.path.isdir', Mock(side_effect=isdir_se))
-        patch_open = patch('__builtin__.open', MagicMock(spec=file, side_effect=open_se))
+        patch_open = patch('builtins.open', MagicMock(spec=file, side_effect=open_se))
 
         patch_urlopen.start()
         patch_listdir.start()

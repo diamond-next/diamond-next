@@ -24,7 +24,7 @@ class TestUptimeCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(UptimeCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.path.exists', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_uptime(self, publish_mock, open_mock):

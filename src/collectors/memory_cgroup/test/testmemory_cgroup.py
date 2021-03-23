@@ -23,7 +23,7 @@ class TestMemoryCgroupCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(MemoryCgroupCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.walk', Mock(return_value=iter(fixtures)))
     @patch.object(Collector, 'publish')
     def test_should_open_all_memory_stat(self, publish_mock, open_mock):

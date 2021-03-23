@@ -65,11 +65,9 @@ class UserScriptsCollector(diamond.collector.Collector):
                     self.log.info("%s is not executable" % absolutescriptpath)
                     continue
             else:
-                # Don't bother logging skipped non-file files (typically
-                # directories)
+                # Don't bother logging skipped non-file files (typically directories)
                 continue
 
-            out = None
             self.log.debug("Executing %s" % absolutescriptpath)
 
             try:
@@ -90,7 +88,7 @@ class UserScriptsCollector(diamond.collector.Collector):
                 self.log.error("%s returned error output (stderr): %s" % (absolutescriptpath, err))
 
             # Use filter to remove empty lines of output
-            for line in filter(None, out.split('\n')):
+            for line in filter(None, out.split(b'\n')):
                 # Ignore invalid lines
                 try:
                     name, value = line.split()
