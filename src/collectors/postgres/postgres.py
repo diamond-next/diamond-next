@@ -222,14 +222,12 @@ class QueryStats(object):
                 # If row > length 2, assume each column name maps to
                 # key => value
                 else:
-                    for key, value in row.iteritems():
-                        if key in ('datname', 'schemaname', 'relname',
-                                   'indexrelname', 'funcname',):
+                    for key, value in iter(row.items()):
+                        if key in ('datname', 'schemaname', 'relname', 'indexrelname', 'funcname'):
                             continue
 
                         self.data.append({
-                            'datname': self._translate_datname(row.get(
-                                'datname', self.dbname)),
+                            'datname': self._translate_datname(row.get('datname', self.dbname)),
                             'schemaname': row.get('schemaname', None),
                             'relname': row.get('relname', None),
                             'indexrelname': row.get('indexrelname', None),
@@ -272,11 +270,7 @@ class DatabaseStats(QueryStats):
         WHERE pg_stat_database.datname
         NOT IN ('template0','template1','postgres', 'rdsadmin')
     """
-    query = post_92_query.replace(
-        'pg_stat_database.temp_files as temp_files,',
-        '').replace(
-        'pg_stat_database.temp_bytes as temp_bytes,',
-        '')
+    query = post_92_query.replace('pg_stat_database.temp_files as temp_files,', '').replace('pg_stat_database.temp_bytes as temp_bytes,', '')
 
 
 class UserFunctionStats(QueryStats):

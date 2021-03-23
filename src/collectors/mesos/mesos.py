@@ -241,7 +241,7 @@ class MesosCollector(Collector):
             self._publish(metrics, False)
 
     def _publish(self, result, sanitize_executor_id=True):
-        for executor_id, executor in result.iteritems():
+        for executor_id, executor in iter(result.items()):
             executor_statistics = executor['statistics']
 
             for key in executor_statistics:

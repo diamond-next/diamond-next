@@ -47,8 +47,7 @@ class UnboundCollector(diamond.collector.ProcessCollector):
                 # Let's compress <1ms into 1 data point
                 histogram['1ms'] += raw_histogram[intv]
             elif intv < 1.0:
-                # Convert to ms and since we're using the upper limit
-                # divide by 2 for lower limit
+                # Convert to ms and since we're using the upper limit divide by 2 for lower limit
                 intv_name = ''.join([str(int(intv / 0.001024 / 2)), 'ms+'])
                 histogram[intv_name] = raw_histogram[intv]
             elif intv == 1.0:
@@ -85,5 +84,5 @@ class UnboundCollector(diamond.collector.ProcessCollector):
         if include_hist:
             histogram = self.get_massaged_histogram(raw_histogram)
 
-            for intv, value in histogram.iteritems():
+            for intv, value in iter(histogram.items()):
                 self.publish('histogram.' + intv, value)

@@ -36,9 +36,9 @@ class EtcdCollector(diamond.collector.Collector):
             'port': 'Port (default is 2379)',
             'timeout': 'Timeout per HTTP(s) call',
             'use_tls': 'Use TLS/SSL or just unsecure (default is unsecure)',
-            'ca_file': 'Only applies when use_tls=true. Path to CA certificate'
-                       ' file to use for server identity verification',
+            'ca_file': 'Only applies when use_tls=true. Path to CA certificate file to use for server identity verification',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -51,6 +51,7 @@ class EtcdCollector(diamond.collector.Collector):
             'use_tls': False,
             'ca_file': '',
         })
+
         return config
 
     def __init__(self, *args, **kwargs):
@@ -71,6 +72,7 @@ class EtcdCollector(diamond.collector.Collector):
         for k in METRICS_KEYS:
             if k not in metrics:
                 continue
+
             v = metrics[k]
             key = self.clean_up(k)
             self.publish("self.%s" % key, v)
@@ -78,7 +80,7 @@ class EtcdCollector(diamond.collector.Collector):
     def collect_store_metrics(self):
         metrics = self.get_store_metrics()
 
-        for k, v in metrics.iteritems():
+        for k, v in iter(metrics.items()):
             key = self.clean_up(k)
             self.publish("store.%s" % key, v)
 
@@ -105,6 +107,7 @@ class EtcdCollector(diamond.collector.Collector):
             return json.load(urlopen(url, **opts))
         except (HTTPError, ValueError) as err:
             self.log.error('Unable to read JSON response: %s' % err)
+
             return {}
 
     def clean_up(self, text):

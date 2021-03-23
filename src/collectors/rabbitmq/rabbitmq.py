@@ -21,8 +21,8 @@ Collects data from RabbitMQ through the admin interface
   **
 """
 
+import base64
 import re
-from base64 import b64encode
 from urllib.parse import quote, urljoin
 from urllib.request import Request, urlopen
 
@@ -42,7 +42,8 @@ class RabbitMQClient(object):
         self.log = log
         self.base_url = '%s://%s/api/' % (scheme, host)
         self.timeout = timeout
-        self._authorization = 'Basic ' + b64encode('%s:%s' % (user, password))
+        base64string = base64.b64encode(bytes('%s:%s' % (user, password), 'utf-8'))
+        self._authorization = 'Basic %s' % base64string
 
     def do_call(self, path):
         url = urljoin(self.base_url, path)
@@ -247,7 +248,7 @@ class RabbitMQCollector(diamond.collector.Collector):
             vhost_conf, legacy = self.get_vhost_conf(vhost_names)
 
             # Iterate all vhosts in our vhosts configurations
-            for vhost, queues in vhost_conf.iteritems():
+            for vhost, queues in iter(vhost_conf.items()):
                 vhost_name = vhost
 
                 if self.config['replace_dot']:

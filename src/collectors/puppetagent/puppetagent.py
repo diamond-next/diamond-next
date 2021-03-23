@@ -23,6 +23,7 @@ class PuppetAgentCollector(diamond.collector.Collector):
         config_help.update({
             'yaml_path': "Path to last_run_summary.yaml",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -34,6 +35,7 @@ class PuppetAgentCollector(diamond.collector.Collector):
             'yaml_path': '/var/lib/puppet/state/last_run_summary.yaml',
             'path': 'puppetagent',
         })
+
         return config
 
     def _get_summary(self):
@@ -53,8 +55,8 @@ class PuppetAgentCollector(diamond.collector.Collector):
 
         summary = self._get_summary()
 
-        for sect, data in summary.iteritems():
-            for stat, value in data.iteritems():
+        for sect, data in iter(summary.items()):
+            for stat, value in iter(data.items()):
                 if value is None or isinstance(value, str):
                     continue
 

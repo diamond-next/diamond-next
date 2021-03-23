@@ -61,6 +61,7 @@ def match_process(pid, name, cmdline, exe, cfg):
     """
     if cfg['selfmon'] and pid == os.getpid():
         return True
+
     for exe_re in cfg['exe']:
         if exe_re.search(exe):
             return True
@@ -70,6 +71,7 @@ def match_process(pid, name, cmdline, exe, cfg):
     for cmdline_re in cfg['cmdline']:
         if cmdline_re.search(' '.join(cmdline)):
             return True
+
     return False
 
 
@@ -82,7 +84,7 @@ def process_info(process, info_keys):
         if type(value) in [float, int]:
             results.update({key: value})
         elif hasattr(value, '_asdict'):
-            for subkey, subvalue in value._asdict().iteritems():
+            for subkey, subvalue in iter(value._asdict().items()):
                 results.update({"%s.%s" % (key, subkey): subvalue})
 
     return results
@@ -163,7 +165,7 @@ class ProcessResourcesCollector(diamond.collector.Collector):
         return config
 
     def save_process_info(self, pg_name, process_info):
-        for key, value in process_info.iteritems():
+        for key, value in iter(process_info.items()):
             if key in self.processes_info[pg_name]:
                 self.processes_info[pg_name][key] += value
             else:
@@ -207,11 +209,12 @@ class ProcessResourcesCollector(diamond.collector.Collector):
             self.collect_process_info(process)
 
         # publish results
-        for pg_name, counters in self.processes_info.iteritems():
+        for pg_name, counters in iter(self.processes_info.items()):
             if counters:
                 metrics = (
                     ("%s.%s" % (pg_name, key), value)
-                    for key, value in counters.iteritems())
+                    for key, value in iter(counters.items())
+                )
             else:
                 if self.processes[pg_name]['count_workers']:
                     metrics = (('%s.workers_count' % pg_name, 0), )
@@ -219,5 +222,6 @@ class ProcessResourcesCollector(diamond.collector.Collector):
                     metrics = ()
 
             [self.publish(*metric) for metric in metrics]
+
             # reinitialize process info
             self.processes_info[pg_name] = {}

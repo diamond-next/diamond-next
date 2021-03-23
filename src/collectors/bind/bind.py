@@ -99,59 +99,32 @@ class BindCollector(diamond.collector.Collector):
                 self.publish('view.%s.zones' % name, nzones)
 
                 for counter in view.findall('rdtype'):
-                    self.clean_counter(
-                        'view.%s.query.%s' % (name, counter.find('name').text),
-                        int(counter.find('counter').text)
-                    )
+                    self.clean_counter('view.%s.query.%s' % (name, counter.find('name').text), int(counter.find('counter').text))
 
                 for counter in view.findall('resstat'):
-                    self.clean_counter(
-                        'view.%s.resstat.%s' % (name, counter.find('name').text),
-                        int(counter.find('counter').text)
-                    )
+                    self.clean_counter('view.%s.resstat.%s' % (name, counter.find('name').text), int(counter.find('counter').text))
 
                 for counter in view.findall('cache/rrset'):
-                    self.clean_counter(
-                        'view.%s.cache.%s' % (name, counter.find('name').text.replace('!', 'NOT_')),
-                        int(counter.find('counter').text)
-                    )
+                    self.clean_counter('view.%s.cache.%s' % (name, counter.find('name').text.replace('!', 'NOT_')), int(counter.find('counter').text))
 
         if 'server' in self.config['publish']:
             for counter in root.findall('server/requests/opcode'):
-                self.clean_counter(
-                    'requests.%s' % counter.find('name').text,
-                    int(counter.find('counter').text)
-                )
+                self.clean_counter('requests.%s' % counter.find('name').text, int(counter.find('counter').text))
 
             for counter in root.findall('server/queries-in/rdtype'):
-                self.clean_counter(
-                    'queries.%s' % counter.find('name').text,
-                    int(counter.find('counter').text)
-                )
+                self.clean_counter('queries.%s' % counter.find('name').text, int(counter.find('counter').text))
 
             for counter in root.findall('server/nsstat'):
-                self.clean_counter(
-                    'nsstat.%s' % counter.find('name').text,
-                    int(counter.find('counter').text)
-                )
+                self.clean_counter('nsstat.%s' % counter.find('name').text, int(counter.find('counter').text))
 
         if 'zonemgmt' in self.config['publish']:
             for counter in root.findall('server/zonestat'):
-                self.clean_counter(
-                    'zonestat.%s' % counter.find('name').text,
-                    int(counter.find('counter').text)
-                )
+                self.clean_counter('zonestat.%s' % counter.find('name').text, int(counter.find('counter').text))
 
         if 'sockets' in self.config['publish']:
             for counter in root.findall('server/sockstat'):
-                self.clean_counter(
-                    'sockstat.%s' % counter.find('name').text,
-                    int(counter.find('counter').text)
-                )
+                self.clean_counter('sockstat.%s' % counter.find('name').text, int(counter.find('counter').text))
 
         if 'memory' in self.config['publish']:
-            for counter in root.find('memory/summary').getchildren():
-                self.publish(
-                    'memory.%s' % counter.tag,
-                    int(counter.text)
-                )
+            for counter in list(root.find('memory/summary').iter()):
+                self.publish('memory.%s' % counter.tag, int(counter.text))

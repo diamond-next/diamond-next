@@ -113,19 +113,19 @@ class TwemproxyCollector(diamond.collector.Collector):
         stats = {}
         pools = {}
 
-        for stat, value in data.iteritems():
+        for stat, value in iter(data.items()):
             # Test if this is a pool
             if isinstance(value, dict):
                 pool_name = stat.replace('.', '_')
                 pools[pool_name] = {}
 
-                for pool_stat, pool_value in value.iteritems():
+                for pool_stat, pool_value in iter(value.items()):
                     # Test if this is a pool server
                     if isinstance(pool_value, dict):
                         server_name = pool_stat.replace('.', '_')
                         pools[pool_name][server_name] = {}
 
-                        for server_stat, server_value in pool_value.iteritems():
+                        for server_stat, server_value in iter(pool_value.items()):
                             pools[pool_name][server_name][server_stat] = int(server_value)
                     else:
                         pools[pool_name][pool_stat] = int(pool_value)
@@ -162,19 +162,17 @@ class TwemproxyCollector(diamond.collector.Collector):
                     self.publish_counter(alias + "." + stat, stats[stat])
 
             # Pool stats
-            for pool, pool_stats in pools.iteritems():
-                for stat, stat_value in pool_stats.iteritems():
+            for pool, pool_stats in iter(pools.items()):
+                for stat, stat_value in iter(pool_stats.items()):
                     # Test if this is a pool server
                     if isinstance(stat_value, dict):
-                        for server_stat, server_value in stat_value.iteritems():
+                        for server_stat, server_value in iter(stat_value.items()):
                             if server_stat in self.GAUGES:
                                 self.publish_gauge(alias + ".pools." + pool + ".servers." + stat + "." + server_stat, server_value)
                             else:
                                 self.publish_counter(alias + ".pools." + pool + ".servers." + stat + "." + server_stat, server_value)
                     else:
                         if stat in self.GAUGES:
-                            self.publish_gauge(
-                                alias + ".pools." + pool + "." + stat, stat_value)
+                            self.publish_gauge(alias + ".pools." + pool + "." + stat, stat_value)
                         else:
-                            self.publish_counter(
-                                alias + ".pools." + pool + "." + stat, stat_value)
+                            self.publish_counter(alias + ".pools." + pool + "." + stat, stat_value)

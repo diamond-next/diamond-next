@@ -66,12 +66,10 @@ class JolokiaCollector(diamond.collector.Collector):
     These domains contain MBeans that are for management purposes,
     or otherwise do not contain useful metrics
     """
-    IGNORE_DOMAINS = ['JMImplementation', 'jmx4perl', 'jolokia',
-                      'com.sun.management', 'java.util.logging']
+    IGNORE_DOMAINS = ['JMImplementation', 'jmx4perl', 'jolokia', 'com.sun.management', 'java.util.logging']
 
     def get_default_config_help(self):
-        config_help = super(JolokiaCollector,
-                            self).get_default_config_help()
+        config_help = super(JolokiaCollector, self).get_default_config_help()
         config_help.update({
             'domains': "Pipe delimited list of JMX domains from which to"
                        " collect stats. If not provided, the list of all"
@@ -116,16 +114,19 @@ class JolokiaCollector(diamond.collector.Collector):
             'port': 8778,
             'use_canonical_names': True,
         })
+
         return config
 
     def __init__(self, *args, **kwargs):
         super(JolokiaCollector, self).__init__(*args, **kwargs)
         self.mbeans = []
+
         if isinstance(self.config['mbeans'], str):
             for mbean in self.config['mbeans'].split('|'):
                 self.mbeans.append(mbean.strip())
         elif isinstance(self.config['mbeans'], list):
             self.mbeans = self.config['mbeans']
+
         if self.config['regex'] is not None:
             self.mbeans = [re.compile(mbean) for mbean in self.mbeans]
 
@@ -134,11 +135,12 @@ class JolokiaCollector(diamond.collector.Collector):
             (re.compile('[:,.]+'), '.'),
             (re.compile('[^a-zA-Z0-9_.+-]+'), '_'),
         ]
+
         if isinstance(self.config['rewrite'], dict):
-            self.rewrite.extend([(re.compile(old), new) for old, new in
-                                 self.config['rewrite'].items()])
+            self.rewrite.extend([(re.compile(old), new) for old, new in self.config['rewrite'].items()])
 
         self.domains = []
+
         if 'domains' in self.config:
             if isinstance(self.config['domains'], str):
                 for domain in self.config['domains'].split('|'):
@@ -157,10 +159,10 @@ class JolokiaCollector(diamond.collector.Collector):
             elif self.config['use_canonical_names'] == 'False':
                 self.config['use_canonical_names'] = False
             else:
-                self.log.error('Unexpected value "%s" for "use_canonical_names"'
-                               ' setting. Expected "True" or "False". Using'
-                               ' default value.',
-                               self.config['use_canonical_names'])
+                self.log.error(
+                    'Unexpected value "%s" for "use_canonical_names" setting. Expected "True" or "False". Using default value.',
+                    self.config['use_canonical_names']
+                )
                 default = self.get_default_config()['use_canonical_names']
                 self.config['use_canonical_names'] = default
 
@@ -168,12 +170,12 @@ class JolokiaCollector(diamond.collector.Collector):
         # if not set it __init__
         if not self.domains:
             listing = self._list_request()
+
             try:
                 if listing['status'] == 200:
                     self.domains = listing['value'].keys()
                 else:
-                    self.log.error('Jolokia status %s while retrieving MBean '
-                                   'listing.', listing['status'])
+                    self.log.error('Jolokia status %s while retrieving MBean listing.', listing['status'])
             except KeyError:
                 # The reponse was totally empty, or not an expected format
                 self.log.error('Unable to retrieve MBean listing.')
@@ -181,11 +183,12 @@ class JolokiaCollector(diamond.collector.Collector):
     def _check_mbean(self, mbean):
         if not self.mbeans:
             return True
+
         mbeanfix = self.clean_up(mbean)
+
         if self.config['regex'] is not None:
             for chkbean in self.mbeans:
-                if chkbean.match(mbean) is not None or \
-                   chkbean.match(mbeanfix) is not None:
+                if chkbean.match(mbean) is not None or chkbean.match(mbeanfix) is not None:
                     return True
         else:
             if mbean in self.mbeans or mbeanfix in self.mbeans:
@@ -194,21 +197,25 @@ class JolokiaCollector(diamond.collector.Collector):
     def collect(self):
         if not self.domains:
             self._get_domains()
+
         for domain in self.domains:
             if domain not in self.IGNORE_DOMAINS:
                 obj = self._read_request(domain)
+
                 try:
                     mbeans = obj['value'] if obj['status'] == 200 else {}
                 except KeyError:
                     # The reponse was totally empty, or not an expected format
                     self.log.error('Unable to retrieve domain %s.', domain)
+
                     continue
-                for k, v in mbeans.iteritems():
+                for k, v in iter(mbeans.items()):
                     if self._check_mbean(k):
                         self.collect_bean(k, v)
 
     def _read_json(self, request):
         json_str = request.read()
+
         return json.loads(json_str)
 
     def _list_request(self):
@@ -223,19 +230,16 @@ class JolokiaCollector(diamond.collector.Collector):
             # maxCollectionSize=0 means "unlimited". This works around an issue
             # prior to Jolokia 1.3 where results were truncated at 1000
             #
-            url = "http://%s:%s/%s%s?maxDepth=1&maxCollectionSize=0" % (
-                self.config['host'],
-                self.config['port'],
-                self.jolokia_path,
-                self.LIST_URL)
-            # need some time to process the downloaded metrics, so that's why
-            # timeout is lower than the interval.
+            url = "http://%s:%s/%s%s?maxDepth=1&maxCollectionSize=0" % (self.config['host'], self.config['port'], self.jolokia_path, self.LIST_URL)
+
+            # need some time to process the downloaded metrics, so that's why timeout is lower than the interval.
             timeout = max(2, float(self.config['interval']) * 2 / 3)
 
             with closing(urlopen(self._create_request(url), timeout=timeout)) as response:
                 return self._read_json(response)
         except (HTTPError, ValueError) as e:
             self.log.error('Unable to read JSON response: %s', str(e))
+
             return {}
 
     def _read_request(self, domain):
@@ -243,22 +247,19 @@ class JolokiaCollector(diamond.collector.Collector):
             url_path = '/?%s' % urlencode({
                 'maxCollectionSize': '0',
                 'ignoreErrors': 'true',
-                'canonicalNaming':
-                    'true' if self.config['use_canonical_names'] else 'false',
+                'canonicalNaming': 'true' if self.config['use_canonical_names'] else 'false',
                 'p': 'read/%s:*' % self._escape_domain(domain),
             })
-            url = "http://%s:%s/%s%s" % (self.config['host'],
-                                         self.config['port'],
-                                         self.jolokia_path,
-                                         url_path)
-            # need some time to process the downloaded metrics, so that's why
-            # timeout is lower than the interval.
+            url = "http://%s:%s/%s%s" % (self.config['host'], self.config['port'], self.jolokia_path, url_path)
+
+            # need some time to process the downloaded metrics, so that's why timeout is lower than the interval.
             timeout = max(2, float(self.config['interval']) * 2 / 3)
 
             with closing(urlopen(self._create_request(url), timeout=timeout)) as response:
                 return self._read_json(response)
         except (HTTPError, ValueError):
             self.log.error('Unable to read JSON response.')
+
             return {}
 
     # escape JMX domain per https://jolokia.org/reference/html/protocol.html
@@ -270,6 +271,7 @@ class JolokiaCollector(diamond.collector.Collector):
         domain = re.sub('/', '!/', domain)
         domain = re.sub('"', '!"', domain)
         domain = quote(domain)
+
         return domain
 
     def _create_request(self, url):
@@ -279,8 +281,7 @@ class JolokiaCollector(diamond.collector.Collector):
 
         if username is not None and password is not None:
             base64string = base64.b64encode(bytes('%s:%s' % (username, password), 'utf-8'))
-
-        req.add_header("Authorization", "Basic %s" % base64string)
+            req.add_header("Authorization", "Basic %s" % base64string)
 
         return req
 
@@ -291,7 +292,7 @@ class JolokiaCollector(diamond.collector.Collector):
         return text
 
     def collect_bean(self, prefix, obj):
-        for k, v in obj.iteritems():
+        for k, v in iter(obj.items()):
             if type(v) in [int, float]:
                 key = "%s.%s" % (prefix, k)
                 key = self.clean_up(key)

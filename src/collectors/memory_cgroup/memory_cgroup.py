@@ -88,8 +88,7 @@ class MemoryCgroupCollector(diamond.collector.Collector):
             if not self.should_skip(root):
                 for filename in filenames:
                     if filename == 'memory.stat':
-                        # matches will contain a tuple contain path to
-                        # cpuacct.stat and the parent of the stat
+                        # matches will contain a tuple contain path to cpuacct.stat and the parent of the stat
                         parent = root.replace(self.memory_path, "").replace("/", ".")
 
                         if parent == '':
@@ -119,8 +118,8 @@ class MemoryCgroupCollector(diamond.collector.Collector):
                     break
 
         # create metrics from collected utimes and stimes for cgroups
-        for parent, cpuacct in results.iteritems():
-            for key, value in cpuacct.iteritems():
+        for parent, cpuacct in iter(results.items()):
+            for key, value in iter(cpuacct.items()):
                 metric_name = '.'.join([parent, key])
                 self.publish(metric_name, value, metric_type='GAUGE')
 

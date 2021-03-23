@@ -42,14 +42,18 @@ def parse_slab_stats(slab_stats):
     for line in slab_stats.splitlines():
         if line == 'END':
             break
+
         # e.g.: "STAT 1:chunks_per_page 10922"
         cmd, key, value = line.split(' ')
+
         if cmd != 'STAT':
             continue
+
         # e.g.: "STAT active_slabs 1"
         if ":" not in key:
             stats_dict[key] = int(value)
             continue
+
         slab, key = key.split(':')
         stats_dict['slabs'][int(slab)][key] = int(value)
 
@@ -66,18 +70,20 @@ def dict_to_paths(dict_):
     }
     """
     metrics = {}
-    for k, v in dict_.iteritems():
+
+    for k, v in iter(dict_.items()):
         if isinstance(v, dict):
             submetrics = dict_to_paths(v)
-            for subk, subv in submetrics.iteritems():
+
+            for subk, subv in iter(submetrics.items()):
                 metrics['.'.join([str(k), str(subk)])] = subv
         else:
             metrics[k] = v
+
     return metrics
 
 
 class MemcachedSlabCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(MemcachedSlabCollector, self).process_config()
         self.host = self.config['host']
@@ -85,6 +91,7 @@ class MemcachedSlabCollector(diamond.collector.Collector):
 
     def get_default_config(self):
         config = super(MemcachedSlabCollector, self).get_default_config()
+
         # Output stats in the format:
         # 'servers.cache-main-01.memcached_slab.slabs.1.chunk_size'
         config.update({
@@ -121,9 +128,8 @@ class MemcachedSlabCollector(diamond.collector.Collector):
         slab_stats = parse_slab_stats(unparsed_slab_stats)
         paths = dict_to_paths(slab_stats)
 
-        for path, value in paths.iteritems():
-            # Add path and prefix to metric (e.g.
-            # 'servers.cache-main-01.memchached_slab')
+        for path, value in iter(paths.items()):
+            # Add path and prefix to metric (e.g. 'servers.cache-main-01.memchached_slab')
             full_path = self.get_metric_path(path)
             metric = Metric(full_path, value)
             self.publish_metric(metric)

@@ -69,6 +69,7 @@ class PgbouncerCollector(diamond.collector.Collector):
     def collect(self):
         if psycopg2 is None:
             self.log.error('Unable to import module psycopg2.')
+
             return {}
 
         instances = self.config['instances']
@@ -83,14 +84,14 @@ class PgbouncerCollector(diamond.collector.Collector):
                 }
             }
 
-        for name, instance in instances.iteritems():
+        for name, instance in iter(instances.items()):
             host = instance['host']
             port = instance['port']
             user = instance.get('user') or self.config['user']
             password = instance.get('password') or self.config['password']
 
-            for database, stats in self._get_stats_by_database(host, port, user, password).iteritems():
-                for stat_name, stat_value in stats.iteritems():
+            for database, stats in iter(self._get_stats_by_database(host, port, user, password).items()):
+                for stat_name, stat_value in iter(stats.items()):
                     self.publish(self._get_metric_name(name, database, stat_name), stat_value)
 
     def _get_metric_name(self, name, database, stat_name):

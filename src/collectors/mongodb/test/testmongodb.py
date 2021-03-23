@@ -153,7 +153,7 @@ class TestMongoDBCollector(CollectorTestCase):
             m = c[0][0]
             datapoints_per_metric[m] += 1
 
-        dupes = [m for m, n in datapoints_per_metric.iteritems() if n > 1]
+        dupes = [m for m, n in iter(datapoints_per_metric.items()) if n > 1]
         self.assertEqual(len(dupes), 0, 'BUG: 1+ point for same metric received: %s' % ', '.join(dupes))
 
         # just a few samples

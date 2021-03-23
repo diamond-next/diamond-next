@@ -13,6 +13,8 @@ from urllib.error import URLError
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
+import diamond.collector
+
 try:
     from xml.etree import ElementTree
 except ImportError:
@@ -22,8 +24,6 @@ try:
     from ElementTree import ParseError as ETParseError
 except ImportError:
     ETParseError = Exception
-
-import diamond.collector
 
 
 class KafkaCollector(diamond.collector.Collector):
@@ -40,6 +40,7 @@ class KafkaCollector(diamond.collector.Collector):
             'host': "",
             'port': "",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -52,6 +53,7 @@ class KafkaCollector(diamond.collector.Collector):
             'port': 8082,
             'path': 'kafka',
         })
+
         return config
 
     def _get(self, path, query_args=None):
@@ -69,12 +71,14 @@ class KafkaCollector(diamond.collector.Collector):
             response = urlopen(url)
         except URLError as err:
             self.log.error("%s: %s", url, err)
+
             return None
 
         try:
             return ElementTree.fromstring(response.read())
         except ETParseError:
             self.log.error("Unable to parse response from mx4j")
+
             return None
 
     def get_mbeans(self, pattern):
@@ -87,7 +91,7 @@ class KafkaCollector(diamond.collector.Collector):
 
         found_beans = set()
 
-        for mbean in mbeans.getiterator(tag='MBean'):
+        for mbean in list(mbeans.iter(tag='MBean')):
             objectname = mbean.get('objectname')
 
             if objectname:
@@ -136,7 +140,7 @@ class KafkaCollector(diamond.collector.Collector):
 
         metrics = {}
 
-        for attrib in attributes.getiterator(tag='Attribute'):
+        for attrib in list(attributes.iter(tag='Attribute')):
             atype = attrib.get('type')
 
             ptype = self.ATTRIBUTE_TYPES.get(atype)
@@ -163,6 +167,7 @@ class KafkaCollector(diamond.collector.Collector):
     def collect(self):
         if ElementTree is None:
             self.log.error('Failed to import xml.etree.ElementTree')
+
             return
 
         # Get list of gatherable stats
@@ -192,5 +197,5 @@ class KafkaCollector(diamond.collector.Collector):
             metrics.update(stats)
 
         # Publish stats
-        for metric, value in metrics.iteritems():
+        for metric, value in iter(metrics.items()):
             self.publish(metric, value)

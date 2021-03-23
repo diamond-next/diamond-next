@@ -21,6 +21,7 @@ class MogilefsCollector(diamond.collector.Collector):
         config_help.update({
             'path': 'Metric path',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -28,6 +29,7 @@ class MogilefsCollector(diamond.collector.Collector):
         config.update({
             'path': 'mogilefs'
         })
+
         return config
 
     def collect(self):
@@ -42,10 +44,12 @@ class MogilefsCollector(diamond.collector.Collector):
             name, var = line.partition(" ")[::2]
             myvars[name.strip()] = int(var)
 
-        for key, value in myvars.iteritems():
+        for key, value in iter(myvars.items()):
             # Set Metric Name
             metric_name = key
+
             # Set Metric Value
             metric_value = value
+
             # Publish Metric
             self.publish(metric_name, metric_value)

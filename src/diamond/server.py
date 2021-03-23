@@ -126,7 +126,7 @@ class Server(object):
 
                 running_collectors = []
 
-                for collector, config in self.config['collectors'].iteritems():
+                for collector, config in iter(self.config['collectors'].items()):
                     if config.get('enabled', False) is not True:
                         continue
 

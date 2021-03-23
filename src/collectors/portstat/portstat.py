@@ -72,12 +72,13 @@ class PortStatCollector(diamond.collector.Collector):
 
         if psutil is None:
             self.log.error('Unable to import module psutil')
+
             return {}
 
-        for port_name, port_cfg in self.ports.iteritems():
+        for port_name, port_cfg in iter(self.ports.items()):
             port = int(port_cfg['number'])
             stats = get_port_stats(port)
 
-            for stat_name, stat_value in stats.iteritems():
+            for stat_name, stat_value in iter(stats.items()):
                 metric_name = '%s.%s' % (port_name, stat_name)
                 self.publish(metric_name, stat_value)

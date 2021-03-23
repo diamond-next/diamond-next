@@ -5,11 +5,11 @@
 - [x] base64.encodestring > base64.b64encode
 - [x] urllib2 > urllib
 - [x] urlparse > urllib.parse
-- [ ] *.getiterator()
-- [ ] *.getchildren()
-- [ ] *.iteritems() > iter(*.items()) ( https://www.python.org/dev/peps/pep-0469/ )
-- [ ] *.iterkeys()
-- [ ] *.itervalues()
+- [x] x.getiterator() > list(x.iter())
+- [x] x.getchildren() > list(x.iter())
+- [x] x.iteritems() > iter(x.items()) ( https://www.python.org/dev/peps/pep-0469/ )
+- [x] x.iterkeys() > iter(x.keys())
+- [x] x.itervalues() > iter(x.values())
 - [x] unicode > str ( https://stackoverflow.com/questions/19877306/nameerror-global-name-unicode-is-not-defined-in-python-3 )
 - [x] xrange > range
 - [x] from StringIO import StringIO > from io import StringIO
@@ -21,7 +21,7 @@
 - [x] string.letters > string.ascii_letters
 - [x] reduce(…) > functools.reduce(…)
 - [x] izip(…) > zip(…)
-- [x] xmlrpclib > xmlrpc
-- [x] MySQLdb > mysqlclient
+- [x] import xmlrpclib > import xmlrpc.client
+- [x] import MySQLdb > import mysqlclient
 - [x] import imp > import importlib
 - [x] raw_input(…) > input(…)

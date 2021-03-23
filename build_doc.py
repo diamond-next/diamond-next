@@ -143,8 +143,7 @@ def write_doc_options(doc_file, options, default_options):
 
 
 def write_doc(items, type_name, doc_path):
-    for item in sorted(items.iterkeys()):
-
+    for item in sorted(iter(items.keys())):
         # Skip configuring the basic item object
         if item == type_name:
             continue

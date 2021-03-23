@@ -135,7 +135,8 @@ class TSDBHandler(Handler):
 
         # Authorization
         if self.user != "":
-            self.httpheader["Authorization"] = "Basic %s" % base64.b64encode(bytes('%s:%s' % (self.user, self.password), 'utf-8'))
+            base64string = base64.b64encode(bytes('%s:%s' % (self.user, self.password), 'utf-8'))
+            self.httpheader["Authorization"] = "Basic %s" % base64string
 
         # compression
         if self.compression >= 1:

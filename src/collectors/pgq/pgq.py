@@ -38,6 +38,7 @@ class PgQCollector(diamond.collector.Collector):
                          "`dsn` attribute, which must be a valid libpq "
                          "connection string."
         })
+
         return config_help
 
     def get_default_config(self):
@@ -45,14 +46,16 @@ class PgQCollector(diamond.collector.Collector):
         config.update({
             'instances': {},
         })
+
         return config
 
     def collect(self):
         if psycopg2 is None:
             self.log.error('Unable to import module psycopg2')
+
             return None
 
-        for instance, configuration in self.config['instances'].iteritems():
+        for instance, configuration in iter(self.config['instances'].items()):
             connection = psycopg2.connect(configuration['dsn'])
             connection.set_isolation_level(
                 psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT,
