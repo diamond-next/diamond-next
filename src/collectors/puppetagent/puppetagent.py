@@ -42,7 +42,7 @@ class PuppetAgentCollector(diamond.collector.Collector):
         summary_fp = open(self.config['yaml_path'], 'r')
 
         try:
-            summary = yaml.load(summary_fp)
+            summary = yaml.safe_load(summary_fp)
         finally:
             summary_fp.close()
 
