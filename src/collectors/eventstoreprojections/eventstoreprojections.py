@@ -110,10 +110,10 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
                         name = projection['name'].replace('$', self.config['replace_dollarsign'])
                     else:
                         name = projection["name"]
+
                     data[name] = projection
             except ValueError as e:
-                self.log.error("failed parsing JSON Object \
-                                from %s. %s", eventstore_host, e)
+                self.log.error("failed parsing JSON Object from %s. %s", eventstore_host, e)
             else:
                 for metric_name, metric_value in self._json_to_flat_metrics("projections", data):
                     self.publish(metric_name, metric_value)

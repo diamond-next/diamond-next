@@ -102,9 +102,7 @@ class HttpdCollector(Collector):
                         raise Exception("Too many redirects!")
 
             except Exception as e:
-                self.log.error(
-                    "Error retrieving HTTPD stats for '%s': %s",
-                    url, e)
+                self.log.error("Error retrieving HTTPD stats for '%s': %s", url, e)
                 continue
 
             exp = re.compile('^([A-Za-z ]+):\s+(.+)$')

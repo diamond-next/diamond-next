@@ -69,10 +69,11 @@ class CephStatsCollector(CephCollector):
         try:
             output = subprocess.check_output(['ceph', '-s'])
         except subprocess.CalledProcessError as err:
-            self.log.info(
-                'Could not get stats: %s' % err)
+            self.log.info('Could not get stats: %s' % err)
             self.log.exception('Could not get stats')
+
             return {}
+
         return process_ceph_status(self, output)
 
     def collect(self):
@@ -81,4 +82,5 @@ class CephStatsCollector(CephCollector):
         """
         stats = self._get_stats()
         self._publish_stats('cephstats', stats)
+
         return

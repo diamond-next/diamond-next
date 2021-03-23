@@ -69,6 +69,5 @@ class HTTPJSONCollector(diamond.collector.Collector):
             except ValueError as e:
                 self.log.error("Can't parse JSON object from %s. %s", url, e)
             else:
-                for metric_name, metric_value in self._json_to_flat_metrics(
-                        "", data):
+                for metric_name, metric_value in self._json_to_flat_metrics("", data):
                     self.publish(metric_name, metric_value)

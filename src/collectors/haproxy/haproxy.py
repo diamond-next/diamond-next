@@ -81,7 +81,7 @@ class HAProxyCollector(diamond.collector.Collector):
         authline = e.headers['www-authenticate']
 
         # this regular expression is used to extract scheme and realm
-        authre = (r'''(?:\s*www-authenticate\s*:)?\s*''' + '''(\w*)\s+realm=['"]([^'"]+)['"]''')
+        authre = r'''(?:\s*www-authenticate\s*:)?\s*(\w*)\s+realm=['"]([^'"]+)['"]'''
         authobj = re.compile(authre, re.IGNORECASE)
         matchobj = authobj.match(authline)
 
@@ -121,7 +121,7 @@ class HAProxyCollector(diamond.collector.Collector):
 
         try:
             sock.connect(self.config['sock'])
-            sock.send('show stat\n')
+            sock.send(b'show stat\n')
 
             while 1:
                 buf = sock.recv(4096)
@@ -191,4 +191,4 @@ class HAProxyCollector(diamond.collector.Collector):
     def _sanitize(self, s):
         """Sanitize the name of a metric to remove unwanted chars
         """
-        return re.sub('[^\w-]', '_', s)
+        return re.sub('[^w-]', '_', s)

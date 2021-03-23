@@ -56,8 +56,7 @@ class DropwizardCollector(diamond.collector.Collector):
         try:
             result = json.load(response)
         except (TypeError, ValueError):
-            self.log.error("Unable to parse response from elasticsearch as" +
-                           " a json object")
+            self.log.error("Unable to parse response from elasticsearch as a json object")
             return
 
         metrics = {}

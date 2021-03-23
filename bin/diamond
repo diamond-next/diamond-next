@@ -282,7 +282,7 @@ def main():
         server.run()
 
     # Pass the exit up stream rather then handle it as an general exception
-    except SystemExit as e:
+    except SystemExit:
         raise SystemExit
 
     except Exception as e:

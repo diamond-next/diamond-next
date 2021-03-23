@@ -308,6 +308,7 @@ class MySQLCollector(diamond.collector.Collector):
         except MySQLError as e:
             self.log.error('MySQLCollector couldnt connect to database %s', e)
             return False
+
         return True
 
     def disconnect(self):

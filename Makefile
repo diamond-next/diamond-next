@@ -96,6 +96,7 @@ clean:
 	./setup.py clean
 	rm -rf dist build MANIFEST .tox *.log
 	find . -name '*.pyc' -delete
+	find -name __pycache__ -delete
 
 version:
 	./version.sh > version.txt

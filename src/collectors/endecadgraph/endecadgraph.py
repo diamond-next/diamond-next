@@ -88,6 +88,7 @@ class EndecaDgraphCollector(Collector):
         def processElem(elem, keyList):
             for k, v in elem.items():
                 prefix = '.'.join(keyList)
+
                 if k not in self.IGNORE_ELEMENTS and self.NUMVAL_MATCH.match(v):
                     k = makeSane(k)
                     self.publish('%s.%s' % (prefix, k), v)
@@ -95,12 +96,15 @@ class EndecaDgraphCollector(Collector):
         def walkXML(context, elemList):
             try:
                 for event, elem in context:
-                    elemName = createKey(elem)
+                    elem_name = createKey(elem)
+
                     if event == 'start':
-                        elemList.append(elemName)
+                        elemList.append(elem_name)
+
                         if len(elem) == 0:
                             if set(elemList).intersection(self.IGNORE_ELEMENTS):
                                 continue
+
                             processElem(elem, elemList)
                     elif event == 'end':
                         elemList.pop()
@@ -116,5 +120,5 @@ class EndecaDgraphCollector(Collector):
             return {}
 
         context = ElementTree.iterparse(StringIO(xml), events=('start', 'end'))
-        elemList = []
-        walkXML(context, elemList)
+        elem_list = []
+        walkXML(context, elem_list)

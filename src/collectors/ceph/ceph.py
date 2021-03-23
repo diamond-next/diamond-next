@@ -112,7 +112,8 @@ class CephCollector(diamond.collector.Collector):
                  name,
                  'perf',
                  'dump',
-                 ])
+                 ]
+            )
         except subprocess.CalledProcessError as err:
             self.log.info('Could not get stats from %s: %s', name, err)
             self.log.exception('Could not get stats from %s' % name)

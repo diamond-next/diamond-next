@@ -71,21 +71,20 @@ class ConnTrackCollector(diamond.collector.Collector):
                 else:
                     self.log.error('Unknown file for collection: %s', sfile)
                     continue
+
                 fpath = os.path.join(sdir, sfile)
+
                 if not os.path.exists(fpath):
                     continue
+
                 try:
                     with open(fpath, "r") as fhandle:
                         metric = float(fhandle.readline().rstrip("\n"))
                         collected[metric_name] = metric
                 except Exception as exception:
-                    self.log.error("Failed to collect from '%s': %s",
-                                   fpath,
-                                   exception)
+                    self.log.error("Failed to collect from '%s': %s", fpath, exception)
         if not collected:
-            self.log.error('No metric was collected, looks like '
-                           'nf_conntrack/ip_conntrack kernel module was '
-                           'not loaded')
+            self.log.error('No metric was collected, looks like nf_conntrack/ip_conntrack kernel module was not loaded')
         else:
             for key in collected.keys():
                 self.publish(key, collected[key])
