@@ -170,7 +170,7 @@ if __name__ == "__main__":
         config = ConfigObj(os.path.abspath(options.configfile))
     else:
         print("ERROR: Config file: %s does not exist." % options.configfile, file=sys.stderr)
-        print("Please run python config.py -c /path/to/diamond.conf", file=sys.stderr)
+        print("Please run python build_doc.py -c /path/to/diamond.conf", file=sys.stderr)
         parser.print_help(sys.stderr)
         sys.exit(1)
 

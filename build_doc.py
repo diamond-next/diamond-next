@@ -21,7 +21,6 @@ def get_include_paths(path):
 
         if os.path.isfile(c_path) and len(f) > 3 and f.endswith('.py'):
             sys.path.append(os.path.dirname(c_path))
-
         elif os.path.isdir(c_path):
             get_include_paths(c_path)
 
@@ -164,16 +163,16 @@ def write_doc(items, type_name, doc_path):
         try:
             tmpfile = None
 
-            if type_name is "Collector":
+            if type_name == "Collector":
                 obj = cls(config=config, handlers={})
-            elif type_name is "Handler":
+            elif type_name == "Handler":
                 tmpfile = tempfile.mkstemp()
                 obj = cls({'log_file': tmpfile[1]})
 
             item_options = obj.get_default_config_help()
             default_options = obj.get_default_config()
 
-            if type_name is "Handler":
+            if type_name == "Handler":
                 os.remove(tmpfile[1])
         except Exception as e:
             print("Caught Exception {}".format(e))
@@ -187,7 +186,7 @@ def write_doc(items, type_name, doc_path):
         if item_options:
             write_doc_options(doc_file, item_options, default_options)
 
-        if type_name is "Collector":
+        if type_name == "Collector":
             doc_file.write("\n")
             doc_file.write("#### Example Output\n")
             doc_file.write("\n")
@@ -215,12 +214,11 @@ if __name__ == "__main__":
         config = configobj.ConfigObj(os.path.abspath(options.configfile))
     else:
         print("ERROR: Config file: %s does not exist." % options.configfile, file=sys.stderr)
-        print("Please run python config.py -c /path/to/diamond.conf", file=sys.stderr)
+        print("Please run python build_doc.py -c /path/to/diamond.conf", file=sys.stderr)
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    docs_path = os.path.abspath(os.path.join(
-        os.path.dirname(__file__), 'docs'))
+    docs_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'docs'))
 
     if options.collector or (not options.collector and not options.handler):
         collector_path = config['server']['collectors_path']
