@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # coding=utf-8
 
-
 import unittest
 
 from diamond.metric import Metric
@@ -89,7 +88,7 @@ class TestMetric(unittest.TestCase):
             '0.0000997143369909',
         ]
 
-        for precision in xrange(0, 100):
+        for precision in range(0, 100):
             for m in metrics:
                 metric = Metric('test.723', m, timestamp=0)
 

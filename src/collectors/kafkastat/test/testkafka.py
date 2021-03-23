@@ -2,9 +2,9 @@
 # coding=utf-8
 
 import unittest
-import urllib
 from unittest.mock import patch
-from urllib import error, parse
+from urllib.error import URLError
+from urllib.parse import parse_qs, urlparse
 
 from collectors.kafkastat.kafkastat import KafkaCollector
 from diamond.collector import Collector
@@ -25,6 +25,7 @@ def run_only_if_ElementTree_is_available(func):
 
     def pred():
         return ElementTree is not None
+
     return run_only(func, pred)
 
 
@@ -57,7 +58,7 @@ class TestKafkaCollector(CollectorTestCase):
     @run_only_if_ElementTree_is_available
     @patch('urllib.request.urlopen')
     def test_get_httperror(self, urlopen_mock):
-        urlopen_mock.side_effect = urllib.error.URLError('BOOM')
+        urlopen_mock.side_effect = URLError('BOOM')
 
         result = self.collector._get('/path')
 
@@ -77,13 +78,15 @@ class TestKafkaCollector(CollectorTestCase):
     def test_get_mbeans(self, get_mock):
         get_mock.return_value = self._get_xml_fixture('serverbydomain.xml')
 
-        expected_names = {'kafka:type=kafka.BrokerAllTopicStat',
-                          'kafka:type=kafka.BrokerTopicStat.mytopic',
-                          'kafka:type=kafka.LogFlushStats',
-                          'kafka:type=kafka.SocketServerStats',
-                          'kafka:type=kafka.logs.mytopic-0',
-                          'kafka:type=kafka.logs.mytopic-1',
-                          'kafka:type=kafka.Log4jController'}
+        expected_names = {
+            'kafka:type=kafka.BrokerAllTopicStat',
+            'kafka:type=kafka.BrokerTopicStat.mytopic',
+            'kafka:type=kafka.LogFlushStats',
+            'kafka:type=kafka.SocketServerStats',
+            'kafka:type=kafka.logs.mytopic-0',
+            'kafka:type=kafka.logs.mytopic-1',
+            'kafka:type=kafka.Log4jController'
+        }
 
         found_beans = self.collector.get_mbeans('*')
 
@@ -153,8 +156,8 @@ class TestKafkaCollector(CollectorTestCase):
         self.assertEqual(metrics, None)
 
     def getKafkaFixture(self, url):
-        url_object = urllib.parse.urlparse(url)
-        query_string = urllib.parse.parse_qs(url_object.query)
+        url_object = urlparse(url)
+        query_string = parse_qs(url_object.query)
         querynames = query_string.get('querynames', [])
         objectnames = query_string.get('objectname', [])
 
@@ -168,15 +171,11 @@ class TestKafkaCollector(CollectorTestCase):
             else:
                 return self.getFixture('serverbydomain_logs_only.xml')
         elif url_object.path == '/mbean':
-            if ('java.lang:type=GarbageCollector,name=PS MarkSweep'
-                    in objectnames):
+            if 'java.lang:type=GarbageCollector,name=PS MarkSweep' in objectnames:
                 return self.getFixture('gc_marksweep.xml')
-            elif ('kafka.controller:type=KafkaController,' +
-                  'name=ActiveControllerCount'
-                  in objectnames):
+            elif 'kafka.controller:type=KafkaController,name=ActiveControllerCount' in objectnames:
                 return self.getFixture('activecontrollercount.xml')
-            elif ('java.lang:type=GarbageCollector,name=PS Scavenge'
-                  in objectnames):
+            elif 'java.lang:type=GarbageCollector,name=PS Scavenge' in objectnames:
                 return self.getFixture('gc_scavenge.xml')
             elif 'java.lang:type=Threading' in objectnames:
                 return self.getFixture('threading.xml')

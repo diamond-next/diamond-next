@@ -1,11 +1,12 @@
 # coding=utf-8
 
-import imp
 import inspect
 import logging
 import os
 import sys
 import traceback
+from importlib.machinery import PathFinder, SourceFileLoader
+from importlib.util import module_from_spec, spec_from_loader
 
 import configobj
 import pkg_resources
@@ -148,19 +149,16 @@ def load_collectors_from_paths(paths):
                     collectors[key] = subcollectors[key]
 
             # Ignore anything that isn't a .py file
-            elif (os.path.isfile(fpath) and
-                  len(f) > 3 and
-                  f[-3:] == '.py' and
-                  f[0:4] != 'test' and
-                  f[0] != '.'):
-
+            elif os.path.isfile(fpath) and len(f) > 3 and f[-3:] == '.py' and f[0:4] != 'test' and f[0] != '.':
                 modname = f[:-3]
 
-                fp, pathname, description = imp.find_module(modname, [path])
+                fp, pathname, description = PathFinder().find_spec(modname, [path])
 
                 try:
                     # Import the module
-                    mod = imp.load_module(modname, fp, pathname, description)
+                    loader = SourceFileLoader(modname, pathname)
+                    spec = spec_from_loader(loader.name, loader)
+                    mod = module_from_spec(spec)
                 except (KeyboardInterrupt, SystemExit) as err:
                     logger.error("System or keyboard interrupt while loading module %s" % modname)
 

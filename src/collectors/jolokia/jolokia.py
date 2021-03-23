@@ -278,8 +278,9 @@ class JolokiaCollector(diamond.collector.Collector):
         password = self.config["password"]
 
         if username is not None and password is not None:
-            base64string = base64.encodestring('%s:%s' % (username, password)).replace('\n', '')
-            req.add_header("Authorization", "Basic %s" % base64string)
+            base64string = base64.b64encode(bytes('%s:%s' % (username, password), 'utf-8'))
+
+        req.add_header("Authorization", "Basic %s" % base64string)
 
         return req
 
@@ -302,7 +303,6 @@ class JolokiaCollector(diamond.collector.Collector):
             elif type(v) in [list]:
                 self.interpret_bean_with_list("%s.%s" % (prefix, k), v)
 
-    # There's no unambiguous way to interpret list values, so
-    # this hook lets subclasses handle them.
+    # There's no unambiguous way to interpret list values, so this hook lets subclasses handle them.
     def interpret_bean_with_list(self, prefix, values):
         pass

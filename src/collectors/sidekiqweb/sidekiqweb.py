@@ -44,17 +44,19 @@ class SidekiqWebCollector(Collector):
             response = urlopen("http://%s:%s/dashboard/stats" % (self.config['host'], int(self.config['port'])))
         except Exception as e:
             self.log.error('Could not connect to sidekiq-web: %s', e)
+
             return {}
 
         try:
             j = json.loads(response.read())
         except Exception as e:
             self.log.error('Could not parse json: %s', e)
+
             return {}
 
         for k in j:
             for item, value in j[k].items():
-                if isinstance(value, (str, unicode)) and 'M' in value:
+                if isinstance(value, (bytes, str)) and 'M' in value:
                     value = float(value.replace('M', ''))
 
                     for unit in self.config['byte_unit']:

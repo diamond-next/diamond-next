@@ -83,22 +83,22 @@ class NvidiaGPUCollector(diamond.collector.ProcessCollector):
         :return:
         """
         try:
-            NVML_TEMPERATURE_GPU = 0
+            nvml_temperature_gpu = 0
             pynvml.nvmlInit()
             device_count = pynvml.nvmlDeviceGetCount()
 
-            for device_index in xrange(device_count):
+            for device_index in range(device_count):
                 handle = pynvml.nvmlDeviceGetHandleByIndex(device_index)
-                memoryInfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                utilizationRates = pynvml.nvmlDeviceGetUtilizationRates(handle)
+                memory_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+                utilization_rates = pynvml.nvmlDeviceGetUtilizationRates(handle)
 
                 metrics = {
-                    'memory.total': memoryInfo.total / 1024 / 1024,
-                    'memory.used': memoryInfo.total / 1024 / 1024,
-                    'memory.free': memoryInfo.free / 1024 / 1024,
-                    'utilization.gpu': utilizationRates.gpu,
-                    'utilization.memory': utilizationRates.memory,
-                    'temperature.gpu': pynvml.nvmlDeviceGetTemperature(handle, NVML_TEMPERATURE_GPU)
+                    'memory.total': memory_info.total / 1024 / 1024,
+                    'memory.used': memory_info.total / 1024 / 1024,
+                    'memory.free': memory_info.free / 1024 / 1024,
+                    'utilization.gpu': utilization_rates.gpu,
+                    'utilization.memory': utilization_rates.memory,
+                    'temperature.gpu': pynvml.nvmlDeviceGetTemperature(handle, nvml_temperature_gpu)
                 }
 
                 for stat_name in stats_config[1:]:

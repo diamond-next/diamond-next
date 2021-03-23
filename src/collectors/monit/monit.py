@@ -50,7 +50,7 @@ class MonitCollector(Collector):
             request = Request(url)
 
             # shouldn't need to check this
-            base64string = base64.encodestring('%s:%s' % (self.config['user'], self.config['passwd'])).replace('\n', '')
+            base64string = base64.b64encode(bytes('%s:%s' % (self.config['user'], self.config['passwd']), 'utf-8'))
             request.add_header("Authorization", "Basic %s" % base64string)
             response = urlopen(request)
         except HTTPError as err:

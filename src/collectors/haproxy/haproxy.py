@@ -5,7 +5,6 @@ Collect HAProxy Stats
 
 #### Dependencies
 
- * urlparse
  * urllib
 
 """
@@ -20,19 +19,17 @@ import diamond.collector
 
 
 class HAProxyCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(HAProxyCollector, self).get_default_config_help()
         config_help.update({
-            'method': "Method to use for data collection. Possible values: " +
-                      "http, unix",
+            'method': "Method to use for data collection. Possible values: http, unix",
             'url': "Url to stats in csv format",
             'user': "Username",
             'pass': "Password",
             'sock': "Path to admin UNIX-domain socket",
-            'ignore_servers': "Ignore servers, just collect frontend and " +
-                              "backend stats",
+            'ignore_servers': "Ignore servers, just collect frontend and backend stats",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -41,14 +38,15 @@ class HAProxyCollector(diamond.collector.Collector):
         """
         config = super(HAProxyCollector, self).get_default_config()
         config.update({
-            'method':           'http',
-            'path':             'haproxy',
-            'url':              'http://localhost/haproxy?stats;csv',
-            'user':             'admin',
-            'pass':             'password',
-            'sock':             '/var/run/haproxy.sock',
-            'ignore_servers':   False,
+            'method': 'http',
+            'path': 'haproxy',
+            'url': 'http://localhost/haproxy?stats;csv',
+            'user': 'admin',
+            'pass': 'password',
+            'sock': '/var/run/haproxy.sock',
+            'ignore_servers': False,
         })
+
         return config
 
     def _get_config_value(self, section, key):
@@ -56,6 +54,7 @@ class HAProxyCollector(diamond.collector.Collector):
             if section not in self.config:
                 self.log.error("Error: Config section '%s' not found", section)
                 return None
+
             return self.config[section].get(key, self.config[key])
         else:
             return self.config[key]
@@ -69,10 +68,12 @@ class HAProxyCollector(diamond.collector.Collector):
 
         try:
             handle = urlopen(req)
+
             return handle.readlines()
         except Exception as e:
             if not hasattr(e, 'code') or e.code != 401:
                 self.log.error("Error retrieving HAProxy stats. %s", e)
+
                 return metrics
 
         # get the www-authenticate line from the headers
@@ -80,37 +81,38 @@ class HAProxyCollector(diamond.collector.Collector):
         authline = e.headers['www-authenticate']
 
         # this regular expression is used to extract scheme and realm
-        authre = (r'''(?:\s*www-authenticate\s*:)?\s*''' +
-                  '''(\w*)\s+realm=['"]([^'"]+)['"]''')
+        authre = (r'''(?:\s*www-authenticate\s*:)?\s*''' + '''(\w*)\s+realm=['"]([^'"]+)['"]''')
         authobj = re.compile(authre, re.IGNORECASE)
         matchobj = authobj.match(authline)
+
         if not matchobj:
             # if the authline isn't matched by the regular expression
             # then something is wrong
             self.log.error('The authentication header is malformed.')
+
             return metrics
 
         scheme = matchobj.group(1)
-        # here we've extracted the scheme
-        # and the realm from the header
+
+        # here we've extracted the scheme and the realm from the header
         if scheme.lower() != 'basic':
             self.log.error('Invalid authentication scheme.')
+
             return metrics
 
-        base64string = base64.encodestring(
-            '%s:%s' % (self._get_config_value(section, 'user'),
-                       self._get_config_value(section, 'pass')))[:-1]
+        base64string = base64.b64encode(bytes('%s:%s' % (self._get_config_value(section, 'user'), self._get_config_value(section, 'pass')), 'utf-8'))
         authheader = 'Basic %s' % base64string
         req.add_header("Authorization", authheader)
 
         try:
             handle = urlopen(req)
             metrics = handle.readlines()
+
             return metrics
         except IOError as e:
             # here we shouldn't fail if the USER/PASS is right
-            self.log.error("Error retrieving HAProxy stats. " +
-                           "(Invalid username or password?) %s", e)
+            self.log.error("Error retrieving HAProxy stats. (Invalid username or password?) %s", e)
+
             return metrics
 
     def unix_get_csv_data(self):
@@ -120,21 +122,27 @@ class HAProxyCollector(diamond.collector.Collector):
         try:
             sock.connect(self.config['sock'])
             sock.send('show stat\n')
+
             while 1:
                 buf = sock.recv(4096)
+
                 if not buf:
                     break
+
                 data += buf
         except socket.error as e:
             self.log.error("Error retrieving HAProxy stats. %s", e)
+
             return []
 
         return data.strip().split('\n')
 
     def _generate_headings(self, row):
         headings = {}
+
         for index, heading in enumerate(row):
             headings[index] = self._sanitize(heading)
+
         return headings
 
     def _collect(self, section=None):
@@ -146,8 +154,7 @@ class HAProxyCollector(diamond.collector.Collector):
         elif self.config['method'] == 'unix':
             csv_data = self.unix_get_csv_data()
         else:
-            self.log.error("Unknown collection method: %s",
-                           self.config['method'])
+            self.log.error("Unknown collection method: %s", self.config['method'])
             csv_data = []
 
         data = list(csv.reader(csv_data))
@@ -155,8 +162,7 @@ class HAProxyCollector(diamond.collector.Collector):
         section_name = section and self._sanitize(section.lower()) + '.' or ''
 
         for row in data:
-            if ((self._get_config_value(section, 'ignore_servers') and
-                 row[1].lower() not in ['frontend', 'backend'])):
+            if self._get_config_value(section, 'ignore_servers') and row[1].lower() not in ['frontend', 'backend']:
                 continue
 
             part_one = self._sanitize(row[0].lower())

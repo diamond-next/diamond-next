@@ -8,7 +8,6 @@ Collect HAProxy Stats
 
 #### Dependencies
 
- * urlparse
  * urllib
 
 
