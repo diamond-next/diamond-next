@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import os
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.kvm.kvm import KVMCollector
@@ -27,7 +27,7 @@ class TestKVMCollector(CollectorTestCase):
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_open = patch('builtins.open', Mock(return_value=StringIO(
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO(
             '0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0' +
             '\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n'
         )))

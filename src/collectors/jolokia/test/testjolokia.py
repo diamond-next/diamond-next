@@ -5,8 +5,8 @@ import re
 import unittest
 from unittest.mock import Mock, patch
 
+import diamond.collector
 from collectors.jolokia.jolokia import JolokiaCollector
-from diamond.collector import Collector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
 
@@ -20,7 +20,7 @@ class TestJolokiaCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(JolokiaCollector)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(diamond.collector.Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock):
         def se(url, timeout=0):
             if url == 'http://localhost:8778/jolokia/list':
@@ -38,7 +38,7 @@ class TestJolokiaCollector(CollectorTestCase):
         self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(diamond.collector.Collector, 'publish')
     def test_real_data_with_rewrite(self, publish_mock):
         def se(url, timeout=0):
             if url == 'http://localhost:8778/jolokia/list':
@@ -60,13 +60,13 @@ class TestJolokiaCollector(CollectorTestCase):
         rewritemetrics = self.get_metrics_rewrite_test()
         self.assertPublishedMany(publish_mock, rewritemetrics)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(diamond.collector.Collector, 'publish')
     def test_should_work_with_real_data_and_basic_auth(self, publish_mock):
         self.collector.config["username"] = "user"
         self.collector.config["password"] = "password"
         self.test_should_work_with_real_data()
 
-    @patch.object(Collector, 'publish')
+    @patch.object(diamond.collector.Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
         patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats_blank')))
 
@@ -76,7 +76,7 @@ class TestJolokiaCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-    @patch.object(Collector, 'publish')
+    @patch.object(diamond.collector.Collector, 'publish')
     def test_should_skip_when_mbean_request_fails(self, publish_mock):
         def se(url, timeout=0):
             if url == 'http://localhost:8778/jolokia/list':

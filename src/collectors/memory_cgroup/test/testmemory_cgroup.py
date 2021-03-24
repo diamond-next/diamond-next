@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import os
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.memory_cgroup.memory_cgroup import MemoryCgroupCollector
@@ -33,7 +33,7 @@ class TestMemoryCgroupCollector(CollectorTestCase):
         })
 
         self.collector = MemoryCgroupCollector(config, None)
-        open_mock.side_effect = lambda x: StringIO('')
+        open_mock.side_effect = lambda x: io.StringIO('')
         self.collector.collect()
         open_mock.assert_any_call(fixtures_path + 'lxc/testcontainer/memory.stat')
         open_mock.assert_any_call(fixtures_path + 'lxc/memory.stat')

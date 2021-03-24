@@ -23,7 +23,7 @@ class TestApcupsdCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_getdata = patch.object(ApcupsdCollector, 'getData', Mock(
+        patch_getdata = patch.object(ApcupsdCollector, 'get_data', Mock(
             return_value=(
                 'APC      : 001,039,1056\n\x00' +
                 '\'DATE     : 2012-07-16 12:53:58 -0700  \n\x00' +

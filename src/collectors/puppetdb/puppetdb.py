@@ -11,8 +11,9 @@ Collect metrics from Puppet DB Dashboard
 """
 
 import urllib.request
+
 import diamond.collector
-from diamond.convertor import time as time_convertor
+import diamond.convertor
 
 try:
     import json
@@ -104,21 +105,32 @@ class PuppetDBCollector(diamond.collector.Collector):
         self.publish_gauge('catalog_duplicate_pct', rawmetrics['duplicate-pct']['Value'])
         self.publish_gauge(
             'sec_command',
-            time_convertor.convert(rawmetrics['processing-time']['50thPercentile'], rawmetrics['processing-time']['LatencyUnit'], 'seconds')
+            diamond.convertor.time.convert(rawmetrics['processing-time']['50thPercentile'], rawmetrics['processing-time']['LatencyUnit'], 'seconds')
         )
         self.publish_gauge(
             'resources_service_time',
-            time_convertor.convert(rawmetrics['resources.service-time']['50thPercentile'], rawmetrics['resources.service-time']['LatencyUnit'], 'seconds')
+            diamond.convertor.time.convert(
+                rawmetrics['resources.service-time']['50thPercentile'],
+                rawmetrics['resources.service-time']['LatencyUnit'],
+                'seconds'
+            )
         )
         self.publish_gauge(
             'enqueueing_service_time',
-            time_convertor.convert(rawmetrics['commands.service-time']['50thPercentile'], rawmetrics['commands.service-time']['LatencyUnit'], 'seconds')
+            diamond.convertor.time.convert(
+                rawmetrics['commands.service-time']['50thPercentile'],
+                rawmetrics['commands.service-time']['LatencyUnit'],
+                'seconds'
+            )
         )
 
         self.publish_gauge('discarded', rawmetrics['discarded']['Count'])
         self.publish_gauge('processed', rawmetrics['processed']['Count'])
         self.publish_gauge('rejected', rawmetrics['fatal']['Count'])
-        self.publish_gauge('DB_Compaction', time_convertor.convert(rawmetrics['gc-time']['50thPercentile'], rawmetrics['gc-time']['LatencyUnit'], 'seconds'))
+        self.publish_gauge(
+            'DB_Compaction',
+            diamond.convertor.time.convert(rawmetrics['gc-time']['50thPercentile'], rawmetrics['gc-time']['LatencyUnit'], 'seconds')
+        )
         self.publish_gauge('resource_duplicate_pct', rawmetrics['pct-resource-dupes']['Value'])
         self.publish_gauge('num_nodes', rawmetrics['num-nodes']['Value'])
 

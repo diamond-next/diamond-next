@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import os
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.loadavg.loadavg import LoadAverageCollector
@@ -32,7 +32,7 @@ class TestLoadAverageCollector(CollectorTestCase):
             # testing this.
             return
 
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/loadavg')
 

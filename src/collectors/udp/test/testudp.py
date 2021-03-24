@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.udp.udp import UDPCollector
@@ -30,7 +30,7 @@ class TestUDPCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_open_proc_net_snmp(self, publish_mock, open_mock):
         UDPCollector.PROC = ['/proc/net/snmp']
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/net/snmp')
 

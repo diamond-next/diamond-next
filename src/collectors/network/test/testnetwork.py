@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.network.network import NetworkCollector
@@ -28,7 +28,7 @@ class TestNetworkCollector(CollectorTestCase):
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_net_dev(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/net/dev')
 

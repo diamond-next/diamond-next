@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import io
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.ip.ip import IPCollector
@@ -28,7 +28,7 @@ class TestIPCollector(CollectorTestCase):
     @patch('diamond.collector.Collector.publish')
     def test_should_open_proc_net_snmp(self, publish_mock, open_mock):
         IPCollector.PROC = ['/proc/net/snmp']
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/net/snmp')
 
@@ -38,14 +38,14 @@ class TestIPCollector(CollectorTestCase):
     def test_should_work_with_synthetic_data(self, publish_mock, open_mock):
         IPCollector.PROC = ['/proc/net/snmp']
         self.setUp(['A', 'C'])
-        open_mock.return_value = StringIO('''
+        open_mock.return_value = io.StringIO('''
 Ip: A B C
 Ip: 0 0 0
 '''.strip())
 
         self.collector.collect()
 
-        open_mock.return_value = StringIO('''
+        open_mock.return_value = io.StringIO('''
 Ip: A B C
 Ip: 0 1 2
 '''.strip())

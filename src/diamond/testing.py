@@ -1,10 +1,10 @@
 from __future__ import print_function
 
 import inspect
+import io
 import os
 import pickle
 import unittest
-from io import StringIO
 
 import configobj
 
@@ -56,7 +56,7 @@ class CollectorTestCase(unittest.TestCase):
 
     def getFixture(self, fixture_name):
         with open(self.getFixturePath(fixture_name), 'r') as f:
-            return StringIO(f.read())
+            return io.StringIO(f.read())
 
     def getFixtures(self):
         fixtures = []

@@ -3,9 +3,9 @@
 
 import contextlib
 import gzip
+import io
 import urllib
 import urllib.error
-from io import StringIO
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -22,7 +22,7 @@ class TestTSDBdHandler(TestCase):
         self.url = 'http://127.0.0.1:4242/api/put'
 
     def decompress(self, input):
-        infile = StringIO()
+        infile = io.StringIO()
         infile.write(input)
 
         with contextlib.closing(gzip.GzipFile(fileobj=infile, mode="r")) as f:

@@ -107,7 +107,7 @@ class HttpdCollector(diamond.collector.Collector):
 
             exp = re.compile('^([A-Za-z ]+):\s+(.+)$')
 
-            for line in data.split(b'\n'):
+            for line in data.split('\n'):
                 if line:
                     m = exp.match(line)
 

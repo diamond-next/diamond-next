@@ -34,7 +34,7 @@ class TestMdStatCollector(CollectorTestCase):
             # testing this.
             return
 
-        open_mock.return_value = io.BytesIO('')
+        open_mock.return_value = io.BytesIO(b'')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/mdstat', 'r')
 

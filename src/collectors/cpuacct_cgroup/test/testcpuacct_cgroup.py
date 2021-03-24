@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import os
 import unittest
-from io import StringIO
 from unittest.mock import patch
 
 from collectors.cpuacct_cgroup.cpuacct_cgroup import CpuAcctCgroupCollector
@@ -28,7 +28,7 @@ class TestCpuAcctCgroupCollector(CollectorTestCase):
     def test_should_open_all_cpuacct_stat(self, publish_mock, open_mock):
         return
         self.collector.config['path'] = self.getFixtureDirPath()
-        open_mock.side_effect = lambda x: StringIO('')
+        open_mock.side_effect = lambda x: io.StringIO('')
         self.collector.collect()
 
         # All the fixtures we should be opening

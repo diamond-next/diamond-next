@@ -1,9 +1,9 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import os
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.memory_docker.memory_docker import MemoryDockerCollector
@@ -64,7 +64,7 @@ class TestMemoryDockerCollector(CollectorTestCase):
     @patch.object(Client, 'containers', Mock(return_value=[]))
     @patch.object(Collector, 'publish')
     def test_should_open_all_cpuacct_stat(self, publish_mock, open_mock):
-        open_mock.side_effect = lambda x: StringIO('')
+        open_mock.side_effect = lambda x: io.StringIO('')
         self.collector.collect()
         open_mock.assert_any_call(fixtures_path + 'lxc/testcontainer/memory.stat')
         open_mock.assert_any_call(fixtures_path + 'lxc/memory.stat')
@@ -76,7 +76,7 @@ class TestMemoryDockerCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_get_containers(self, publish_mock, containers_mock, open_mock):
         containers_mock.return_value = []
-        open_mock.side_effect = lambda x: StringIO('')
+        open_mock.side_effect = lambda x: io.StringIO('')
         self.collector.collect()
         containers_mock.assert_any_call(all=True)
 

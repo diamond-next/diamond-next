@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.cpu.cpu import CPUCollector
@@ -28,13 +28,13 @@ class TestCPUCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_open_proc_stat(self, publish_mock, open_mock):
         CPUCollector.PROC = '/proc/stat'
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/stat')
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_open = patch('builtins.open', Mock(return_value=StringIO('cpu 100 200 300 400 500 0 0 0 0 0')))
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO('cpu 100 200 300 400 500 0 0 0 0 0')))
 
         patch_open.start()
         self.collector.collect()
@@ -42,7 +42,7 @@ class TestCPUCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-        patch_open = patch('builtins.open', Mock(return_value=StringIO('cpu 110 220 330 440 550 0 0 0 0 0')))
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO('cpu 110 220 330 440 550 0 0 0 0 0')))
 
         patch_open.start()
         self.collector.collect()
@@ -183,7 +183,7 @@ class TestCPUCollectorNormalize(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_proc_stat(self, publish_mock):
-        patch_open = patch('builtins.open', Mock(return_value=StringIO(
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO(
             "\n".join([self.input_dict_to_proc_string('', self.input_base),
                        self.input_dict_to_proc_string('0', self.input_base),
                        self.input_dict_to_proc_string('1', self.input_base),
@@ -196,7 +196,7 @@ class TestCPUCollectorNormalize(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-        patch_open = patch('builtins.open', Mock(return_value=StringIO(
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO(
             "\n".join([self.input_dict_to_proc_string('', self.input_next),
                        self.input_dict_to_proc_string('0', self.input_next),
                        self.input_dict_to_proc_string('1', self.input_next),

@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.interrupt.soft import SoftInterruptCollector
@@ -26,13 +26,13 @@ class TestSoftInterruptCollector(CollectorTestCase):
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_stat(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/stat', 'r')
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_open = patch('builtins.open', Mock(return_value=StringIO('softirq 0 0 0 0 0 0 0 0 0 0 0')))
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO('softirq 0 0 0 0 0 0 0 0 0 0 0')))
 
         patch_open.start()
         self.collector.collect()
@@ -40,7 +40,7 @@ class TestSoftInterruptCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-        patch_open = patch('builtins.open', Mock(return_value=StringIO('softirq 55 1 2 3 4 5 6 7 8 9 10')))
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO('softirq 55 1 2 3 4 5 6 7 8 9 10')))
 
         patch_open.start()
         self.collector.collect()

@@ -13,7 +13,6 @@ import re
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class VarnishCollector(diamond.collector.Collector):
@@ -174,7 +173,7 @@ class VarnishCollector(diamond.collector.Collector):
         try:
             command = [self.config['bin'], '-1']
 
-            if str_to_bool(self.config['use_sudo']):
+            if diamond.collector.str_to_bool(self.config['use_sudo']):
                 command.insert(0, self.config['sudo_cmd'])
 
             output = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # coding=utf-8
 
-from io import StringIO
+import io
 from unittest.mock import Mock, patch
 
 from collectors.uptime.uptime import UptimeCollector
@@ -28,7 +28,7 @@ class TestUptimeCollector(CollectorTestCase):
     @patch('os.path.exists', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_uptime(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('1288459.83 10036802.26')
+        open_mock.return_value = io.StringIO('1288459.83 10036802.26')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/uptime')
 

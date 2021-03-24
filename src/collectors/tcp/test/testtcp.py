@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # coding=utf-8
 
+import io
 import unittest
-from io import StringIO
 from unittest.mock import Mock, patch
 
 from collectors.tcp.tcp import TCPCollector
@@ -30,7 +30,7 @@ class TestTCPCollector(CollectorTestCase):
     @patch('diamond.collector.Collector.publish')
     def test_should_open_proc_net_netstat(self, publish_mock, open_mock):
         TCPCollector.PROC = ['/proc/net/netstat']
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/net/netstat')
 
@@ -40,7 +40,7 @@ class TestTCPCollector(CollectorTestCase):
     def test_should_work_with_synthetic_data(self, publish_mock, open_mock):
         TCPCollector.PROC = ['/proc/net/netstat']
         self.setUp(['A', 'C'])
-        open_mock.return_value = StringIO('''
+        open_mock.return_value = io.StringIO('''
 TcpExt: A B C
 TcpExt: 0 0 0
 '''.strip())
@@ -48,7 +48,7 @@ TcpExt: 0 0 0
         self.collector.collect()
         self.assertPublishedMany(publish_mock, {})
 
-        open_mock.return_value = StringIO('''
+        open_mock.return_value = io.StringIO('''
 TcpExt: A B C
 TcpExt: 0 1 2
 '''.strip())
