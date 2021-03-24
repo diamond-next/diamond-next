@@ -3,6 +3,7 @@
 import logging
 import logging.config
 import os
+
 import sys
 
 
@@ -45,7 +46,6 @@ def setup_logging(configfile, stdout=False):
             stream_handler.setFormatter(DebugFormatter())
             stream_handler.setLevel(root_log_level)
             log.addHandler(stream_handler)
-
     except Exception as e:
         sys.stderr.write("Error occurs when initialize logging: ")
         sys.stderr.write(str(e))
