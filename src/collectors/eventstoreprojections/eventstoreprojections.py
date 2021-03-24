@@ -18,8 +18,8 @@ This collector is based upon the HTTPJSONCollector.
 """
 
 import json
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+import urllib.error
+import urllib.request
 
 import diamond.collector
 
@@ -90,12 +90,12 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
             self.config['route']
         )
 
-        req = Request(eventstore_host, headers=self.config['headers'])
+        req = urllib.request.Request(eventstore_host, headers=self.config['headers'])
         req.add_header('Content-type', 'application/json')
 
         try:
-            resp = urlopen(req)
-        except URLError as e:
+            resp = urllib.request.urlopen(req)
+        except urllib.error.URLError as e:
             self.log.error("Can't open url %s. %s", eventstore_host, e)
         else:
             content = resp.read()

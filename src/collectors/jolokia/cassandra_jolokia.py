@@ -20,13 +20,14 @@ CassandraJolokiaCollector.conf
 ```
 """
 
-import math
 import re
 
-from jolokia import JolokiaCollector
+import math
+
+import jolokia
 
 
-class CassandraJolokiaCollector(JolokiaCollector):
+class CassandraJolokiaCollector(jolokia.JolokiaCollector):
     # override to allow setting which percentiles will be collected
     def get_default_config_help(self):
         config_help = super(CassandraJolokiaCollector, self).get_default_config_help()

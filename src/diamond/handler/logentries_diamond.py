@@ -8,14 +8,14 @@ based on data in real time.
 
 import json
 import logging
-from collections import deque
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+import collections
+import urllib.error
+import urllib.request
 
-from diamond.handler.Handler import Handler
+import diamond.handler.Handler
 
 
-class LogentriesDiamondHandler(Handler):
+class LogentriesDiamondHandler(diamond.handler.Handler.Handler):
     """
       Implements the abstract Handler class
     """
@@ -24,10 +24,10 @@ class LogentriesDiamondHandler(Handler):
         New instance of LogentriesDiamondHandler class
         """
 
-        Handler.__init__(self, config)
+        diamond.handler.Handler.Handler.__init__(self, config)
         self.log_token = self.config.get('log_token', None)
         self.queue_size = int(self.config['queue_size'])
-        self.queue = deque([])
+        self.queue = collections.deque([])
 
         if self.log_token is None:
             raise Exception
@@ -76,9 +76,9 @@ class LogentriesDiamondHandler(Handler):
             metric = self.queue.popleft()
             topic, value, timestamp = str(metric).split()
             msg = json.dumps({"event": {topic: value}})
-            req = Request("https://js.logentries.com/v1/logs/" + self.log_token, msg)
+            req = urllib.request.Request("https://js.logentries.com/v1/logs/" + self.log_token, msg)
 
             try:
-                urlopen(req)
-            except URLError as e:
+                urllib.request.urlopen(req)
+            except urllib.error.URLError as e:
                 logging.error("Can't send log message to Logentries %s", e)

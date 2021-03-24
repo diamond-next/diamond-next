@@ -49,12 +49,12 @@ an mbean.
 """
 
 import base64
+import contextlib
 import json
 import re
-from contextlib import closing
-from urllib.error import HTTPError
-from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import diamond.collector
 
@@ -235,16 +235,16 @@ class JolokiaCollector(diamond.collector.Collector):
             # need some time to process the downloaded metrics, so that's why timeout is lower than the interval.
             timeout = max(2, float(self.config['interval']) * 2 / 3)
 
-            with closing(urlopen(self._create_request(url), timeout=timeout)) as response:
+            with contextlib.closing(urllib.request.urlopen(self._create_request(url), timeout=timeout)) as response:
                 return self._read_json(response)
-        except (HTTPError, ValueError) as e:
+        except (urllib.error.HTTPError, ValueError) as e:
             self.log.error('Unable to read JSON response: %s', str(e))
 
             return {}
 
     def _read_request(self, domain):
         try:
-            url_path = '/?%s' % urlencode({
+            url_path = '/?%s' % urllib.parse.urlencode({
                 'maxCollectionSize': '0',
                 'ignoreErrors': 'true',
                 'canonicalNaming': 'true' if self.config['use_canonical_names'] else 'false',
@@ -255,9 +255,9 @@ class JolokiaCollector(diamond.collector.Collector):
             # need some time to process the downloaded metrics, so that's why timeout is lower than the interval.
             timeout = max(2, float(self.config['interval']) * 2 / 3)
 
-            with closing(urlopen(self._create_request(url), timeout=timeout)) as response:
+            with contextlib.closing(urllib.request.urlopen(self._create_request(url), timeout=timeout)) as response:
                 return self._read_json(response)
-        except (HTTPError, ValueError):
+        except (urllib.error.HTTPError, ValueError):
             self.log.error('Unable to read JSON response.')
 
             return {}
@@ -270,12 +270,12 @@ class JolokiaCollector(diamond.collector.Collector):
         domain = re.sub('!', '!!', domain)
         domain = re.sub('/', '!/', domain)
         domain = re.sub('"', '!"', domain)
-        domain = quote(domain)
+        domain = urllib.parse.quote(domain)
 
         return domain
 
     def _create_request(self, url):
-        req = Request(url)
+        req = urllib.request.Request(url)
         username = self.config["username"]
         password = self.config["password"]
 

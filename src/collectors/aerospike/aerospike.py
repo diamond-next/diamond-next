@@ -10,15 +10,15 @@ Collect statistics from Aerospike
  * re
 """
 
+import distutils.version
 import re
 import socket
 import telnetlib
-from distutils.version import LooseVersion
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class AerospikeCollector(Collector):
+class AerospikeCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(AerospikeCollector, self).get_default_config_help()
         config_help.update({
@@ -225,7 +225,7 @@ class AerospikeCollector(Collector):
             t.write('version\n')
             version = t.read_until('\n', 1)
 
-            if LooseVersion(version) >= LooseVersion("3.9"):
+            if distutils.version.LooseVersion(version) >= distutils.version.LooseVersion("3.9"):
                 self.config['dialect'] = 39
             else:
                 self.config['dialect'] = 27

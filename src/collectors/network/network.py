@@ -15,7 +15,6 @@ import re
 
 import diamond.collector
 import diamond.convertor
-from diamond.collector import str_to_bool
 
 try:
     import psutil
@@ -62,7 +61,7 @@ class NetworkCollector(diamond.collector.Collector):
             # Build Regular Expression
             greed = ''
 
-            if str_to_bool(self.config['greedy']):
+            if diamond.collector.str_to_bool(self.config['greedy']):
                 greed = '\S*'
 
             exp = (('^(?:\s*)((?:%s)%s):(?:\s*)' +

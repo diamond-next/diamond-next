@@ -13,7 +13,6 @@ import os
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class IPVSCollector(diamond.collector.Collector):
@@ -24,7 +23,7 @@ class IPVSCollector(diamond.collector.Collector):
         self.statcommand = [self.config['bin'], '--list', '--stats', '--numeric', '--exact']
         self.concommand = [self.config['bin'], '--list', '--numeric']
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             self.statcommand.insert(0, self.config['sudo_cmd'])
             self.concommand.insert(0, self.config['sudo_cmd'])
 
@@ -62,7 +61,7 @@ class IPVSCollector(diamond.collector.Collector):
 
             return False
 
-        if ((str_to_bool(self.config['use_sudo']) and not os.access(self.config['sudo_cmd'], os.X_OK))):
+        if diamond.collector.str_to_bool(self.config['use_sudo']) and not os.access(self.config['sudo_cmd'], os.X_OK):
             self.log.error("%s does not exist, or is not executable", self.config['sudo_cmd'])
 
             return False

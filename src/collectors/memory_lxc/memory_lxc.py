@@ -10,11 +10,11 @@ Collect Memory usage and limit of LXCs
 
 import os
 
+import diamond.collector
 import diamond.convertor
-from diamond.collector import Collector
 
 
-class MemoryLxcCollector(Collector):
+class MemoryLxcCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         """
         Return help text for collector configuration.

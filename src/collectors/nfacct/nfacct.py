@@ -10,10 +10,9 @@ Collect counters from Netfilter accounting
 """
 
 import re
-from subprocess import PIPE, Popen
+import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class NetfilterAccountingCollector(diamond.collector.Collector):
@@ -50,10 +49,10 @@ class NetfilterAccountingCollector(diamond.collector.Collector):
         """
         cmd = [self.config['bin'], "list"]
 
-        if str_to_bool(self.config['reset']):
+        if diamond.collector.str_to_bool(self.config['reset']):
             cmd.append("reset")
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             cmd.insert(0, self.config['sudo_cmd'])
 
         # We avoid use of the XML format to mtaintain compatbility with older
@@ -63,7 +62,7 @@ class NetfilterAccountingCollector(diamond.collector.Collector):
         # Each line is of the format:
         # { pkts = 00000000000001121700, bytes = 00000000000587037355 } = ipv4;
         matcher = re.compile("{ pkts = (.*), bytes = (.*) } = (.*);")
-        lines = Popen(cmd, stdout=PIPE).communicate()[0].strip().splitlines()
+        lines = subprocess.Popen(cmd, stdout=subprocess.PIPE).communicate()[0].strip().splitlines()
 
         for line in lines:
             matches = re.match(matcher, line)

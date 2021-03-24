@@ -9,13 +9,14 @@ http://www.servertech.com/
 """
 
 import re
+
 import time
 
-from collectors.snmp.snmp import SNMPCollector
-from diamond.metric import Metric
+import collectors.snmp.snmp
+import diamond.metric
 
 
-class ServerTechPDUCollector(SNMPCollector):
+class ServerTechPDUCollector(collectors.snmp.snmp.SNMPCollector):
     """
     SNMPCollector for ServerTech PDUs
     """
@@ -81,7 +82,7 @@ class ServerTechPDUCollector(SNMPCollector):
                 metric_path = '.'.join(['devices', device, 'system', metric_name])
 
                 # Create Metric
-                metric = Metric(metric_path, metric_value, timestamp, 2)
+                metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 2)
 
                 # Publish Metric
                 self.publish_metric(metric)
@@ -119,7 +120,7 @@ class ServerTechPDUCollector(SNMPCollector):
                 metric_path = '.'.join(['devices', device, 'input', metric_name])
 
                 # Create Metric
-                metric = Metric(metric_path, metric_value, timestamp, 2)
+                metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 2)
 
                 # Publish Metric
                 self.publish_metric(metric)

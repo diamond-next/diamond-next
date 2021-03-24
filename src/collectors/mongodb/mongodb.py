@@ -23,12 +23,12 @@ MongoDBCollector.conf
 """
 
 import datetime
+import functools
 import re
+
 import zlib
-from functools import reduce
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 try:
     import pymongo
@@ -162,7 +162,7 @@ class MongoDBCollector(diamond.collector.Collector):
             try:
                 # Ensure that the SSL option is a boolean.
                 if type(self.config['ssl']) is str:
-                    self.config['ssl'] = str_to_bool(self.config['ssl'])
+                    self.config['ssl'] = diamond.collector.str_to_bool(self.config['ssl'])
 
                 if ReadPreference is None:
                     conn = pymongo.MongoClient(
@@ -193,10 +193,10 @@ class MongoDBCollector(diamond.collector.Collector):
             data = conn.db.command('serverStatus')
             self._publish_transformed(data, base_prefix)
 
-            if str_to_bool(self.config['simple']):
+            if diamond.collector.str_to_bool(self.config['simple']):
                 data = self._extract_simple_data(data)
 
-            if str_to_bool(self.config['replica']):
+            if diamond.collector.str_to_bool(self.config['replica']):
                 try:
                     replset_data = conn.admin.command('replSetGetStatus')
                     self._publish_replset(replset_data, base_prefix)
@@ -225,7 +225,7 @@ class MongoDBCollector(diamond.collector.Collector):
 
                     collection_stats = conn[db_name].command('collstats', collection_name)
 
-                    if str_to_bool(self.config['translate_collections']):
+                    if diamond.collector.str_to_bool(self.config['translate_collections']):
                         collection_name = collection_name.replace('.', '_')
 
                     collection_prefix = db_prefix + [collection_name]
@@ -239,7 +239,7 @@ class MongoDBCollector(diamond.collector.Collector):
         prefix = base_prefix + ['replset']
         self._publish_dict_with_prefix(data, prefix)
         total_nodes = len(data['members'])
-        healthy_nodes = reduce(lambda value, node: value + node['health'], data['members'], 0)
+        healthy_nodes = functools.reduce(lambda value, node: value + node['health'], data['members'], 0)
 
         self._publish_dict_with_prefix({
             'healthy_nodes': healthy_nodes,

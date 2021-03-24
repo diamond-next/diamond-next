@@ -23,12 +23,13 @@
 Collectd network protocol implementation.
 """
 
-import select
+import copy
+import datetime
+import io
 import socket
 import struct
-from copy import deepcopy
-from datetime import datetime
-from io import StringIO
+
+import select
 
 DEFAULT_PORT = 25826
 """Default port"""
@@ -162,11 +163,11 @@ class Data(object):
 
     @property
     def datetime(self):
-        return datetime.fromtimestamp(self.time)
+        return datetime.datetime.fromtimestamp(self.time)
 
     @property
     def source(self):
-        buf = StringIO()
+        buf = io.StringIO()
         if self.host:
             buf.write(str(self.host))
         if self.plugin:
@@ -251,10 +252,10 @@ def interpret_opcodes(iterable):
             nt.severity = data
         elif kind == TYPE_MESSAGE:
             nt.message = data
-            yield deepcopy(nt)
+            yield copy.deepcopy(nt)
         elif kind == TYPE_VALUES:
             vl[:] = data
-            yield deepcopy(vl)
+            yield copy.deepcopy(vl)
 
 
 class Reader(object):
@@ -299,16 +300,13 @@ class Reader(object):
 
         if multicast:
             if hasattr(socket, "SO_REUSEPORT"):
-                self._sock.setsockopt(
-                    socket.SOL_SOCKET,
-                    socket.SO_REUSEPORT, 1)
+                self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
             val = None
+
             if family == socket.AF_INET:
                 assert "." in self.host
-                val = struct.pack("4sl",
-                                  socket.inet_aton(self.host),
-                                  socket.INADDR_ANY)
+                val = struct.pack("4sl", socket.inet_aton(self.host), socket.INADDR_ANY)
             elif family == socket.AF_INET6:
                 raise NotImplementedError("IPv6 support not ready yet")
             else:

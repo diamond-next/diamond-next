@@ -10,12 +10,12 @@ Collect metrics from Puppet Dashboard
 """
 
 import re
-from urllib.request import urlopen
+import urllib.request
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class PuppetDashboardCollector(Collector):
+class PuppetDashboardCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PuppetDashboardCollector, self).get_default_config_help()
         config_help.update({
@@ -39,7 +39,7 @@ class PuppetDashboardCollector(Collector):
 
     def collect(self):
         try:
-            response = urlopen("http://%s:%s/" % (self.config['host'], int(self.config['port'])))
+            response = urllib.request.urlopen("http://%s:%s/" % (self.config['host'], int(self.config['port'])))
         except Exception as e:
             self.log.error('Could not connect to puppet-dashboard: %s', e)
             return {}

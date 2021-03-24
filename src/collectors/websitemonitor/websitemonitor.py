@@ -6,15 +6,16 @@ Gather HTTP Response code and Duration of HTTP request
   * urllib
 """
 
+import datetime
+import urllib.error
+import urllib.request
+
 import time
-from datetime import datetime
-from urllib.error import URLError
-from urllib.request import Request, urlopen
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class WebsiteMonitorCollector(Collector):
+class WebsiteMonitorCollector(diamond.collector.Collector):
     """
     Gather HTTP response code and Duration of HTTP request
     """
@@ -37,23 +38,23 @@ class WebsiteMonitorCollector(Collector):
         return default_config
 
     def collect(self):
-        req = Request('%s' % (self.config['URL']))
+        req = urllib.request.Request('%s' % (self.config['URL']))
 
         # time in seconds since epoch as a floating number
         start_time = time.time()
 
         try:
             # human-readable time e.g November 25, 2013 18:15:56
-            st = datetime.fromtimestamp(start_time).strftime('%B %d, %Y %H:%M:%S')
+            st = datetime.datetime.fromtimestamp(start_time).strftime('%B %d, %Y %H:%M:%S')
             self.log.debug('Start time: %s' % st)
 
-            resp = urlopen(req)
+            resp = urllib.request.urlopen(req)
 
             # time in seconds since epoch as a floating number
             end_time = time.time()
 
             # human-readable end time e.eg. November 25, 2013 18:15:56
-            et = datetime.fromtimestamp(end_time).strftime('%B %d, %Y %H:%M%S')
+            et = datetime.datetime.fromtimestamp(end_time).strftime('%B %d, %Y %H:%M%S')
             self.log.debug('End time: %s' % et)
 
             # Response time in milliseconds
@@ -62,7 +63,7 @@ class WebsiteMonitorCollector(Collector):
             # Publish metrics
             self.publish('response_time.%s' % resp.code, rt, metric_type='COUNTER')
         # urllib will puke on non HTTP 200/OK URLs
-        except URLError as e:
+        except urllib.error.URLError as e:
             if e.code != 200:
                 # time in seconds since epoch as a floating number
                 end_time = time.time()

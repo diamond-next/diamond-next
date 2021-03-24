@@ -9,9 +9,9 @@ Collect stats via MX4J from Kafka
  * xml.etree
 """
 
-from urllib.error import URLError
-from urllib.parse import urlencode
-from urllib.request import urlopen
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import diamond.collector
 
@@ -65,11 +65,11 @@ class KafkaCollector(diamond.collector.Collector):
         if query_args:
             qargs.update(query_args)
 
-        url = 'http://%s:%i%s?%s' % (self.config['host'], int(self.config['port']), path, urlencode(qargs))
+        url = 'http://%s:%i%s?%s' % (self.config['host'], int(self.config['port']), path, urllib.parse.urlencode(qargs))
 
         try:
-            response = urlopen(url)
-        except URLError as err:
+            response = urllib.request.urlopen(url)
+        except urllib.error.URLError as err:
             self.log.error("%s: %s", url, err)
 
             return None

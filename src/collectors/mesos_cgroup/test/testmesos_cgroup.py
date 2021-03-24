@@ -29,7 +29,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             if url == 'http://localhost:5051/state.json':
                 return self.getFixture('state.json')
             else:
-                print(url)
                 raise NotImplementedError()
 
         def listdir_se(directory):
@@ -42,7 +41,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             if directory in cgroup_directories:
                 return ["b0d5971e-915c-414b-aa25-0da46e64ff4e"]
             else:
-                print(directory)
                 raise NotImplementedError()
 
         def isdir_se(directory):
@@ -55,7 +53,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             if directory in task_directories:
                 return True
             else:
-                print(directory)
                 raise NotImplementedError()
 
         def open_se(path, mode='r', create=True):

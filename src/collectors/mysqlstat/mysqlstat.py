@@ -29,10 +29,10 @@ GRANT PROCESS ON *.* TO 'user'@'hostname' IDENTIFIED BY
 """
 
 import re
+
 import time
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 try:
     import mysqlclient
@@ -247,9 +247,9 @@ class MySQLCollector(diamond.collector.Collector):
             self.config['hosts'].append(hoststr)
 
         # Normalize some config vars
-        self.config['master'] = str_to_bool(self.config['master'])
-        self.config['slave'] = str_to_bool(self.config['slave'])
-        self.config['innodb'] = str_to_bool(self.config['innodb'])
+        self.config['master'] = diamond.collector.str_to_bool(self.config['master'])
+        self.config['slave'] = diamond.collector.str_to_bool(self.config['slave'])
+        self.config['innodb'] = diamond.collector.str_to_bool(self.config['innodb'])
 
         self.db = None
 

@@ -23,8 +23,8 @@ Collects data from RabbitMQ through the admin interface
 
 import base64
 import re
-from urllib.parse import quote, urljoin
-from urllib.request import Request, urlopen
+import urllib.parse
+import urllib.request
 
 import diamond.collector
 
@@ -46,11 +46,11 @@ class RabbitMQClient(object):
         self._authorization = 'Basic %s' % base64string
 
     def do_call(self, path):
-        url = urljoin(self.base_url, path)
-        req = Request(url)
+        url = urllib.parse.urljoin(self.base_url, path)
+        req = urllib.request.Request(url)
         req.add_header('Authorization', self._authorization)
 
-        return json.load(urlopen(req, timeout=self.timeout))
+        return json.load(urllib.request.urlopen(req, timeout=self.timeout))
 
     def get_all_vhosts(self):
         return self.do_call('vhosts')
@@ -62,8 +62,8 @@ class RabbitMQClient(object):
         path = 'queues'
 
         if vhost:
-            vhost = quote(vhost, '')
-            queue_name = quote(queue_name, '')
+            vhost = urllib.parse.quote(vhost, '')
+            queue_name = urllib.parse.quote(queue_name, '')
             path += '/%s/%s' % (vhost, queue_name)
 
         try:
@@ -75,7 +75,7 @@ class RabbitMQClient(object):
 
     def get_queues(self, vhost):
         path = 'queues'
-        vhost = quote(vhost, '')
+        vhost = urllib.parse.quote(vhost, '')
         path += '/%s' % vhost
 
         try:

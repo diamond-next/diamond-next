@@ -9,9 +9,9 @@ Uses /proc/net/sockstat to collect data on number of open sockets
 
 """
 
+import collections
 import os
 import re
-from collections import defaultdict
 
 import diamond.collector
 
@@ -47,7 +47,7 @@ class SockstatCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        result = defaultdict(int)
+        result = collections.defaultdict(int)
 
         for path in self.PROCS:
             if not os.access(path, os.R_OK):

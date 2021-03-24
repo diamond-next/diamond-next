@@ -10,10 +10,10 @@ port = 11211  # optional
 """
 
 import socket
-from collections import defaultdict
+import collections
 
 import diamond.collector
-from diamond.metric import Metric
+import diamond.metric
 
 
 def parse_slab_stats(slab_stats):
@@ -37,7 +37,7 @@ def parse_slab_stats(slab_stats):
         'total_malloced': 1048512,
     }
     """
-    stats_dict = {'slabs': defaultdict(lambda: {})}
+    stats_dict = {'slabs': collections.defaultdict(lambda: {})}
 
     for line in slab_stats.splitlines():
         if line == 'END':
@@ -131,5 +131,5 @@ class MemcachedSlabCollector(diamond.collector.Collector):
         for path, value in iter(paths.items()):
             # Add path and prefix to metric (e.g. 'servers.cache-main-01.memchached_slab')
             full_path = self.get_metric_path(path)
-            metric = Metric(full_path, value)
+            metric = diamond.metric.Metric(full_path, value)
             self.publish_metric(metric)

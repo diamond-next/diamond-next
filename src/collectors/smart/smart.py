@@ -14,7 +14,6 @@ import re
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class SmartCollector(diamond.collector.Collector):
@@ -52,7 +51,7 @@ class SmartCollector(diamond.collector.Collector):
             if devices.match(device):
                 command = [self.config['bin'], "-A", os.path.join('/dev', device)]
 
-                if str_to_bool(self.config['use_sudo']):
+                if diamond.collector.str_to_bool(self.config['use_sudo']):
                     command.insert(0, self.config['sudo_cmd'])
 
                 attributes = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0].strip().splitlines()

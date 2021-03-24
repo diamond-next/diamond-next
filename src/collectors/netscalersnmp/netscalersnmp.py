@@ -10,13 +10,14 @@ balancing, firewall, proxy and VPN functions.
 
 import re
 import struct
+
 import time
 
-from collectors.snmp.snmp import SNMPCollector
-from diamond.metric import Metric
+import collectors.snmp.snmp
+import diamond.metric
 
 
-class NetscalerSNMPCollector(SNMPCollector):
+class NetscalerSNMPCollector(collectors.snmp.snmp.SNMPCollector):
     """
     SNMPCollector for Netscaler Metrics
     """
@@ -173,7 +174,7 @@ class NetscalerSNMPCollector(SNMPCollector):
             metric_path = '.'.join(['devices', device, 'system', metric_name])
 
             # Create Metric
-            metric = Metric(metric_path, metric_value, timestamp, 0)
+            metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)
@@ -190,7 +191,7 @@ class NetscalerSNMPCollector(SNMPCollector):
             metric_value = self.derivative(metric_path, int(self.get(v, host, port, community)[v]), self.MAX_VALUE)
 
             # Create Metric
-            metric = Metric(metric_path, metric_value, timestamp, 0)
+            metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)
@@ -231,7 +232,7 @@ class NetscalerSNMPCollector(SNMPCollector):
                 metric_path = '.'.join(['devices', device, 'service', metric_name])
 
                 # Create Metric
-                metric = Metric(metric_path, metric_value, timestamp, 0)
+                metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
                 # Publish Metric
                 self.publish_metric(metric)
@@ -272,7 +273,7 @@ class NetscalerSNMPCollector(SNMPCollector):
                 metric_path = '.'.join(['devices', device, 'vserver', metric_name])
 
                 # Create Metric
-                metric = Metric(metric_path, metric_value, timestamp, 0)
+                metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
                 # Publish Metric
                 self.publish_metric(metric)

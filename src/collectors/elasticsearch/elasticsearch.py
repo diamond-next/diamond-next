@@ -9,22 +9,20 @@ parameter the instance alias will be appended to the
 
 #### Dependencies
 
- * urlib2
+ * urllib
 
 """
 
 import base64
 import re
-from urllib.request import Request, urlopen
+import urllib.request
 
-from diamond.collector import str_to_bool
+import diamond.collector
 
 try:
     import json
 except ImportError:
     import simplejson as json
-
-import diamond.collector
 
 RE_LOGSTASH_INDEX = re.compile('^(.*)-\d{4}(\.\d{2}){2,3}$')
 
@@ -113,13 +111,13 @@ class ElasticSearchCollector(diamond.collector.Collector):
         url = '%s://%s:%i/%s' % (scheme, host, port, path)
 
         try:
-            request = Request(url)
+            request = urllib.request.Request(url)
 
             if self.config['user'] and self.config['password']:
                 base64string = base64.b64encode(bytes('%s:%s' % (self.config['user'], self.config['password']), 'utf-8'))
                 request.add_header("Authorization", "Basic %s" % base64string)
 
-            response = urlopen(request)
+            response = urllib.request.urlopen(request)
         except Exception as err:
             self.log.error("%s: %s" % (url, err))
             return False
@@ -376,7 +374,7 @@ class ElasticSearchCollector(diamond.collector.Collector):
             self._copy_two_level(metrics, 'network', data['network'])
 
         # cluster (optional)
-        if str_to_bool(self.config['cluster']):
+        if diamond.collector.str_to_bool(self.config['cluster']):
             self.collect_instance_cluster_stats(scheme, host, port, metrics)
 
         # indices (optional)

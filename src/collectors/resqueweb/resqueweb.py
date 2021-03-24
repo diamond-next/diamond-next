@@ -9,12 +9,12 @@ Collects data for Resque Web
 
 """
 
-from urllib.request import urlopen
+import urllib.request
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class ResqueWebCollector(Collector):
+class ResqueWebCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(ResqueWebCollector, self).get_default_config_help()
         config_help.update({})
@@ -34,7 +34,7 @@ class ResqueWebCollector(Collector):
 
     def collect(self):
         try:
-            response = urlopen("http://%s:%s/stats.txt" % (self.config['host'], int(self.config['port'])))
+            response = urllib.request.urlopen("http://%s:%s/stats.txt" % (self.config['host'], int(self.config['port'])))
         except Exception as e:
             self.log.error('Could not connect to resque-web: %s', e)
             return {}

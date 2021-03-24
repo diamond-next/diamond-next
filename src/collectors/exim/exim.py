@@ -13,7 +13,6 @@ import os
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class EximCollector(diamond.collector.Collector):
@@ -47,17 +46,17 @@ class EximCollector(diamond.collector.Collector):
 
         command = [self.config['bin'], '-bpc']
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             command = [
                 self.config['sudo_cmd'],
                 '-u',
                 self.config['sudo_user']
             ].extend(command)
 
-        queuesize = subprocess.Popen(
-            command, stdout=subprocess.PIPE).communicate()[0].split()
+        queuesize = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0].split()
 
         if not len(queuesize):
             return
+
         queuesize = queuesize[-1]
         self.publish('queuesize', queuesize)

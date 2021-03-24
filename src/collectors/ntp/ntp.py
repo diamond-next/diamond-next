@@ -23,7 +23,7 @@ $
 """
 
 import diamond.collector
-from diamond import convertor
+import diamond.convertor
 
 
 class NtpCollector(diamond.collector.ProcessCollector):
@@ -77,7 +77,7 @@ class NtpCollector(diamond.collector.ProcessCollector):
             offset_in_s = float(parts[9])
 
             # Convert to the requested time unit
-            offset = convertor.time.convert(offset_in_s, 's', self.config['time_scale'])
+            offset = diamond.convertor.time.convert(offset_in_s, 's', self.config['time_scale'])
 
             # Determine metric namespace based on given time unit
             metric_name = 'offset.%s' % self.config['time_scale']

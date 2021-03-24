@@ -29,7 +29,6 @@ import re
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class PassengerCollector(diamond.collector.Collector):
@@ -74,7 +73,7 @@ class PassengerCollector(diamond.collector.Collector):
         """
         command = [self.config["passenger_memory_stats_bin"]]
 
-        if str_to_bool(self.config["use_sudo"]):
+        if diamond.collector.str_to_bool(self.config["use_sudo"]):
             command.insert(0, self.config["sudo_cmd"])
 
         try:
@@ -174,7 +173,7 @@ class PassengerCollector(diamond.collector.Collector):
 
         command = [self.config["passenger_status_bin"]]
 
-        if str_to_bool(self.config["use_sudo"]):
+        if diamond.collector.str_to_bool(self.config["use_sudo"]):
             command.insert(0, self.config["sudo_cmd"])
 
         try:

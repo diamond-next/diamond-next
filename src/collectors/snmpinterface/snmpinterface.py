@@ -63,11 +63,11 @@ https://github.com/GreggBzz/snmp-interface-poll as an alternative collector
 
 import re
 
+import collectors.snmp.snmp
 import diamond.convertor
-from collectors.snmp.snmp import SNMPCollector
 
 
-class SNMPInterfaceCollector(SNMPCollector):
+class SNMPInterfaceCollector(collectors.snmp.snmp.SNMPCollector):
     # IF-MIB OID
     IF_MIB_INDEX_OID = "1.3.6.1.2.1.2.2.1.1"
     IF_MIB_NAME_OID = "1.3.6.1.2.1.31.1.1.1.1"

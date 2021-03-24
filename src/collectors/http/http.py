@@ -28,7 +28,7 @@ Metrics are collected as :
 """
 
 import datetime
-from urllib.request import Request, urlopen
+import urllib.request
 
 import diamond.collector
 
@@ -61,10 +61,10 @@ class HttpCollector(diamond.collector.Collector):
         for url in self.config['req_url']:
             self.log.debug("collecting %s", str(url))
             req_start = datetime.datetime.now()
-            req = Request(url, headers=self.config['headers'])
+            req = urllib.request.Request(url, headers=self.config['headers'])
 
             try:
-                handle = urlopen(req)
+                handle = urllib.request.urlopen(req)
                 the_page = handle.read()
                 req_end = datetime.datetime.now()
                 req_time = req_end - req_start

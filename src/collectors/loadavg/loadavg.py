@@ -14,7 +14,6 @@ import os
 import re
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class LoadAverageCollector(diamond.collector.Collector):
@@ -45,7 +44,7 @@ class LoadAverageCollector(diamond.collector.Collector):
         load01, load05, load15 = os.getloadavg()
         cpu_count = multiprocessing.cpu_count()
 
-        if not str_to_bool(self.config['simple']):
+        if not diamond.collector.str_to_bool(self.config['simple']):
             self.publish_gauge('01', load01, 2)
             self.publish_gauge('05', load05, 2)
             self.publish_gauge('15', load15, 2)

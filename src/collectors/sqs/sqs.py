@@ -31,6 +31,7 @@ restart diamond.
 """
 
 import diamond.collector
+
 try:
     from boto import sqs
 except ImportError:

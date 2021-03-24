@@ -10,7 +10,6 @@ Collect metrics from postgresql
 """
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 try:
     import psycopg2
@@ -79,16 +78,18 @@ class PostgresqlCollector(diamond.collector.Collector):
 
         # Get list of databases
         dbs = self._get_db_names()
+
         if len(dbs) == 0:
             self.log.error("I have 0 databases!")
+
             return {}
 
         if self.config['metrics']:
             metrics = self.config['metrics']
-        elif str_to_bool(self.config['extended']):
+        elif diamond.collector.str_to_bool(self.config['extended']):
             metrics = registry['extended']
-            if str_to_bool(self.config['has_admin']) \
-                    and 'WalSegmentStats' not in metrics:
+
+            if diamond.collector.str_to_bool(self.config['has_admin']) and 'WalSegmentStats' not in metrics:
                 metrics.append('WalSegmentStats')
 
         else:

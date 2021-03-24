@@ -16,7 +16,7 @@
 """
 
 import diamond.collector
-from diamond.metric import Metric
+import diamond.metric
 
 try:
     import xml.etree.ElementTree as ET
@@ -65,7 +65,7 @@ class netapp_inodeCol(object):
         graphite_path += '.' + self.device + '.' + 'volume'
         graphite_path += '.' + volume + '.' + metric_name
 
-        metric = Metric(graphite_path, metric_value, precision=4, host=self.device)
+        metric = diamond.metric.Metric(graphite_path, metric_value, precision=4, host=self.device)
 
         self.publish_metric(metric)
 

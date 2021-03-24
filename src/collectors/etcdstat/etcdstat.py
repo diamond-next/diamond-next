@@ -13,8 +13,8 @@ Collects metrics from an Etcd instance.
 """
 
 import json
-from urllib.error import HTTPError
-from urllib.request import urlopen
+import urllib.error
+import urllib.request
 
 import diamond.collector
 
@@ -104,8 +104,8 @@ class EtcdCollector(diamond.collector.Collector):
 
             url = "%s://%s:%s/v2/stats/%s" % (protocol, self.config['host'], self.config['port'], category)
 
-            return json.load(urlopen(url, **opts))
-        except (HTTPError, ValueError) as err:
+            return json.load(urllib.request.urlopen(url, **opts))
+        except (urllib.error.HTTPError, ValueError) as err:
             self.log.error('Unable to read JSON response: %s' % err)
 
             return {}

@@ -9,14 +9,14 @@ Collect stats from Apache HTTPD server using mod_status
 
 """
 
+import http.client
 import re
-from http.client import HTTPConnection, HTTPSConnection
-from urllib.parse import urlparse
+import urllib.parse
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class HttpdCollector(Collector):
+class HttpdCollector(diamond.collector.Collector):
     def process_config(self):
         super(HttpdCollector, self).process_config()
 
@@ -72,13 +72,13 @@ class HttpdCollector(Collector):
 
                 while True:
                     # Parse Url
-                    parts = urlparse(url)
+                    parts = urllib.parse.urlparse(url)
 
                     # Set httplib class
                     if parts.scheme == 'http':
-                        connection = HTTPConnection(parts.netloc)
+                        connection = http.client.HTTPConnection(parts.netloc)
                     elif parts.scheme == 'https':
-                        connection = HTTPSConnection(parts.netloc)
+                        connection = http.client.HTTPSConnection(parts.netloc)
                     else:
                         raise Exception("Invalid scheme: %s" % parts.scheme)
 
@@ -107,7 +107,7 @@ class HttpdCollector(Collector):
 
             exp = re.compile('^([A-Za-z ]+):\s+(.+)$')
 
-            for line in data.split('\n'):
+            for line in data.split(b'\n'):
                 if line:
                     m = exp.match(line)
 
@@ -120,7 +120,7 @@ class HttpdCollector(Collector):
                             continue
 
                         if k == 'Scoreboard':
-                            for sb_kv in self._parseScoreboard(v):
+                            for sb_kv in self._parse_scoreboard(v):
                                 self._publish(nickname, sb_kv[0], sb_kv[1])
                         else:
                             self._publish(nickname, k, v)
@@ -180,7 +180,7 @@ class HttpdCollector(Collector):
                 # Publish Metric
                 self.publish(metric_name, metric_value)
 
-    def _parseScoreboard(self, sb):
+    def _parse_scoreboard(self, sb):
         ret = [('IdleWorkers', sb.count('_')),
                ('ReadingWorkers', sb.count('R')),
                ('WritingWorkers', sb.count('W')),

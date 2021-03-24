@@ -11,12 +11,12 @@ This class collects data on NUMA utilization
 """
 
 import logging
-from re import compile as re_compile
-from subprocess import PIPE, Popen
+import re
+import subprocess
 
 import diamond.collector
 
-node_re = re_compile('(?P<node>^node d+ (free|size)): (?P<size>d+) MB')
+node_re = re.compile('(?P<node>^node d+ (free|size)): (?P<size>d+) MB')
 
 
 class NumaCollector(diamond.collector.Collector):
@@ -33,7 +33,7 @@ class NumaCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        p = Popen([self.config['bin'], '--hardware'], stdout=PIPE, stderr=PIPE)
+        p = subprocess.Popen([self.config['bin'], '--hardware'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
         output, errors = p.communicate()
 

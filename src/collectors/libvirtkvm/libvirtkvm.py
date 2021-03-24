@@ -10,7 +10,6 @@ Uses libvirt to harvest per KVM instance stats
 """
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 try:
     from xml.etree import ElementTree
@@ -89,7 +88,7 @@ class LibvirtKVMCollector(diamond.collector.Collector):
 
     def report_cpu_metric(self, statname, value, instance):
         # Value in cummulative nanoseconds
-        if str_to_bool(self.config['cpu_absolute']):
+        if diamond.collector.str_to_bool(self.config['cpu_absolute']):
             metric = value
         else:
             # Nanoseconds (10^9), however, we want to express in 100%
@@ -103,8 +102,9 @@ class LibvirtKVMCollector(diamond.collector.Collector):
             return {}
 
         conn = libvirt.openReadOnly(self.config['uri'])
+
         for dom in [conn.lookupByID(n) for n in conn.listDomainsID()]:
-            if str_to_bool(self.config['sort_by_uuid']):
+            if diamond.collector.str_to_bool(self.config['sort_by_uuid']):
                 name = dom.UUIDString()
             else:
                 name = dom.name()
@@ -113,6 +113,7 @@ class LibvirtKVMCollector(diamond.collector.Collector):
             vcpus = dom.getCPUStats(True, 0)
             totalcpu = 0
             idx = 0
+
             for vcpu in vcpus:
                 cputime = vcpu['cpu_time']
                 self.report_cpu_metric('cpu.%s.time' % idx, cputime, name)

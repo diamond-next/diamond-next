@@ -17,8 +17,9 @@ port=16379
 
 """
 
+import urllib.request
+
 import time
-from urllib.request import urlopen
 
 import diamond.collector
 
@@ -69,7 +70,7 @@ class CelerymonCollector(diamond.collector.Collector):
         port = self.config['port']
 
         celerymon_url = "http://%s:%s/api/task/?since=%i" % (host, port, self.LastCollectTime)
-        response = urlopen(celerymon_url)
+        response = urllib.request.urlopen(celerymon_url)
         body = response.read()
         celery_data = json.loads(body)
 

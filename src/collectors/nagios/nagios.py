@@ -13,7 +13,6 @@ import os
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class NagiosStatsCollector(diamond.collector.Collector):
@@ -72,12 +71,13 @@ class NagiosStatsCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        if ((not os.access(self.config['bin'], os.X_OK) or (str_to_bool(self.config['use_sudo']) and not os.access(self.config['sudo_cmd'], os.X_OK)))):
+        if ((not os.access(self.config['bin'], os.X_OK)
+             or (diamond.collector.str_to_bool(self.config['use_sudo']) and not os.access(self.config['sudo_cmd'], os.X_OK)))):
             return
 
         command = [self.config['bin'], '--data', ",".join(self.config['vars']), '--mrtg']
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             command.insert(0, self.config['sudo_cmd'])
 
         p = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0][:-1]

@@ -24,13 +24,13 @@ you're going to have a bad time.
 
 import json
 import os
-from urllib.error import HTTPError
-from urllib.request import urlopen
+import urllib.error
+import urllib.request
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class MesosCGroupCollector(Collector):
+class MesosCGroupCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(MesosCGroupCollector, self).get_default_config_help()
         config_help.update({
@@ -121,8 +121,8 @@ class MesosCGroupCollector(Collector):
         try:
             url = "http://%s:%s/%s" % (self.config['host'], self.config['port'], self.config['mesos_state_path'])
 
-            return json.load(urlopen(url))
-        except (HTTPError, ValueError) as err:
+            return json.load(urllib.request.urlopen(url))
+        except (urllib.error.HTTPError, ValueError) as err:
             self.log.error('Unable to read JSON response: %s' % err)
 
             return {}

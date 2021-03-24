@@ -7,9 +7,10 @@ Get ceph status from one node
 import os
 import re
 import subprocess
+
 import sys
 
-from collectors.ceph.ceph import CephCollector
+import collectors.ceph.ceph
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ceph'))
 
@@ -61,7 +62,7 @@ def process_ceph_status(self, output):
     return ret
 
 
-class CephStatsCollector(CephCollector):
+class CephStatsCollector(collectors.ceph.ceph.CephCollector):
     def _get_stats(self):
         """
         Get ceph stats

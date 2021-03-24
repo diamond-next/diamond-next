@@ -10,14 +10,13 @@ Simple collector which get JSON and parse it into flat metrics
 """
 
 import json
-from urllib.error import URLError
-from urllib.request import Request, urlopen
+import urllib.error
+import urllib.request
 
 import diamond.collector
 
 
 class HTTPJSONCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(HTTPJSONCollector, self).get_default_config_help()
         config_help.update({
@@ -53,12 +52,12 @@ class HTTPJSONCollector(diamond.collector.Collector):
     def collect(self):
         url = self.config['url']
 
-        req = Request(url, headers=self.config['headers'])
+        req = urllib.request.Request(url, headers=self.config['headers'])
         req.add_header('Content-type', 'application/json')
 
         try:
-            resp = urlopen(req)
-        except URLError as e:
+            resp = urllib.request.urlopen(req)
+        except urllib.error.URLError as e:
             self.log.error("Can't open url %s. %s", url, e)
         else:
 

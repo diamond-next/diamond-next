@@ -36,13 +36,14 @@ https://communities.netapp.com/docs/DOC-1044
 from __future__ import print_function
 
 import re
+
 import sys
 import time
 import unicodedata
 
 import diamond.collector
 import diamond.convertor
-from diamond.metric import Metric
+import diamond.metric
 
 
 class NetAppCollector(diamond.collector.Collector):
@@ -214,7 +215,7 @@ class NetAppCollector(diamond.collector.Collector):
 
         # Change metric name before publish if needed.
         newpath = ".".join([".".join(path.split(".")[:-1]), prettyname])
-        metric = Metric(newpath, value, precision=4, host=device)
+        metric = diamond.metric.Metric(newpath, value, precision=4, host=device)
         self.publish_metric(metric)
 
     def _gen_delta_depend(self, path, derivative, multiplier, prettyname, device):

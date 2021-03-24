@@ -25,13 +25,14 @@ community = mycommunitystring
 """
 
 import struct
+
 import time
 
-from collectors.snmp.snmp import SNMPCollector
-from diamond.metric import Metric
+import collectors.snmp.snmp
+import diamond.metric
 
 
-class IODriveSNMPCollector(SNMPCollector):
+class IODriveSNMPCollector(collectors.snmp.snmp.SNMPCollector):
     """
     SNMPCollector for a single Fusion IO Drive
     """
@@ -100,7 +101,7 @@ class IODriveSNMPCollector(SNMPCollector):
             metric_path = '.'.join(['servers', host, device, metric_name])
 
             # Create Metric
-            metric = Metric(metric_path, metric_value, timestamp, 0)
+            metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)
@@ -114,7 +115,7 @@ class IODriveSNMPCollector(SNMPCollector):
             metric_path = '.'.join(['servers', host, device, metric_name])
 
             # Create Metric
-            metric = Metric(metric_path, metric_value, timestamp, 0)
+            metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)

@@ -9,7 +9,7 @@ import os
 import re
 
 import diamond.collector
-from diamond.metric import Metric
+import diamond.metric
 
 
 class HBaseCollector(diamond.collector.Collector):
@@ -56,15 +56,16 @@ class HBaseCollector(diamond.collector.Collector):
             metrics = {}
 
             data = match.groupdict()
+
             for metric in data['metrics'].split(','):
                 metric = metric.strip()
+
                 if '=' in metric:
                     key, value = metric.split('=', 1)
                     metrics[key] = value
 
             for metric in metrics.keys():
                 try:
-
                     if data['name'] == 'jvm.metrics':
                         path = self.get_metric_path('.'.join([
                             data['name'],
@@ -98,13 +99,10 @@ class HBaseCollector(diamond.collector.Collector):
 
                     value = float(metrics[metric])
 
-                    self.publish_metric(
-                        Metric(path,
-                               value,
-                               timestamp=int(data['timestamp']) / 1000))
-
+                    self.publish_metric(diamond.metric.Metric(path, value, timestamp=int(data['timestamp']) / 1000))
                 except ValueError:
                     pass
+
         fd.seek(0)
         fd.truncate()
         fd.close()

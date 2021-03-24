@@ -11,11 +11,11 @@ Collect Uptime metrics
 
 import os
 
-from diamond import convertor
-from diamond.collector import Collector
+import diamond.collector
+import diamond.convertor
 
 
-class UptimeCollector(Collector):
+class UptimeCollector(diamond.collector.Collector):
     PROC = '/proc/uptime'
 
     def get_default_config(self):
@@ -43,7 +43,7 @@ class UptimeCollector(Collector):
             fd.close()
             v = float(uptime.split()[0].strip())
 
-            return convertor.time.convert(v, 's', self.config['metric_name'])
+            return diamond.convertor.time.convert(v, 's', self.config['metric_name'])
         except Exception as e:
             self.log.error('Unable to read uptime from %s: %s' % (self.PROC, e))
             return None

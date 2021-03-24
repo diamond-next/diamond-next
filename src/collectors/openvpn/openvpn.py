@@ -36,8 +36,9 @@ You can also specify multiple and mixed instances::
 
 import os.path
 import socket
+import urllib.parse
+
 import time
-from urllib.parse import urlparse
 
 import diamond.collector
 
@@ -69,7 +70,7 @@ class OpenVPNCollector(diamond.collector.Collector):
         """
         Convert urlparse from a python 2.4 layout to a python 2.7 layout
         """
-        parsed = urlparse(uri)
+        parsed = urllib.parse.urlparse(uri)
 
         if 'scheme' not in parsed:
             class Object(object):

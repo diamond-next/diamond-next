@@ -5,7 +5,7 @@ Collect the DataStax OpsCenter metrics
 """
 
 import datetime
-from urllib.request import urlopen
+import urllib.request
 
 import diamond.collector
 
@@ -118,7 +118,7 @@ class DseOpsCenterCollector(diamond.collector.Collector):
         url = 'http://%s:%i/%s/keyspaces' % (self.config['host'], int(self.config['port']), self.config['cluster_id'])
 
         try:
-            response = urlopen(url)
+            response = urllib.request.urlopen(url)
         except Exception as err:
             self.log.error('%s: %s', url, err)
 
@@ -162,7 +162,7 @@ class DseOpsCenterCollector(diamond.collector.Collector):
         )
 
         try:
-            response = urlopen(url)
+            response = urllib.request.urlopen(url)
         except Exception as err:
             self.log.error('%s: %s', url, err)
 

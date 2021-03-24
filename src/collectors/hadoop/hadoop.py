@@ -16,8 +16,7 @@ import os
 import re
 
 import diamond.collector
-from diamond.collector import str_to_bool
-from diamond.metric import Metric
+import diamond.metric
 
 
 class HadoopCollector(diamond.collector.Collector):
@@ -113,14 +112,10 @@ class HadoopCollector(diamond.collector.Collector):
 
                     value = float(metrics[metric])
 
-                    self.publish_metric(
-                        Metric(path,
-                               value,
-                               timestamp=int(data['timestamp']) / 1000))
-
+                    self.publish_metric(diamond.metric.Metric(path, value, timestamp=int(data['timestamp']) / 1000))
                 except ValueError:
                     pass
-        if str_to_bool(self.config['truncate']):
+        if diamond.collector.str_to_bool(self.config['truncate']):
             fd.seek(0)
             fd.truncate()
         fd.close()

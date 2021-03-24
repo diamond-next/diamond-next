@@ -55,11 +55,11 @@ restart diamond.
 
 import time
 
-from collectors.snmp.snmp import SNMPCollector
-from diamond.metric import Metric
+import collectors.snmp.snmp
+import diamond.metric
 
 
-class SNMPRawCollector(SNMPCollector):
+class SNMPRawCollector(collectors.snmp.snmp.SNMPCollector):
     def process_config(self):
         super(SNMPRawCollector, self).process_config()
         # list to save non-existing oid's per device, to avoid repetition of
@@ -169,5 +169,5 @@ class SNMPRawCollector(SNMPCollector):
                 self.log.debug('\'{}\' ({}) on device \'{}\' - value=[{}]'.format(oid, metricName, device, value))
 
                 path = '.'.join([self.config['path_prefix'], device, self.config['path_suffix'], metricName])
-                metric = Metric(path=path, value=value, timestamp=timestamp, precision=self._precision(value), metric_type='GAUGE')
+                metric = diamond.metric.Metric(path=path, value=value, timestamp=timestamp, precision=self._precision(value), metric_type='GAUGE')
                 self.publish_metric(metric)

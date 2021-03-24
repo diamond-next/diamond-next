@@ -14,10 +14,9 @@ with server hardware but usually not available in consumer hardware.
 
 import getpass
 import os
-from subprocess import PIPE, Popen
+import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class IPMISensorCollector(diamond.collector.Collector):
@@ -73,10 +72,9 @@ class IPMISensorCollector(diamond.collector.Collector):
         return None
 
     def collect(self):
-        use_sudo = str_to_bool(self.config['use_sudo'])
-        if ((not os.access(self.config['bin'], os.X_OK) or
-             (use_sudo and
-              not os.access(self.config['sudo_cmd'], os.X_OK)))):
+        use_sudo = diamond.collector.str_to_bool(self.config['use_sudo'])
+
+        if not os.access(self.config['bin'], os.X_OK) or (use_sudo and not os.access(self.config['sudo_cmd'], os.X_OK)):
             return False
 
         command = [self.config['bin'], 'sensor']
@@ -84,16 +82,16 @@ class IPMISensorCollector(diamond.collector.Collector):
         if use_sudo and getpass.getuser() != 'root':
             command.insert(0, self.config['sudo_cmd'])
 
-        p = Popen(command, stdout=PIPE).communicate()[0][:-1]
+        p = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0][:-1]
 
-        for i, v in enumerate(p.split("\n")):
-            data = v.split("|")
+        for i, v in enumerate(p.split(b"\n")):
+            data = v.split(b"|")
+
             try:
                 # Complex keys are fun!
                 metric_name = data[0].strip()
                 metric_name = metric_name.replace(".", "_")
-                metric_name = metric_name.replace(" ",
-                                                  self.config['delimiter'])
+                metric_name = metric_name.replace(" ", self.config['delimiter'])
                 metrics = []
 
                 # Each sensor line is a column seperated by a | with the
@@ -112,20 +110,13 @@ class IPMISensorCollector(diamond.collector.Collector):
                 if not self.config['thresholds']:
                     metrics.append((metric_name, self.parse_value(data[1])))
                 else:
-                    metrics.append((metric_name + ".Reading",
-                                    self.parse_value(data[1])))
-                    metrics.append((metric_name + ".Lower.NonRecoverable",
-                                    self.parse_value(data[4])))
-                    metrics.append((metric_name + ".Lower.Critical",
-                                    self.parse_value(data[5])))
-                    metrics.append((metric_name + ".Lower.NonCritical",
-                                    self.parse_value(data[6])))
-                    metrics.append((metric_name + ".Upper.NonCritical",
-                                    self.parse_value(data[7])))
-                    metrics.append((metric_name + ".Upper.Critical",
-                                    self.parse_value(data[8])))
-                    metrics.append((metric_name + ".Upper.NonRecoverable",
-                                    self.parse_value(data[9])))
+                    metrics.append((metric_name + ".Reading", self.parse_value(data[1])))
+                    metrics.append((metric_name + ".Lower.NonRecoverable", self.parse_value(data[4])))
+                    metrics.append((metric_name + ".Lower.Critical", self.parse_value(data[5])))
+                    metrics.append((metric_name + ".Lower.NonCritical", self.parse_value(data[6])))
+                    metrics.append((metric_name + ".Upper.NonCritical", self.parse_value(data[7])))
+                    metrics.append((metric_name + ".Upper.Critical", self.parse_value(data[8])))
+                    metrics.append((metric_name + ".Upper.NonRecoverable", self.parse_value(data[9])))
 
                 [self.publish(name, value)
                  for (name, value) in metrics

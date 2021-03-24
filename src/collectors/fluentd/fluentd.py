@@ -20,7 +20,7 @@ The FlutendCollector monitors fluentd and data about the kinesis stream.
 """
 
 import json
-from urllib.request import urlopen
+import urllib.request
 
 import diamond.collector
 
@@ -51,7 +51,7 @@ class FluentdCollector(diamond.collector.Collector):
         params = (self.config['host'], self.config['port'], self.API_PATH)
         url = "http://%s:%s/%s" % params
 
-        res = urlopen(url)
+        res = urllib.request.urlopen(url)
         data = json.load(res)
 
         result = self.parse_api_output(data)

@@ -14,7 +14,6 @@ import subprocess
 
 import diamond.collector
 import diamond.convertor
-from diamond.collector import str_to_bool
 
 LINE_PATTERN = re.compile('^(?P<source>\S+).*\s+(?P<offset>[+-]\d+)(?P<unit>\w+)\s+')
 IP_PATTERN = re.compile('^\d+\.\d+\.\d+\.\d+$')
@@ -23,21 +22,23 @@ IP_PATTERN = re.compile('^\d+\.\d+\.\d+\.\d+$')
 def cleanup_source(source):
     if IP_PATTERN.search(source):
         return source.replace('.', '_')
+
     if '.' in source:
         hostname, _ = source.split('.', 1)
         return hostname
+
     return source
 
 
 class ChronydCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(ChronydCollector, self).get_default_config_help()
         config_help.update({
-            'bin':         'The path to the chronyc binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
+            'bin': 'The path to the chronyc binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -46,18 +47,19 @@ class ChronydCollector(diamond.collector.Collector):
         """
         config = super(ChronydCollector, self).get_default_config()
         config.update({
-            'path':             'chrony',
-            'bin':              '/usr/bin/chronyc',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
+            'path': 'chrony',
+            'bin': '/usr/bin/chronyc',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
         })
+
         return config
 
     def get_output(self):
         try:
             command = [self.config['bin'], 'sourcestats']
 
-            if str_to_bool(self.config['use_sudo']):
+            if diamond.collector.str_to_bool(self.config['use_sudo']):
                 command.insert(0, self.config['sudo_cmd'])
 
             return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
@@ -69,6 +71,7 @@ class ChronydCollector(diamond.collector.Collector):
 
         for line in output.strip().split("\n"):
             m = LINE_PATTERN.search(line)
+
             if m is None:
                 continue
 

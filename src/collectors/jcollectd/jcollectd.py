@@ -22,18 +22,18 @@ See https://github.com/emicklei/jcollectd for an up-to-date jcollect fork.
 
 """
 
+import queue
 import re
 import threading
-from queue import Empty, Full, Queue
 
+import collectors.jcollectd.collectd_network
+import diamond.collector
 import diamond.metric
-from collectors.jcollectd.collectd_network import Reader
-from diamond.collector import Collector
 
 ALIVE = True
 
 
-class JCollectdCollector(Collector):
+class JCollectdCollector(diamond.collector.Collector):
     def __init__(self, *args, **kwargs):
         super(JCollectdCollector, self).__init__(*args, **kwargs)
         self.listener_thread = None
@@ -59,7 +59,7 @@ class JCollectdCollector(Collector):
             try:
                 dp = q.get(False)
                 metric = self.make_metric(dp)
-            except Empty:
+            except queue.Empty:
                 break
             self.publish_metric(metric)
 
@@ -110,12 +110,12 @@ class ListenerThread(threading.Thread):
         self.log = log
         self.poll_interval = poll_interval
 
-        self.queue = Queue()
+        self.queue = queue.Queue()
 
     def run(self):
         self.log.info('ListenerThread started on {}:{}(udp)'.format(self.host, self.port))
 
-        rdr = Reader(self.host, self.port)
+        rdr = collectors.jcollectd.collectd_network.Reader(self.host, self.port)
 
         try:
             while ALIVE:
@@ -137,7 +137,7 @@ class ListenerThread(threading.Thread):
             try:
                 metric = self.transform(item)
                 self.queue.put(metric)
-            except Full:
+            except queue.Full:
                 self.log.error('Queue to collector is FULL')
             except Exception as e:
                 self.log.error('B00M! type={}, exception={}'.format(type(e), e))

@@ -11,15 +11,15 @@ Renzo Toma <rtoma@bol.com>
 
 """
 
+import io
 import re
+import urllib.request
 import xml.etree.cElementTree as ElementTree
-from io import StringIO
-from urllib.request import urlopen
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class EndecaDgraphCollector(Collector):
+class EndecaDgraphCollector(diamond.collector.Collector):
     # ignore these elements, because they are of no use
     IGNORE_ELEMENTS = [
         'most_expensive_queries',
@@ -71,10 +71,10 @@ class EndecaDgraphCollector(Collector):
         return config
 
     def collect(self):
-
         def makeSane(stat):
             stat = self.CHAR_BLACKLIST.sub('_', stat.lower())
             stat = self.UNDERSCORE_UNDUPE.sub('_', stat)
+
             return stat
 
         def createKey(element):
@@ -83,6 +83,7 @@ class EndecaDgraphCollector(Collector):
                 key = makeSane(key)
             else:
                 key = element.tag[len(self.XML_NS):]
+
             return key
 
         def processElem(elem, keyList):
@@ -114,11 +115,11 @@ class EndecaDgraphCollector(Collector):
         url = 'http://%s:%d/admin?op=stats' % (self.config['host'], self.config['port'])
 
         try:
-            xml = urlopen(url, timeout=self.config['timeout']).read()
+            xml = urllib.request.urlopen(url, timeout=self.config['timeout']).read()
         except Exception as e:
             self.log.error('Could not connect to endeca on %s: %s' % (url, e))
             return {}
 
-        context = ElementTree.iterparse(StringIO(xml), events=('start', 'end'))
+        context = ElementTree.iterparse(io.StringIO(xml), events=('start', 'end'))
         elem_list = []
         walkXML(context, elem_list)

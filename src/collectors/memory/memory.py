@@ -13,8 +13,8 @@ as memory is allocated to Buffers and Cache as well. See
 
 """
 
+import decimal
 import os
-from decimal import Decimal
 
 import diamond.collector
 import diamond.convertor
@@ -109,7 +109,7 @@ class MemoryCollector(diamond.collector.Collector):
 
             if memory_total is not None and memory_available is not None:
                 memory_used = memory_total - memory_available
-                memory_used_percent = Decimal(str(100.0 * memory_used / memory_total))
+                memory_used_percent = decimal.Decimal(str(100.0 * memory_used / memory_total))
                 self.publish('MemUsedPercentage', round(memory_used_percent, 2), metric_type='GAUGE')
 
             return True
@@ -133,7 +133,7 @@ class MemoryCollector(diamond.collector.Collector):
 
                 memory_used = memory_total - memory_available
 
-                memory_used_percent = Decimal(str(100.0 * memory_used / memory_total))
+                memory_used_percent = decimal.Decimal(str(100.0 * memory_used / memory_total))
                 self.publish('MemUsedPercentage', round(memory_used_percent, 2), metric_type='GAUGE')
 
                 value = diamond.convertor.binary.convert(value=phymem_usage.free, old_unit=units, new_unit=unit)

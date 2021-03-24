@@ -2,9 +2,9 @@
 # coding=utf-8
 
 import unittest
+import urllib.error
+import urllib.parse
 from unittest.mock import patch
-from urllib.error import URLError
-from urllib.parse import parse_qs, urlparse
 
 from collectors.kafkastat.kafkastat import KafkaCollector
 from diamond.collector import Collector
@@ -58,7 +58,7 @@ class TestKafkaCollector(CollectorTestCase):
     @run_only_if_ElementTree_is_available
     @patch('urllib.request.urlopen')
     def test_get_httperror(self, urlopen_mock):
-        urlopen_mock.side_effect = URLError('BOOM')
+        urlopen_mock.side_effect = urllib.error.URLError('BOOM')
 
         result = self.collector._get('/path')
 
@@ -156,8 +156,8 @@ class TestKafkaCollector(CollectorTestCase):
         self.assertEqual(metrics, None)
 
     def getKafkaFixture(self, url):
-        url_object = urlparse(url)
-        query_string = parse_qs(url_object.query)
+        url_object = urllib.parse.urlparse(url)
+        query_string = urllib.parse.parse_qs(url_object.query)
         querynames = query_string.get('querynames', [])
         objectnames = query_string.get('objectname', [])
 

@@ -14,7 +14,7 @@ Openstack swift collector.
 both of these should come installed with swift
 """
 
-from subprocess import PIPE, Popen
+import subprocess
 
 import diamond.collector
 
@@ -59,7 +59,7 @@ class OpenstackSwiftCollector(diamond.collector.Collector):
     def collect(self):
         # dispersion report.  this can take easily >60s. beware!
         if self.config['enable_dispersion_report']:
-            p = Popen(['swift-dispersion-report', '-j'], stdout=PIPE, stderr=PIPE)
+            p = subprocess.Popen(['swift-dispersion-report', '-j'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = p.communicate()
             self.publish('dispersion.errors', len(stderr.split('\n')) - 1)
             data = json.loads(stdout)
@@ -74,7 +74,7 @@ class OpenstackSwiftCollector(diamond.collector.Collector):
 
             for container in self.config['containers'].split(','):
                 cmd = ['swift', '-A', self.config['auth_url'], '-U', account, '-K', self.config['password'], 'stat', container]
-                p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 stdout, stderr = p.communicate()
                 stats = {}
 

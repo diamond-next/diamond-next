@@ -10,7 +10,7 @@ The XENCollector grabs usage/allocation metrics using libvirt
 
 import os
 
-from diamond.collector import Collector
+import diamond.collector
 
 try:
     import libvirt
@@ -18,7 +18,7 @@ except ImportError:
     libvirt = None
 
 
-class XENCollector(Collector):
+class XENCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(XENCollector, self).get_default_config_help()
         config_help.update({})

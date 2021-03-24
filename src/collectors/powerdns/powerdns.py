@@ -14,7 +14,6 @@ import os
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class PowerDNSCollector(diamond.collector.Collector):
@@ -55,7 +54,7 @@ class PowerDNSCollector(diamond.collector.Collector):
 
         command = [self.config['bin'], 'list']
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             command.insert(0, self.config['sudo_cmd'])
 
         data = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]

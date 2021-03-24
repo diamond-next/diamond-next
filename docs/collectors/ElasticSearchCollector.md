@@ -12,7 +12,7 @@ parameter the instance alias will be appended to the
 
 #### Dependencies
 
- * urlib2
+ * urllib
 
 
 #### Options

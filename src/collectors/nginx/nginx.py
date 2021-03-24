@@ -58,12 +58,12 @@ For commercial nginx+:
 
 import json
 import re
-from urllib.request import Request, urlopen
+import urllib.request
 
-from diamond.collector import Collector
+import diamond.collector
 
 
-class NginxCollector(Collector):
+class NginxCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(NginxCollector, self).get_default_config_help()
         config_help.update({
@@ -188,10 +188,10 @@ class NginxCollector(Collector):
             headers = {}
 
         url = '%s://%s:%i%s' % (scheme, self.config['req_host'], int(self.config['req_port']), self.config['req_path'])
-        req = Request(url=url, headers=headers)
+        req = urllib.request.Request(url=url, headers=headers)
 
         try:
-            handle = urlopen(req)
+            handle = urllib.request.urlopen(req)
 
             # Test for json payload; indicates nginx+
             if handle.info().gettype() == 'application/json':

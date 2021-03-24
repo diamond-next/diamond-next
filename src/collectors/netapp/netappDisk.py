@@ -23,7 +23,7 @@ from __future__ import print_function
 import time
 
 import diamond.collector
-from diamond.metric import Metric
+import diamond.metric
 
 try:
     import xml.etree.ElementTree as ET
@@ -292,7 +292,7 @@ class netappDiskCol(object):
         graphite_path += '.' + self.device + '.' + type
         graphite_path += '.' + metric_name
 
-        metric = Metric(
+        metric = diamond.metric.Metric(
             graphite_path,
             metric_value,
             precision=4,

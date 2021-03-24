@@ -26,7 +26,7 @@ password = foobar
 
 """
 
-from collections import defaultdict
+import collections
 
 import diamond.collector
 
@@ -101,7 +101,7 @@ class PgbouncerCollector(diamond.collector.Collector):
 
     def _get_stats_by_database(self, host, port, user, password):
         # Mapping of database name -> stats.
-        databases = defaultdict(dict)
+        databases = collections.defaultdict(dict)
         conn = psycopg2.connect(database='pgbouncer', user=user, password=password, host=host, port=port)
 
         # Avoid using transactions, set isolation level to autocommit

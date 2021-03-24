@@ -17,7 +17,6 @@ import re
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class MountStatsCollector(diamond.collector.Collector):
@@ -111,7 +110,7 @@ class MountStatsCollector(diamond.collector.Collector):
         the statvers value returned by mountstats.
         """
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             if not os.access(self.config['sudo_cmd'], os.X_OK):
                 self.log.error("Cannot find or exec %s" % self.config['sudo_cmd'])
                 return None

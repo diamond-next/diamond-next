@@ -24,18 +24,19 @@ Enable this handler
 import json
 import logging
 import re
+import urllib.error
+import urllib.request
+
 import time
-from urllib.error import URLError
-from urllib.request import Request, urlopen
 
-from diamond.handler.Handler import Handler
-from diamond.util import get_diamond_version
+import diamond.handler.Handler
+import diamond.util
 
 
-class SignalfxHandler(Handler):
+class SignalfxHandler(diamond.handler.Handler.Handler):
     # Inititalize Handler with url and batch size
     def __init__(self, config=None):
-        Handler.__init__(self, config)
+        diamond.handler.Handler.Handler.__init__(self, config)
         self.metrics = []
         self.filter_metrics = self.config["filter_metrics_regex"]
         self.batch_size = int(self.config['batch'])
@@ -145,7 +146,7 @@ class SignalfxHandler(Handler):
         """
         HTTP user agent
         """
-        return "Diamond: %s" % get_diamond_version()
+        return "Diamond: %s" % diamond.util.get_diamond_version()
 
     def _send(self):
         # Potentially use protobufs in the future
@@ -162,12 +163,12 @@ class SignalfxHandler(Handler):
         self.metrics = []
         post_body = json.dumps(post_dictionary)
         logging.debug("Body is %s", post_body)
-        req = Request(self.url, post_body, {"Content-type": "application/json", "X-SF-TOKEN": self.auth_token, "User-Agent": self.user_agent()})
+        req = urllib.request.Request(self.url, post_body, {"Content-type": "application/json", "X-SF-TOKEN": self.auth_token, "User-Agent": self.user_agent()})
         self.reset_batch_timeout()
 
         try:
-            urlopen(req)
-        except URLError as err:
+            urllib.request.urlopen(req)
+        except urllib.error.URLError as err:
             error_message = err.read()
             logging.exception("Unable to post signalfx metrics" + error_message)
 

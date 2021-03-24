@@ -80,17 +80,17 @@ high.
 import base64
 import contextlib
 import gzip
+import io
 import json
 import re
-from io import StringIO
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+import urllib.error
+import urllib.request
 
-from diamond.handler.Handler import Handler
-from diamond.metric import Metric
+import diamond.handler.Handler
+import diamond.metric
 
 
-class TSDBHandler(Handler):
+class TSDBHandler(diamond.handler.Handler.Handler):
     """
     Implements the abstract Handler class, sending data to OpenTSDB
     """
@@ -100,7 +100,7 @@ class TSDBHandler(Handler):
         """
 
         # Initialize Handler
-        Handler.__init__(self, config)
+        diamond.handler.Handler.Handler.__init__(self, config)
 
         # Initialize Options
 
@@ -224,7 +224,7 @@ class TSDBHandler(Handler):
         if len(self.entrys) >= self.batch:
             # Compress data
             if self.compression >= 1:
-                data = StringIO()
+                data = io.StringIO()
 
                 with contextlib.closing(gzip.GzipFile(fileobj=data, compresslevel=self.compression, mode="w")) as f:
                     f.write(json.dumps(self.entrys))
@@ -246,8 +246,8 @@ class TSDBHandler(Handler):
             self.log.debug(content)
 
             try:
-                request = Request("http://" + self.host + ":" + str(self.port) + "/api/put", content, self.httpheader)
-                response = urlopen(url=request, timeout=self.timeout)
+                request = urllib.request.Request("http://" + self.host + ":" + str(self.port) + "/api/put", content, self.httpheader)
+                response = urllib.request.urlopen(url=request, timeout=self.timeout)
 
                 if response.getcode() < 301:
                     self.log.debug(response.read())
@@ -255,10 +255,10 @@ class TSDBHandler(Handler):
                     # Transaction should be finished
                     self.log.debug(response.getcode())
                     success = True
-            except HTTPError as e:
+            except urllib.error.HTTPError as e:
                 self.log.error("HTTP Error Code: " + str(e.code))
                 self.log.error("Message : " + str(e.reason))
-            except URLError as e:
+            except urllib.error.URLError as e:
                 self.log.error("Connection Error: " + str(e.reason))
             finally:
                 retry += 1
@@ -271,7 +271,7 @@ This class wraps a metric and applies the additonal OpenTSDB tagging logic.
 """
 
 
-class MetricWrapper(Metric):
+class MetricWrapper(diamond.metric.Metric):
     def is_aggregate(self):
         return self.aggregate
 

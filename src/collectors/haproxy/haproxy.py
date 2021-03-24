@@ -13,7 +13,7 @@ import base64
 import csv
 import re
 import socket
-from urllib.request import Request, urlopen
+import urllib.request
 
 import diamond.collector
 
@@ -64,10 +64,10 @@ class HAProxyCollector(diamond.collector.Collector):
         Request stats from HAProxy Server
         """
         metrics = []
-        req = Request(self._get_config_value(section, 'url'))
+        req = urllib.request.Request(self._get_config_value(section, 'url'))
 
         try:
-            handle = urlopen(req)
+            handle = urllib.request.urlopen(req)
 
             return handle.readlines()
         except Exception as e:
@@ -105,7 +105,7 @@ class HAProxyCollector(diamond.collector.Collector):
         req.add_header("Authorization", authheader)
 
         try:
-            handle = urlopen(req)
+            handle = urllib.request.urlopen(req)
             metrics = handle.readlines()
 
             return metrics

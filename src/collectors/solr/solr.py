@@ -12,7 +12,7 @@ Collect the solr stats for the local node
 """
 
 import posixpath
-from urllib.request import urlopen
+import urllib.request
 
 import diamond.collector
 
@@ -75,7 +75,7 @@ class SolrCollector(diamond.collector.Collector):
         url = 'http://%s:%i/%s' % (self.config['host'], int(self.config['port']), path)
 
         try:
-            response = urlopen(url)
+            response = urllib.request.urlopen(url)
         except Exception as err:
             self.log.error("%s: %s", url, err)
             return False

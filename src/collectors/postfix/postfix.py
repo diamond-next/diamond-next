@@ -16,7 +16,6 @@ get realtime cumulative stats.
 import socket
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 try:
     import json
@@ -92,7 +91,7 @@ class PostfixCollector(diamond.collector.Collector):
         if not data:
             return
 
-        if str_to_bool(self.config['include_clients']) and u'clients' in data:
+        if diamond.collector.str_to_bool(self.config['include_clients']) and u'clients' in data:
             for client, value in iter(data['clients'].items()):
                 # translate dots to underscores in client names
                 metric = u'.'.join(['clients', client.translate(DOTS_TO_UNDERS)])

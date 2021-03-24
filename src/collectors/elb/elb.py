@@ -40,18 +40,18 @@ You can specify an arbitrary amount of regions
 """
 
 import calendar
+import collections
 import datetime
 import functools
 import pickle
 import re
+import string
 import threading
+
 import time
-from collections import namedtuple
-from string import Template
 
 import diamond.collector
-from diamond.collector import str_to_bool
-from diamond.metric import Metric
+import diamond.metric
 
 try:
     import boto.ec2.elb
@@ -121,9 +121,7 @@ class ElbCollector(diamond.collector.Collector):
 
     # default_to_zero means if cloudwatch does not return a stat for the
     # given metric, then just default it to zero.
-    MetricInfo = namedtuple(
-        'MetricInfo',
-        'name aws_type diamond_type precision default_to_zero')
+    MetricInfo = collections.namedtuple('MetricInfo', 'name aws_type diamond_type precision default_to_zero')
 
     # AWS metrics for ELBs
     metrics = [
@@ -144,15 +142,15 @@ class ElbCollector(diamond.collector.Collector):
 
     def process_config(self):
         super(ElbCollector, self).process_config()
-        if str_to_bool(self.config['enabled']):
+
+        if diamond.collector.str_to_bool(self.config['enabled']):
             self.interval = self.config.as_int('interval')
+
             # Why is this?
             if self.interval % 60 != 0:
-                raise Exception('Interval must be a multiple of 60 seconds: %s'
-                                % self.interval)
+                raise Exception('Interval must be a multiple of 60 seconds: %s' % self.interval)
 
-        if (('access_key_id' in self.config and
-             'secret_access_key' in self.config)):
+        if 'access_key_id' in self.config and 'secret_access_key' in self.config:
             self.auth_kwargs = {
                 'aws_access_key_id': self.config['access_key_id'],
                 'aws_secret_access_key': self.config['secret_access_key']
@@ -194,13 +192,19 @@ class ElbCollector(diamond.collector.Collector):
         path = self.get_metric_path(name, instance)
 
         # Get metric TTL
-        ttl = float(self.config['interval']) * float(
-            self.config['ttl_multiplier'])
+        ttl = float(self.config['interval']) * float(self.config['ttl_multiplier'])
 
         # Create Metric
-        metric = Metric(path, value, raw_value=raw_value, timestamp=timestamp,
-                        precision=precision, host=self.get_hostname(),
-                        metric_type=metric_type, ttl=ttl)
+        metric = diamond.metric.Metric(
+            path,
+            value,
+            raw_value=raw_value,
+            timestamp=timestamp,
+            precision=precision,
+            host=self.get_hostname(),
+            metric_type=metric_type,
+            ttl=ttl
+        )
 
         # Publish Metric
         self.publish_metric(metric)
@@ -242,7 +246,7 @@ class ElbCollector(diamond.collector.Collector):
             'elb_name': elb_name,
             'metric_name': metric.name,
         }
-        name_template = Template(self.config['format'])
+        name_template = string.Template(self.config['format'])
         formatted_name = name_template.substitute(template_tokens)
         self.publish_delayed_metric(
             formatted_name,
