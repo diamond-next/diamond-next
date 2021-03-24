@@ -247,8 +247,8 @@ if __name__ == "__main__":
 
             config_file.write()
 
-        except IOError as (errno, strerror):
-            print("I/O error({}): {}".format(errno, strerror))
+        except IOError as ex:
+            print("I/O error({}): {}".format(ex.errno, ex.strerror))
         except KeyboardInterrupt:
             print()
             sys.exit()
