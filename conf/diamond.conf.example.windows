@@ -128,8 +128,8 @@ batch = 100
 ### Options for collectors
 [collectors]
 
-### Default options for all Collectors
 [[collectorsDefault]]
+### Default options for all Collectors
 
 # Uncomment and set to hardcode a hostname for the collector path
 # Keep in mind, periods are seperators in graphite
