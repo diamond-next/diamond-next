@@ -1,15 +1,14 @@
 # coding=utf-8
 
+import importlib.util
 import inspect
 import logging
 import os
-import sys
 import traceback
-from importlib.machinery import PathFinder, SourceFileLoader
-from importlib.util import module_from_spec, spec_from_loader
 
 import configobj
 import pkg_resources
+import sys
 
 from diamond.collector import Collector
 from diamond.handler.Handler import Handler
@@ -125,7 +124,7 @@ def load_collectors_from_paths(paths):
 
     if isinstance(paths, str):
         paths = paths.split(',')
-        paths = map(str.strip, paths)
+        paths = list(map(str.strip, paths))
 
     load_include_path(paths)
 
@@ -152,13 +151,12 @@ def load_collectors_from_paths(paths):
             elif os.path.isfile(fpath) and len(f) > 3 and f[-3:] == '.py' and f[0:4] != 'test' and f[0] != '.':
                 modname = f[:-3]
 
-                fp, pathname, description = PathFinder().find_spec(modname, [path])
+                spec = importlib.util.spec_from_file_location(modname, "%s/%s.py" % (path, modname))
 
                 try:
                     # Import the module
-                    loader = SourceFileLoader(modname, pathname)
-                    spec = spec_from_loader(loader.name, loader)
-                    mod = module_from_spec(spec)
+                    mod = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(mod)
                 except (KeyboardInterrupt, SystemExit) as err:
                     logger.error("System or keyboard interrupt while loading module %s" % modname)
 
@@ -172,9 +170,6 @@ def load_collectors_from_paths(paths):
                 else:
                     for name, cls in get_collectors_from_module(mod):
                         collectors[name] = cls
-                finally:
-                    if fp:
-                        fp.close()
 
     # Return Collector classes
     return collectors

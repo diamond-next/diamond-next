@@ -2,7 +2,7 @@
 Description=diamond - A system statistics collector for graphite
 
 [Service]
-ExecStart=/usr/bin/python3 /usr/bin/diamond
+ExecStart=/usr/bin/python3 /usr/local/bin/diamond
 Type=forking
 #If not using default pid, make sure you change PIDFile setting
 PIDFile=/var/run/diamond.pid
