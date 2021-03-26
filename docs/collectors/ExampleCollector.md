@@ -58,13 +58,13 @@ with the following options in diamond.conf:
 
     [handlers]
 
-    [[default]]
+    [[handlersDefault]]
 
     [[ArchiveHandler]]
     log_file = /dev/stdout
 
     [collectors]
-    [[default]]
+    [[collectorsDefault]]
 
 and then run diamond in foreground mode:
 

@@ -76,7 +76,7 @@ def load_handlers(config, handler_names):
             handler_config = configobj.ConfigObj()
 
             # Merge default Handler default config
-            handler_config.merge(config['handlers']['default'])
+            handler_config.merge(config['handlers']['handlersDefault'])
 
             # Check if Handler config exists
             if cls_name in config['handlers']:

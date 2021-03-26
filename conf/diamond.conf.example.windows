@@ -42,8 +42,9 @@ handlers_path = C:\\Program Files\\diamond\\handlers
 # daemon logging handler(s)
 keys = rotated_file
 
-### Defaults options for all Handlers
-[[default]]
+### Default options for all Handlers
+[[handlersDefault]]
+
 enabled = False
 
 [[ArchiveHandler]]
@@ -127,8 +128,8 @@ batch = 100
 ### Options for collectors
 [collectors]
 
-[[default]]
-### Defaults options for all Collectors
+### Default options for all Collectors
+[[collectorsDefault]]
 
 # Uncomment and set to hardcode a hostname for the collector path
 # Keep in mind, periods are seperators in graphite
