@@ -72,7 +72,7 @@ collectors on a regular interval (configured in diamond.cfg).
 If diamond detects a new collector, or that a collectors module has changed
 (based on the file's mtime), it will be reloaded.
 
-Diamond looks for collectors in /usr/lib/diamond/collectors/ (on Ubuntu). By
+Diamond looks for collectors in /usr/share/diamond/collectors/ (on Ubuntu). By
 default diamond will invoke the *collect* method every 60 seconds.
 
 Diamond collectors that require a separate configuration file should place a

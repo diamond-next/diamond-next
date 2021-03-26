@@ -9,7 +9,7 @@ remote SNMP-enabled devices such as routers and switches using SNMP IF_MIB
 The snmpinterfacecollector.py module should be installed into your Diamond
 installation collectors directory. This directory is defined
 in diamond.cfg under the *collectors_path* directive. This defaults to
-*/usr/lib/diamond/collectors/* on Ubuntu.
+*/usr/share/diamond/collectors/* on Ubuntu.
 
 The SNMPInterfaceCollector.cfg file should be installed into your diamond
 installation config directory. This directory is defined
