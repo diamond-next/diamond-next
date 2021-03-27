@@ -8,16 +8,22 @@ balancing, firewall, proxy and VPN functions.
 
 """
 
+import os
 import re
 import struct
 
+import sys
 import time
 
-import collectors.snmp.snmp
 import diamond.metric
 
+# Fix Path for locating the SNMPCollector
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
 
-class NetscalerSNMPCollector(collectors.snmp.snmp.SNMPCollector):
+from snmp import SNMPCollector as parent_SNMPCollector
+
+
+class NetscalerSNMPCollector(parent_SNMPCollector):
     """
     SNMPCollector for Netscaler Metrics
     """

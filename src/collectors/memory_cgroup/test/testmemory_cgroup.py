@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 import io
@@ -6,13 +6,13 @@ import os
 import unittest
 from unittest.mock import Mock, patch
 
-from collectors.memory_cgroup.memory_cgroup import MemoryCgroupCollector
 from diamond.collector import Collector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
 
-dirname = os.path.dirname(__file__)
-fixtures_path = os.path.join(dirname, 'fixtures/')
+from memory_cgroup import MemoryCgroupCollector
+
+fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
 fixtures = []
 
 for root, dirnames, filenames in os.walk(fixtures_path):

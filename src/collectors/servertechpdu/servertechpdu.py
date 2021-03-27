@@ -8,15 +8,21 @@ http://www.servertech.com/
 
 """
 
+import os
 import re
 
+import sys
 import time
 
-import collectors.snmp.snmp
 import diamond.metric
 
+# Fix Path for locating the SNMPCollector
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
 
-class ServerTechPDUCollector(collectors.snmp.snmp.SNMPCollector):
+from snmp import SNMPCollector as parent_SNMPCollector
+
+
+class ServerTechPDUCollector(parent_SNMPCollector):
     """
     SNMPCollector for ServerTech PDUs
     """

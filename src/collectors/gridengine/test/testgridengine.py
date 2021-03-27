@@ -1,13 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 import os
 from unittest.mock import patch
 
-from collectors.gridengine.gridengine import GridEngineCollector
 from diamond.collector import Collector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
+
+from gridengine import GridEngineCollector
 
 
 class TestGridEngineCollector(CollectorTestCase):
@@ -16,8 +17,7 @@ class TestGridEngineCollector(CollectorTestCase):
     def setUp(self):
         config = get_collector_config('GridEngineCollector', {})
         self.collector = GridEngineCollector(config, None)
-        self.fixtures_dir = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), 'fixtures'))
+        self.fixtures_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fixtures'))
 
     def test_import(self):
         """Test that import succeeds

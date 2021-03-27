@@ -9,24 +9,32 @@ The MemoryDockerCollector collects memory statistics from docker containers
 
 """
 
-import collectors.memory_cgroup.memory_cgroup
+import os
+
+import sys
 
 try:
     import docker
 except ImportError:
     docker = None
 
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'memory_cgroup'))
 
-class MemoryDockerCollector(collectors.memory_cgroup.memory_cgroup.MemoryCgroupCollector):
+from memory_cgroup import MemoryCgroupCollector
+
+
+class MemoryDockerCollector(MemoryCgroupCollector):
     def collect(self):
         if docker is None:
             self.log.error('Unable to import docker')
+
             return
 
         self.containers = dict(
             (c['Id'], c['Names'][0][1:])
             for c in docker.Client().containers(all=True)
-            if c['Names'] is not None)
+            if c['Names'] is not None
+        )
 
         return super(MemoryDockerCollector, self).collect()
 

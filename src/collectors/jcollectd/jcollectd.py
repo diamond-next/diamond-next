@@ -26,9 +26,10 @@ import queue
 import re
 import threading
 
-import collectors.jcollectd.collectd_network
 import diamond.collector
 import diamond.metric
+
+import collectd_network
 
 ALIVE = True
 
@@ -115,7 +116,7 @@ class ListenerThread(threading.Thread):
     def run(self):
         self.log.info('ListenerThread started on {}:{}(udp)'.format(self.host, self.port))
 
-        rdr = collectors.jcollectd.collectd_network.Reader(self.host, self.port)
+        rdr = collectd_network.Reader(self.host, self.port)
 
         try:
             while ALIVE:

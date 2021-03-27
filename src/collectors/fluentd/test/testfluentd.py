@@ -1,16 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 import json
 import os
 import unittest
 
-from collectors.fluentd.fluentd import FluentdCollector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config
 
-dirname = os.path.dirname(__file__)
-fixtures_path = os.path.join(dirname, 'fixtures/')
+from fluentd import FluentdCollector
+
+fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
 
 
 class TestFluentdCollector(CollectorTestCase):

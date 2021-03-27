@@ -24,15 +24,21 @@ community = mycommunitystring
 
 """
 
+import os
 import struct
 
+import sys
 import time
 
-import collectors.snmp.snmp
 import diamond.metric
 
+# Fix Path for locating the SNMPCollector
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
 
-class IODriveSNMPCollector(collectors.snmp.snmp.SNMPCollector):
+from snmp import SNMPCollector as parent_SNMPCollector
+
+
+class IODriveSNMPCollector(parent_SNMPCollector):
     """
     SNMPCollector for a single Fusion IO Drive
     """

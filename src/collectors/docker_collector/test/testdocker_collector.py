@@ -1,11 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
 import json
 import os
 import unittest
 
-from collectors.docker_collector.docker_collector import DockerCollector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config, run_only
 
@@ -14,8 +13,9 @@ try:
 except ImportError:
     Client = None
 
-dirname = os.path.dirname(__file__)
-fixtures_path = os.path.join(dirname, 'fixtures/')
+from docker_collector import DockerCollector
+
+fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
 
 
 def run_only_if_docker_client_is_available(func):

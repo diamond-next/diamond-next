@@ -53,13 +53,19 @@ restart diamond.
 
 """
 
+import os
+
+import sys
 import time
 
-import collectors.snmp.snmp
 import diamond.metric
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'snmp'))
 
-class SNMPRawCollector(collectors.snmp.snmp.SNMPCollector):
+from snmp import SNMPCollector as parent_SNMPCollector
+
+
+class SNMPRawCollector(parent_SNMPCollector):
     def process_config(self):
         super(SNMPRawCollector, self).process_config()
         # list to save non-existing oid's per device, to avoid repetition of
