@@ -4,7 +4,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from collectors.http.http import HttpCollector
+from collectors.httpc.httpc import HttpCollector
 from diamond.collector import Collector
 from diamond.testing import CollectorTestCase
 from test import get_collector_config

@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import importlib
 import importlib.util
 import inspect
 import logging
@@ -155,8 +156,7 @@ def load_collectors_from_paths(paths):
 
                 try:
                     # Import the module
-                    mod = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(mod)
+                    mod = spec.loader.load_module(modname)
                 except (KeyboardInterrupt, SystemExit) as err:
                     logger.error("System or keyboard interrupt while loading module %s" % modname)
 
