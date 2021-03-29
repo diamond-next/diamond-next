@@ -306,7 +306,7 @@ class MySQLCollector(diamond.collector.Collector):
             self.db = mysqlclient.connect(**params)
             self.log.debug('MySQLCollector: Connected to database.')
         except MySQLError as e:
-            self.log.error('MySQLCollector couldnt connect to database %s', e)
+            self.log.error("MySQLCollector couldn't connect to database %s", e)
             return False
 
         return True

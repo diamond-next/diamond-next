@@ -136,7 +136,7 @@ class MySQLPerfCollector(diamond.collector.Collector):
         try:
             self.db = mysqlclient.connect(**params)
         except MySQLError as e:
-            self.log.error('MySQLPerfCollector couldnt connect to database %s', e)
+            self.log.error("MySQLPerfCollector couldn't connect to database %s", e)
             return {}
 
         self.log.debug('MySQLPerfCollector: Connected to database.')
