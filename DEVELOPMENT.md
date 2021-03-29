@@ -2,25 +2,25 @@
 
 ```shell
 cde sdk use python_v3.9
-pip install configobj distro redis
+pip3 install configobj distro redis
 ```
 
 ## Test
 
 ```shell
-python test.py
+python3 test.py
 ```
 
 ## Create package
 
 ```shell
-python setup.py sdist
+python3 setup.py sdist
 ```
 
 ## Create package & deploy to pypi
 
 ```shell
-python setup.py sdist upload -r http://pypi-repo.onet/pypi/
+python3 setup.py sdist upload -r http://pypi-repo.onet/pypi/
 ```
 
 ## Install package
