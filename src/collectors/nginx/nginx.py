@@ -86,31 +86,29 @@ class NginxCollector(diamond.collector.Collector):
         default_config['req_ssl'] = False
         default_config['req_host_header'] = None
         default_config['path'] = 'nginx'
+
         return default_config
 
     def collect_nginx(self, status):
-        activeConnectionsRE = re.compile(r'Active connections: (?P<conn>\d+)')
-        totalConnectionsRE = re.compile('^\s+(?P<conn>\d+)\s+' +
-                                        '(?P<acc>\d+)\s+(?P<req>\d+)')
-        connectionStatusRE = re.compile('Reading: (?P<reading>\d+) ' +
-                                        'Writing: (?P<writing>\d+) ' +
-                                        'Waiting: (?P<waiting>\d+)')
+        active_connections_re = re.compile(r'Active connections: (?P<conn>\d+)')
+        total_connections_re = re.compile('^\s+(?P<conn>\d+)\s+(?P<acc>\d+)\s+(?P<req>\d+)')
+        connection_status_re = re.compile('Reading: (?P<reading>\d+) Writing: (?P<writing>\d+) Waiting: (?P<waiting>\d+)')
         precision = int(self.config['precision'])
 
         for l in status.readlines():
             l = l.rstrip('\r\n')
 
-            if activeConnectionsRE.match(l):
-                self.publish_gauge('active_connections', int(activeConnectionsRE.match(l).group('conn')), precision)
-            elif totalConnectionsRE.match(l):
-                m = totalConnectionsRE.match(l)
+            if active_connections_re.match(l):
+                self.publish_gauge('active_connections', int(active_connections_re.match(l).group('conn')), precision)
+            elif total_connections_re.match(l):
+                m = total_connections_re.match(l)
                 req_per_conn = float(m.group('req')) / float(m.group('acc'))
                 self.publish_counter('conn_accepted', int(m.group('conn')), precision)
                 self.publish_counter('conn_handled', int(m.group('acc')), precision)
                 self.publish_counter('req_handled', int(m.group('req')), precision)
                 self.publish_gauge('req_per_conn', float(req_per_conn), precision)
-            elif connectionStatusRE.match(l):
-                m = connectionStatusRE.match(l)
+            elif connection_status_re.match(l):
+                m = connection_status_re.match(l)
                 self.publish_gauge('act_reads', int(m.group('reading')), precision)
                 self.publish_gauge('act_writes', int(m.group('writing')), precision)
                 self.publish_gauge('act_waits', int(m.group('waiting')), precision)
@@ -200,7 +198,6 @@ class NginxCollector(diamond.collector.Collector):
             # Plain payload; indicates open source nginx
             else:
                 self.collect_nginx(handle)
-
         except IOError:
             self.log.error("Unable to open %s" % url)
         except Exception as e:
