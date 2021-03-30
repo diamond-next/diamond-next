@@ -1,7 +1,6 @@
 # Development
 
 ```shell
-cde sdk use python_v3.9
 pip3 install configobj distro redis
 ```
 

@@ -31,8 +31,7 @@ else:
     setup_kwargs = dict()
 
 if os.name == 'nt':
-    pgm_files = os.environ["ProgramFiles"]
-    base_files = os.path.join(pgm_files, 'diamond')
+    base_files = os.path.join(os.environ['ProgramFiles'], 'diamond')
     data_files = [
         (base_files, ['LICENSE', 'version.txt']),
         (os.path.join(base_files, 'user_scripts'), []),
@@ -41,6 +40,7 @@ if os.name == 'nt':
         (os.path.join(base_files, 'handlers'), glob('conf/handlers/*')),
     ]
 else:
+    base_files = []
     data_files = [
         ('share/diamond', ['LICENSE', 'version.txt']),
         ('share/diamond/user_scripts', []),
