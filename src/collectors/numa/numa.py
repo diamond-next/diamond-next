@@ -37,11 +37,11 @@ class NumaCollector(diamond.collector.Collector):
 
         output, errors = p.communicate()
 
-        lines = output.split('\n')
+        lines = str(output).split('\n')
 
         for line in lines:
             try:
-                match = node_re.search(line)
+                match = node_re.search(str(line))
 
                 if match:
                     logging.debug("Matched: %s %s" % (match.group('node'), match.group('size')))
