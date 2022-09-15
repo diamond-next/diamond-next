@@ -22,13 +22,15 @@ import diamond.collector
 class IPMISensorCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(IPMISensorCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'Path to the ipmitool binary',
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-            'thresholds': 'Collect thresholds as well as reading',
-            'delimiter': 'Parse blanks in sensor names into a delimiter'
-        })
+        config_help.update(
+            {
+                "bin": "Path to the ipmitool binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+                "thresholds": "Collect thresholds as well as reading",
+                "delimiter": "Parse blanks in sensor names into a delimiter",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -36,14 +38,16 @@ class IPMISensorCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(IPMISensorCollector, self).get_default_config()
-        config.update({
-            'bin': '/usr/bin/ipmitool',
-            'use_sudo': False,
-            'sudo_cmd': '/usr/bin/sudo',
-            'path': 'ipmi.sensors',
-            'thresholds': False,
-            'delimiter': '.'
-        })
+        config.update(
+            {
+                "bin": "/usr/bin/ipmitool",
+                "use_sudo": False,
+                "sudo_cmd": "/usr/bin/sudo",
+                "path": "ipmi.sensors",
+                "thresholds": False,
+                "delimiter": ".",
+            }
+        )
         return config
 
     def parse_value(self, value):
@@ -53,7 +57,7 @@ class IPMISensorCollector(diamond.collector.Collector):
         value = value.strip()
 
         # Skip missing sensors
-        if value == 'na':
+        if value == "na":
             return None
 
         # Try just getting the float value
@@ -72,15 +76,17 @@ class IPMISensorCollector(diamond.collector.Collector):
         return None
 
     def collect(self):
-        use_sudo = diamond.collector.str_to_bool(self.config['use_sudo'])
+        use_sudo = diamond.collector.str_to_bool(self.config["use_sudo"])
 
-        if not os.access(self.config['bin'], os.X_OK) or (use_sudo and not os.access(self.config['sudo_cmd'], os.X_OK)):
+        if not os.access(self.config["bin"], os.X_OK) or (
+            use_sudo and not os.access(self.config["sudo_cmd"], os.X_OK)
+        ):
             return False
 
-        command = [self.config['bin'], 'sensor']
+        command = [self.config["bin"], "sensor"]
 
-        if use_sudo and getpass.getuser() != 'root':
-            command.insert(0, self.config['sudo_cmd'])
+        if use_sudo and getpass.getuser() != "root":
+            command.insert(0, self.config["sudo_cmd"])
 
         p = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0][:-1]
 
@@ -91,7 +97,7 @@ class IPMISensorCollector(diamond.collector.Collector):
                 # Complex keys are fun!
                 metric_name = data[0].strip()
                 metric_name = metric_name.replace(".", "_")
-                metric_name = metric_name.replace(" ", self.config['delimiter'])
+                metric_name = metric_name.replace(" ", self.config["delimiter"])
                 metrics = []
 
                 # Each sensor line is a column seperated by a | with the
@@ -107,20 +113,42 @@ class IPMISensorCollector(diamond.collector.Collector):
                 # 9. Upper Critical
                 # 10. Upper Non-Recoverable
 
-                if not self.config['thresholds']:
+                if not self.config["thresholds"]:
                     metrics.append((metric_name, self.parse_value(data[1])))
                 else:
-                    metrics.append((metric_name + ".Reading", self.parse_value(data[1])))
-                    metrics.append((metric_name + ".Lower.NonRecoverable", self.parse_value(data[4])))
-                    metrics.append((metric_name + ".Lower.Critical", self.parse_value(data[5])))
-                    metrics.append((metric_name + ".Lower.NonCritical", self.parse_value(data[6])))
-                    metrics.append((metric_name + ".Upper.NonCritical", self.parse_value(data[7])))
-                    metrics.append((metric_name + ".Upper.Critical", self.parse_value(data[8])))
-                    metrics.append((metric_name + ".Upper.NonRecoverable", self.parse_value(data[9])))
+                    metrics.append(
+                        (metric_name + ".Reading", self.parse_value(data[1]))
+                    )
+                    metrics.append(
+                        (
+                            metric_name + ".Lower.NonRecoverable",
+                            self.parse_value(data[4]),
+                        )
+                    )
+                    metrics.append(
+                        (metric_name + ".Lower.Critical", self.parse_value(data[5]))
+                    )
+                    metrics.append(
+                        (metric_name + ".Lower.NonCritical", self.parse_value(data[6]))
+                    )
+                    metrics.append(
+                        (metric_name + ".Upper.NonCritical", self.parse_value(data[7]))
+                    )
+                    metrics.append(
+                        (metric_name + ".Upper.Critical", self.parse_value(data[8]))
+                    )
+                    metrics.append(
+                        (
+                            metric_name + ".Upper.NonRecoverable",
+                            self.parse_value(data[9]),
+                        )
+                    )
 
-                [self.publish(name, value)
-                 for (name, value) in metrics
-                 if value is not None]
+                [
+                    self.publish(name, value)
+                    for (name, value) in metrics
+                    if value is not None
+                ]
 
             except ValueError:
                 continue

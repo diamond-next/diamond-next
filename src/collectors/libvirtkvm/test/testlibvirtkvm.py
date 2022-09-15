@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestLibvirtKVMCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('LibvirtKVMCollector', {})
+        config = get_collector_config("LibvirtKVMCollector", {})
         self.collector = LibvirtKVMCollector(config, None)
 
     def test_import(self):

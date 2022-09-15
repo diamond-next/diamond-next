@@ -78,45 +78,42 @@ except ImportError:
 header = '"Content-Type: application/json"'
 
 operational_type = [
-    'app',
-    'web',
-    'jvm',
-    'thread_pool',
+    "app",
+    "web",
+    "jvm",
+    "thread_pool",
 ]
 
 web_stats = [
-    'errorCount',
-    'requestCount',
-    'bytesReceived',
-    'bytesSent',
-    'processingTime',
+    "errorCount",
+    "requestCount",
+    "bytesReceived",
+    "bytesSent",
+    "processingTime",
 ]
 
 memory_types = [
-    'init',
-    'used',
-    'committed',
-    'max',
+    "init",
+    "used",
+    "committed",
+    "max",
 ]
 
 buffer_pool_types = [
-    'count',
-    'memory-used',
+    "count",
+    "memory-used",
 ]
 
-thread_types = [
-    'thread-count',
-    'daemon-thread-count'
-]
+thread_types = ["thread-count", "daemon-thread-count"]
 
 memory_topics = [
-    'heap-memory-usage',
-    'non-heap-memory-usage',
+    "heap-memory-usage",
+    "non-heap-memory-usage",
 ]
 
 gc_types = [
-    'collection-count',
-    'collection-time',
+    "collection-count",
+    "collection-time",
 ]
 
 
@@ -124,74 +121,82 @@ class JbossApiCollector(diamond.collector.Collector):
     def process_config(self):
         super(JbossApiCollector, self).process_config()
 
-        if self.config['hosts'].__class__.__name__ != 'list':
-            self.config['hosts'] = [self.config['hosts']]
+        if self.config["hosts"].__class__.__name__ != "list":
+            self.config["hosts"] = [self.config["hosts"]]
 
         # get the params for each host
-        if 'host' in self.config:
+        if "host" in self.config:
             hoststr = "%s:%s@%s:%s:%s" % (
-                self.config['user'],
-                self.config['password'],
-                self.config['host'],
-                self.config['port'],
-                self.config['proto'],
+                self.config["user"],
+                self.config["password"],
+                self.config["host"],
+                self.config["port"],
+                self.config["proto"],
             )
-            self.config['hosts'].append(hoststr)
+            self.config["hosts"].append(hoststr)
 
-        if type(self.config['connector_options']) is not list:
-            self.config['connector_options'] = [self.config['connector_options']]
+        if type(self.config["connector_options"]) is not list:
+            self.config["connector_options"] = [self.config["connector_options"]]
 
     def get_default_config_help(self):
         # Need to update this when done to help explain details when running
         # diamond-setup.
         config_help = super(JbossApiCollector, self).get_default_config_help()
-        config_help.update({
-            'curl_bin': 'Path to system curl executable',
-            'hosts': 'List of hosts to collect from. Format is yourusername:yourpassword@host:port:proto',  # NOQA
-            'app_stats': 'Collect application pool stats',
-            'jvm_memory_pool_stats': 'Collect JVM memory-pool stats',
-            'jvm_buffer_pool_stats': 'Collect JVM buffer-pool stats',
-            'jvm_memory_stats': 'Collect JVM basic memory stats',
-            'jvm_gc_stats': 'Collect JVM garbage-collector stats',
-            'jvm_thread_stats': 'Collect JVM thread stats',
-            'thread_pool_stats': 'Collect JBoss thread pool stats',
-            'connector_stats': 'Collect HTTP and AJP Connector stats',
-            'connector_options': 'Types of connectors to collect'
-        })
+        config_help.update(
+            {
+                "curl_bin": "Path to system curl executable",
+                "hosts": "List of hosts to collect from. Format is yourusername:yourpassword@host:port:proto",  # NOQA
+                "app_stats": "Collect application pool stats",
+                "jvm_memory_pool_stats": "Collect JVM memory-pool stats",
+                "jvm_buffer_pool_stats": "Collect JVM buffer-pool stats",
+                "jvm_memory_stats": "Collect JVM basic memory stats",
+                "jvm_gc_stats": "Collect JVM garbage-collector stats",
+                "jvm_thread_stats": "Collect JVM thread stats",
+                "thread_pool_stats": "Collect JBoss thread pool stats",
+                "connector_stats": "Collect HTTP and AJP Connector stats",
+                "connector_options": "Types of connectors to collect",
+            }
+        )
         return config_help
 
     def get_default_config(self):
 
         # Initialize default config
         config = super(JbossApiCollector, self).get_default_config()
-        config.update({
-            'path': 'jboss',
-            'curl_bin': '/usr/bin/curl',
-            'connect_timeout': '4',
-            'ssl_options': '--sslv3 -k',
-            'curl_options': '-s --digest -L ',
-            'interface_regex': '^(.+?)\.',  # matches up to first "."
-            'hosts': [],
-            'app_stats': 'True',
-            'connector_options': ['http', 'ajp'],
-            'jvm_memory_pool_stats': 'True',
-            'jvm_buffer_pool_stats': 'True',
-            'jvm_memory_stats': 'True',
-            'jvm_gc_stats': 'True',
-            'jvm_thread_stats': 'True',
-            'connector_stats': 'True',
-            'thread_pool_stats': 'True'
-        })
+        config.update(
+            {
+                "path": "jboss",
+                "curl_bin": "/usr/bin/curl",
+                "connect_timeout": "4",
+                "ssl_options": "--sslv3 -k",
+                "curl_options": "-s --digest -L ",
+                "interface_regex": "^(.+?)\.",  # matches up to first "."
+                "hosts": [],
+                "app_stats": "True",
+                "connector_options": ["http", "ajp"],
+                "jvm_memory_pool_stats": "True",
+                "jvm_buffer_pool_stats": "True",
+                "jvm_memory_stats": "True",
+                "jvm_gc_stats": "True",
+                "jvm_thread_stats": "True",
+                "connector_stats": "True",
+                "thread_pool_stats": "True",
+            }
+        )
         # Return default config
         return config
 
-    def get_stats(self, current_host, current_port, current_proto, current_user, current_pword):
-        if not os.access(self.config['curl_bin'], os.X_OK):
-            self.log.error("%s is not executable or does not exist.", self.config['curl_bin'])
+    def get_stats(
+        self, current_host, current_port, current_proto, current_user, current_pword
+    ):
+        if not os.access(self.config["curl_bin"], os.X_OK):
+            self.log.error(
+                "%s is not executable or does not exist.", self.config["curl_bin"]
+            )
 
         # Check if there is a RegEx to perform on the interface names
-        if self.config['interface_regex'] != '':
-            interface = self.string_regex(self.config['interface_regex'], current_host)
+        if self.config["interface_regex"] != "":
+            interface = self.string_regex(self.config["interface_regex"], current_host)
 
         else:
             # Clean up any possible extra "."'s in the interface, keeps
@@ -199,132 +204,219 @@ class JbossApiCollector(diamond.collector.Collector):
             interface = self.string_fix(current_host)
 
         for op_type in operational_type:
-            output = self.get_data(op_type, current_host, current_port, current_proto, current_user, current_pword)
+            output = self.get_data(
+                op_type,
+                current_host,
+                current_port,
+                current_proto,
+                current_user,
+                current_pword,
+            )
 
-            if op_type == 'app' and self.config['app_stats'] == 'True':
+            if op_type == "app" and self.config["app_stats"] == "True":
                 if output:
                     # Grab the pool stats for each Instance
-                    for instance in output['result']['data-source']:
-                        datasource = output['result']['data-source'][instance]
+                    for instance in output["result"]["data-source"]:
+                        datasource = output["result"]["data-source"][instance]
 
-                        for metric in datasource['statistics']['pool']:
-                            metric_name = '%s.%s.%s.statistics.pool.%s' % (interface, op_type, instance, metric)
-                            metric_value = datasource['statistics']['pool'][metric]
+                        for metric in datasource["statistics"]["pool"]:
+                            metric_name = "%s.%s.%s.statistics.pool.%s" % (
+                                interface,
+                                op_type,
+                                instance,
+                                metric,
+                            )
+                            metric_value = datasource["statistics"]["pool"][metric]
                             self.publish(metric_name, float(metric_value))
 
-            if op_type == 'thread_pool' and self.config['thread_pool_stats'] == 'True' and output:
+            if (
+                op_type == "thread_pool"
+                and self.config["thread_pool_stats"] == "True"
+                and output
+            ):
                 # Grab the stats from each thread pool type
-                for pool_type in output['result']:
-                    if output['result'][pool_type]:
-                        pool_types = output['result'][pool_type]
+                for pool_type in output["result"]:
+                    if output["result"][pool_type]:
+                        pool_types = output["result"][pool_type]
 
                         for pool in pool_types:
                             for metric in pool_types[pool]:
-                                metric_name = '%s.%s.%s.%s.statistics.%s' % (interface, op_type, pool_type, pool, metric)
+                                metric_name = "%s.%s.%s.%s.statistics.%s" % (
+                                    interface,
+                                    op_type,
+                                    pool_type,
+                                    pool,
+                                    metric,
+                                )
                                 metric_value = pool_types[pool][metric]
 
                                 if self.is_number(metric_value):
                                     self.publish(metric_name, float(metric_value))
 
-            if op_type == 'web' and self.config['connector_stats'] == 'True':
+            if op_type == "web" and self.config["connector_stats"] == "True":
                 if output:
                     # Grab http and ajp info (make these options)
-                    for c_type in self.config['connector_options']:
+                    for c_type in self.config["connector_options"]:
                         for metric in web_stats:
-                            metric_name = ('%s.%s.connector.%s.%s' % (interface, op_type, c_type, metric))
-                            connector = output['result']['connector']
+                            metric_name = "%s.%s.connector.%s.%s" % (
+                                interface,
+                                op_type,
+                                c_type,
+                                metric,
+                            )
+                            connector = output["result"]["connector"]
                             metric_value = connector[c_type][metric]
                             self.publish(metric_name, float(metric_value))
 
-            if op_type == 'jvm':
+            if op_type == "jvm":
                 if output:
-                    if self.config['jvm_memory_pool_stats'] == 'True':
+                    if self.config["jvm_memory_pool_stats"] == "True":
                         # Grab JVM memory pool stats
-                        mempool = output['result']['type']['memory-pool']
+                        mempool = output["result"]["type"]["memory-pool"]
 
-                        for pool_name in mempool['name']:
+                        for pool_name in mempool["name"]:
                             for metric in memory_types:
-                                metric_name = ('%s.%s.%s.%s.%s.%s' % (interface, op_type, 'memory-pool', pool_name, 'usage', metric))
-                                metric_value = mempool['name'][pool_name]['usage'][metric]
+                                metric_name = "%s.%s.%s.%s.%s.%s" % (
+                                    interface,
+                                    op_type,
+                                    "memory-pool",
+                                    pool_name,
+                                    "usage",
+                                    metric,
+                                )
+                                metric_value = mempool["name"][pool_name]["usage"][
+                                    metric
+                                ]
                                 self.publish(metric_name, float(metric_value))
 
                     # Grab JVM buffer-pool stats
-                    if self.config['jvm_buffer_pool_stats'] == 'True':
-                        bufferpool = output['result']['type']['buffer-pool']
+                    if self.config["jvm_buffer_pool_stats"] == "True":
+                        bufferpool = output["result"]["type"]["buffer-pool"]
 
-                        for pool in bufferpool['name']:
+                        for pool in bufferpool["name"]:
                             for metric in buffer_pool_types:
-                                metric_name = ('%s.%s.%s.%s.%s' % (interface, op_type, 'buffer-pool', pool, metric))
-                                metric_value = bufferpool['name'][pool][metric]
+                                metric_name = "%s.%s.%s.%s.%s" % (
+                                    interface,
+                                    op_type,
+                                    "buffer-pool",
+                                    pool,
+                                    metric,
+                                )
+                                metric_value = bufferpool["name"][pool][metric]
                                 self.publish(metric_name, float(metric_value))
 
                     # Grab basic memory stats
-                    if self.config['jvm_memory_stats'] == 'True':
+                    if self.config["jvm_memory_stats"] == "True":
                         for mem_type in memory_topics:
                             for metric in memory_types:
-                                metric_name = ('%s.%s.%s.%s.%s' % (interface, op_type, 'memory', mem_type, metric))
-                                memory = output['result']['type']['memory']
+                                metric_name = "%s.%s.%s.%s.%s" % (
+                                    interface,
+                                    op_type,
+                                    "memory",
+                                    mem_type,
+                                    metric,
+                                )
+                                memory = output["result"]["type"]["memory"]
                                 metric_value = memory[mem_type][metric]
                                 self.publish(metric_name, float(metric_value))
 
                     # Grab Garbage collection stats
-                    if self.config['jvm_gc_stats'] == 'True':
-                        garbage = output['result']['type']['garbage-collector']
+                    if self.config["jvm_gc_stats"] == "True":
+                        garbage = output["result"]["type"]["garbage-collector"]
 
-                        for gc_name in garbage['name']:
+                        for gc_name in garbage["name"]:
                             for metric in gc_types:
-                                metric_name = ('%s.%s.%s.%s.%s' % (interface, op_type, 'garbage-collector', gc_name, metric))
-                                metric_value = garbage['name'][gc_name][metric]
+                                metric_name = "%s.%s.%s.%s.%s" % (
+                                    interface,
+                                    op_type,
+                                    "garbage-collector",
+                                    gc_name,
+                                    metric,
+                                )
+                                metric_value = garbage["name"][gc_name][metric]
                                 self.publish(metric_name, float(metric_value))
 
                     # Grab threading stats
-                    if self.config['jvm_thread_stats'] == 'True':
+                    if self.config["jvm_thread_stats"] == "True":
                         for metric in thread_types:
-                            metric_name = ('%s.%s.%s.%s' % (interface, op_type, 'threading', metric))
-                            threading = output['result']['type']['threading']
+                            metric_name = "%s.%s.%s.%s" % (
+                                interface,
+                                op_type,
+                                "threading",
+                                metric,
+                            )
+                            threading = output["result"]["type"]["threading"]
                             metric_value = threading[metric]
                             self.publish(metric_name, float(metric_value))
 
         return True
 
-    def get_data(self, op_type, current_host, current_port, current_proto, current_user, current_pword):
+    def get_data(
+        self,
+        op_type,
+        current_host,
+        current_port,
+        current_proto,
+        current_user,
+        current_pword,
+    ):
         output = {}
 
-        if op_type == 'app':
-            data = ('{"operation":"read-resource", ' +
-                    '"include-runtime":"true", ' +
-                    '"recursive":"true", ' +
-                    '"address":["subsystem","datasources"]}')
+        if op_type == "app":
+            data = (
+                '{"operation":"read-resource", '
+                + '"include-runtime":"true", '
+                + '"recursive":"true", '
+                + '"address":["subsystem","datasources"]}'
+            )
 
-        if op_type == 'thread_pool':
-            data = ('{"operation":"read-resource", "include-runtime":"true", ' +
-                    '"recursive":"true" , "address":["subsystem","threads"]}')
+        if op_type == "thread_pool":
+            data = (
+                '{"operation":"read-resource", "include-runtime":"true", '
+                + '"recursive":"true" , "address":["subsystem","threads"]}'
+            )
 
-        if op_type == 'web':
-            data = ('{"operation":"read-resource", ' +
-                    '"include-runtime":"true", ' +
-                    '"recursive":"true", ' +
-                    '"address":["subsystem","web"]}')
+        if op_type == "web":
+            data = (
+                '{"operation":"read-resource", '
+                + '"include-runtime":"true", '
+                + '"recursive":"true", '
+                + '"address":["subsystem","web"]}'
+            )
 
-        if op_type == 'jvm':
-            data = ('{"operation":"read-resource", ' +
-                    '"include-runtime":"true", ' +
-                    '"recursive":"true", ' +
-                    '"address":["core-service","platform-mbean"]}')
+        if op_type == "jvm":
+            data = (
+                '{"operation":"read-resource", '
+                + '"include-runtime":"true", '
+                + '"recursive":"true", '
+                + '"address":["core-service","platform-mbean"]}'
+            )
 
-        the_cmd = (("%s --connect-timeout %s %s %s %s://%s:%s/management " +
-                    "--header %s -d '%s' -u %s:%s") % (
-            self.config['curl_bin'], self.config['connect_timeout'],
-            self.config['ssl_options'], self.config['curl_options'],
-            current_proto, current_host, current_port, header, data,
-            current_user, current_pword))
+        the_cmd = (
+            "%s --connect-timeout %s %s %s %s://%s:%s/management "
+            + "--header %s -d '%s' -u %s:%s"
+        ) % (
+            self.config["curl_bin"],
+            self.config["connect_timeout"],
+            self.config["ssl_options"],
+            self.config["curl_options"],
+            current_proto,
+            current_host,
+            current_port,
+            header,
+            data,
+            current_user,
+            current_pword,
+        )
 
         try:
-            attributes = subprocess.Popen(the_cmd, shell=True, stdout=subprocess.PIPE).communicate()[0]
+            attributes = subprocess.Popen(
+                the_cmd, shell=True, stdout=subprocess.PIPE
+            ).communicate()[0]
             output = json.loads(attributes)
         except Exception as e:
             self.log.error("JbossApiCollector: There was an exception %s", e)
-            output = ''
+            output = ""
         return output
 
     def is_number(self, value):
@@ -339,9 +431,8 @@ class JbossApiCollector(diamond.collector.Collector):
 
     def collect(self):
 
-        for host in self.config['hosts']:
-            matches = re.search(
-                '^([^:]*):([^@]*)@([^:]*):([^:]*):?(.*)', host)
+        for host in self.config["hosts"]:
+            matches = re.search("^([^:]*):([^@]*)@([^:]*):([^:]*):?(.*)", host)
 
             if not matches:
                 continue
@@ -353,6 +444,8 @@ class JbossApiCollector(diamond.collector.Collector):
             current_pword = matches.group(2)
 
             # Call get_stats for each instance of jboss
-            self.get_stats(current_host, current_port, current_proto, current_user, current_pword)
+            self.get_stats(
+                current_host, current_port, current_proto, current_user, current_pword
+            )
 
         return True

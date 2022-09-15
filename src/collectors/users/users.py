@@ -39,32 +39,34 @@ class UsersCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(UsersCollector, self).get_default_config()
-        config.update({
-            'path': 'users',
-            'utmp': None,
-        })
+        config.update(
+            {
+                "path": "users",
+                "utmp": None,
+            }
+        )
 
         return config
 
     def collect(self):
         if UtmpFile is None and UtmpRecord is None:
-            self.log.error('Unable to import either pyutmp or python-utmp')
+            self.log.error("Unable to import either pyutmp or python-utmp")
 
             return False
 
-        metrics = {'total': 0}
+        metrics = {"total": 0}
 
         if UtmpFile:
-            for utmp in UtmpFile(path=self.config['utmp']):
+            for utmp in UtmpFile(path=self.config["utmp"]):
                 if utmp.ut_user_process:
                     metrics[utmp.ut_user] = metrics.get(utmp.ut_user, 0) + 1
-                    metrics['total'] = metrics['total'] + 1
+                    metrics["total"] = metrics["total"] + 1
 
         if UtmpRecord:
-            for utmp in UtmpRecord(fname=self.config['utmp']):
+            for utmp in UtmpRecord(fname=self.config["utmp"]):
                 if utmp.ut_type == UTMPCONST.USER_PROCESS:
                     metrics[utmp.ut_user] = metrics.get(utmp.ut_user, 0) + 1
-                    metrics['total'] = metrics['total'] + 1
+                    metrics["total"] = metrics["total"] + 1
 
         for metric_name in metrics.keys():
             self.publish(metric_name, metrics[metric_name])

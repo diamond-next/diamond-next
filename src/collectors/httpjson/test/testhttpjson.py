@@ -11,15 +11,17 @@ from test import get_collector_config
 
 class TestHTTPJSONCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('HTTPJSONCollector', {})
+        config = get_collector_config("HTTPJSONCollector", {})
         self.collector = HTTPJSONCollector(config, None)
 
     def test_import(self):
         self.assertTrue(HTTPJSONCollector)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(Collector, "publish")
     def test_should_work_with_real_data(self, publish_mock):
-        urlopen_mock = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('stats.json')))
+        urlopen_mock = patch(
+            "urllib.request.urlopen", Mock(return_value=self.getFixture("stats.json"))
+        )
 
         urlopen_mock.start()
         self.collector.collect()

@@ -24,7 +24,7 @@ except ImportError:
     import simplejson as json
 
 
-def flatten_dictionary(input, sep='.', prefix=None):
+def flatten_dictionary(input, sep=".", prefix=None):
     """Produces iterator of pairs where the first value is
     the joined key names and the second value is the value
     associated with the lowest level key. For example::
@@ -50,16 +50,17 @@ def flatten_dictionary(input, sep='.', prefix=None):
 class CephCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(CephCollector, self).get_default_config_help()
-        config_help.update({
-            'socket_path': 'The location of the ceph monitoring sockets.'
-                           ' Defaults to "/var/run/ceph"',
-            'socket_prefix': 'The first part of all socket names.'
-                             ' Defaults to "ceph-"',
-            'socket_ext': 'Extension for socket filenames.'
-                          ' Defaults to "asok"',
-            'ceph_binary': 'Path to "ceph" executable. '
-                           'Defaults to /usr/bin/ceph.',
-        })
+        config_help.update(
+            {
+                "socket_path": "The location of the ceph monitoring sockets."
+                ' Defaults to "/var/run/ceph"',
+                "socket_prefix": "The first part of all socket names."
+                ' Defaults to "ceph-"',
+                "socket_ext": "Extension for socket filenames." ' Defaults to "asok"',
+                "ceph_binary": 'Path to "ceph" executable. '
+                "Defaults to /usr/bin/ceph.",
+            }
+        )
 
         return config_help
 
@@ -68,12 +69,14 @@ class CephCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(CephCollector, self).get_default_config()
-        config.update({
-            'socket_path': '/var/run/ceph',
-            'socket_prefix': 'ceph-',
-            'socket_ext': 'asok',
-            'ceph_binary': '/usr/bin/ceph',
-        })
+        config.update(
+            {
+                "socket_path": "/var/run/ceph",
+                "socket_prefix": "ceph-",
+                "socket_ext": "asok",
+                "ceph_binary": "/usr/bin/ceph",
+            }
+        )
 
         return config
 
@@ -81,9 +84,10 @@ class CephCollector(diamond.collector.Collector):
         """Return a sequence of paths to sockets for communicating
         with ceph daemons.
         """
-        socket_pattern = os.path.join(self.config['socket_path'],
-                                      (self.config['socket_prefix'] +
-                                       '*.' + self.config['socket_ext']))
+        socket_pattern = os.path.join(
+            self.config["socket_path"],
+            (self.config["socket_prefix"] + "*." + self.config["socket_ext"]),
+        )
 
         return glob.glob(socket_pattern)
 
@@ -93,10 +97,10 @@ class CephCollector(diamond.collector.Collector):
         """
         base = os.path.splitext(os.path.basename(name))[0]
 
-        if base.startswith(self.config['socket_prefix']):
-            base = base[len(self.config['socket_prefix']):]
+        if base.startswith(self.config["socket_prefix"]):
+            base = base[len(self.config["socket_prefix"]) :]
 
-        return 'ceph.' + base
+        return "ceph." + base
 
     def _get_stats_from_socket(self, name):
         """Return the parsed JSON data returned when ceph is told to
@@ -107,24 +111,25 @@ class CephCollector(diamond.collector.Collector):
         """
         try:
             json_blob = subprocess.check_output(
-                [self.config['ceph_binary'],
-                 '--admin-daemon',
-                 name,
-                 'perf',
-                 'dump',
-                 ]
+                [
+                    self.config["ceph_binary"],
+                    "--admin-daemon",
+                    name,
+                    "perf",
+                    "dump",
+                ]
             )
         except subprocess.CalledProcessError as err:
-            self.log.info('Could not get stats from %s: %s', name, err)
-            self.log.exception('Could not get stats from %s' % name)
+            self.log.info("Could not get stats from %s: %s", name, err)
+            self.log.exception("Could not get stats from %s" % name)
 
             return {}
 
         try:
             json_data = json.loads(json_blob)
         except Exception as err:
-            self.log.info('Could not parse stats from %s: %s', name, err)
-            self.log.exception('Could not parse stats from %s' % name)
+            self.log.info("Could not parse stats from %s: %s", name, err)
+            self.log.exception("Could not parse stats from %s" % name)
 
             return {}
 
@@ -142,7 +147,7 @@ class CephCollector(diamond.collector.Collector):
         Collect stats
         """
         for path in self._get_socket_paths():
-            self.log.debug('checking %s', path)
+            self.log.debug("checking %s", path)
             counter_prefix = self._get_counter_prefix_from_socket_name(path)
             stats = self._get_stats_from_socket(path)
             self._publish_stats(counter_prefix, stats)

@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestZookeeperCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('ZookeeperCollector', {})
+        config = get_collector_config("ZookeeperCollector", {})
         self.collector = ZookeeperCollector(config, None)
 
     def test_import(self):

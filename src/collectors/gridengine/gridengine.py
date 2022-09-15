@@ -20,14 +20,20 @@ import diamond.collector
 
 
 class GridEngineCollector(diamond.collector.Collector):
-    """Diamond collector for Grid Engine performance data
-    """
+    """Diamond collector for Grid Engine performance data"""
 
     class QueueStatsEntry:
-
-        def __init__(self, name=None, load=None, used=None, resv=None,
-                     available=None, total=None, temp_disabled=None,
-                     manual_intervention=None):
+        def __init__(
+            self,
+            name=None,
+            load=None,
+            used=None,
+            resv=None,
+            available=None,
+            total=None,
+            temp_disabled=None,
+            manual_intervention=None,
+        ):
             self.name = name
             self.load = load
             self.used = used
@@ -38,7 +44,6 @@ class GridEngineCollector(diamond.collector.Collector):
             self.manual_intervention = manual_intervention
 
     class StatsParser(object):
-
         def __init__(self, document):
             self.dom = xml.dom.minidom.parseString(document.strip())
 
@@ -51,19 +56,20 @@ class GridEngineCollector(diamond.collector.Collector):
             for node in node.childNodes:
                 if node.nodeType == node.TEXT_NODE:
                     rc.append(node.data)
-            return ''.join(rc)
+            return "".join(rc)
 
     class QueueStatsParser(StatsParser):
-
         def __init__(self, document):
             self.dom = xml.dom.minidom.parseString(document.strip())
 
         def parse(self):
             cluster_queue_summaries = self.dom.getElementsByTagName(
-                "cluster_queue_summary")
+                "cluster_queue_summary"
+            )
             return [
                 self._parse_cluster_stats_entry(node)
-                for node in cluster_queue_summaries]
+                for node in cluster_queue_summaries
+            ]
 
         def _parse_cluster_stats_entry(self, node):
             name = self.get_tag_text(node, "name")
@@ -73,9 +79,7 @@ class GridEngineCollector(diamond.collector.Collector):
             available = int(self.get_tag_text(node, "available"))
             total = int(self.get_tag_text(node, "total"))
             temp_disabled = int(self.get_tag_text(node, "temp_disabled"))
-            manual_intervention = int(self.get_tag_text(
-                node,
-                "manual_intervention"))
+            manual_intervention = int(self.get_tag_text(node, "manual_intervention"))
 
             return GridEngineCollector.QueueStatsEntry(
                 name=name,
@@ -85,33 +89,36 @@ class GridEngineCollector(diamond.collector.Collector):
                 available=available,
                 total=total,
                 temp_disabled=temp_disabled,
-                manual_intervention=manual_intervention)
+                manual_intervention=manual_intervention,
+            )
 
     def process_config(self):
         super(GridEngineCollector, self).process_config()
-        os.environ['SGE_ROOT'] = self.config['sge_root']
+        os.environ["SGE_ROOT"] = self.config["sge_root"]
 
     def get_default_config_help(self):
-        config_help = super(GridEngineCollector,
-                            self).get_default_config_help()
-        config_help.update({
-            'bin_path': "The path to Grid Engine's qstat",
-            'sge_root': "The SGE_ROOT value to provide to qstat"
-        })
+        config_help = super(GridEngineCollector, self).get_default_config_help()
+        config_help.update(
+            {
+                "bin_path": "The path to Grid Engine's qstat",
+                "sge_root": "The SGE_ROOT value to provide to qstat",
+            }
+        )
         return config_help
 
     def get_default_config(self):
         config = super(GridEngineCollector, self).get_default_config()
-        config.update({
-            'bin_path': '/opt/gridengine/bin/lx-amd64/qstat',
-            'path': 'gridengine',
-            'sge_root': self._sge_root(),
-        })
+        config.update(
+            {
+                "bin_path": "/opt/gridengine/bin/lx-amd64/qstat",
+                "path": "gridengine",
+                "sge_root": self._sge_root(),
+            }
+        )
         return config
 
     def collect(self):
-        """Collect statistics from Grid Engine via qstat.
-        """
+        """Collect statistics from Grid Engine via qstat."""
         self._collect_queue_stats()
 
     def _capture_output(self, cmd):
@@ -125,26 +132,32 @@ class GridEngineCollector(diamond.collector.Collector):
         parser = self.QueueStatsParser(output)
         for cq in parser.parse():
             name = self._sanitize(cq.name)
-            prefix = 'queues.%s' % name
-            metrics = ['load', 'used', 'resv', 'available', 'total',
-                       'temp_disabled', 'manual_intervention']
+            prefix = "queues.%s" % name
+            metrics = [
+                "load",
+                "used",
+                "resv",
+                "available",
+                "total",
+                "temp_disabled",
+                "manual_intervention",
+            ]
             for metric in metrics:
-                path = '%s.%s' % (prefix, metric)
+                path = "%s.%s" % (prefix, metric)
                 value = getattr(cq, metric)
                 self.publish(path, value)
 
     def _queue_stats_xml(self):
-        bin_path = self.config['bin_path']
-        return self._capture_output([bin_path, '-g', 'c', '-xml'])
+        bin_path = self.config["bin_path"]
+        return self._capture_output([bin_path, "-g", "c", "-xml"])
 
     def _sanitize(self, s):
-        """Sanitize the name of a metric to remove unwanted chars
-        """
+        """Sanitize the name of a metric to remove unwanted chars"""
         return re.sub("[^\w-]", "_", s)
 
     def _sge_root(self):
-        sge_root = os.environ.get('SGE_ROOT')
+        sge_root = os.environ.get("SGE_ROOT")
         if sge_root:
             return sge_root
         else:
-            return '/opt/gridengine'
+            return "/opt/gridengine"

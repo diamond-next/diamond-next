@@ -28,25 +28,20 @@ import diamond.collector
 
 
 class DarnerCollector(diamond.collector.Collector):
-    GAUGES = [
-        'curr_connections',
-        'curr_items',
-        'uptime'
-    ]
+    GAUGES = ["curr_connections", "curr_items", "uptime"]
 
     def get_default_config_help(self):
         config_help = super(DarnerCollector, self).get_default_config_help()
-        config_help.update({
-            'publish':
-                "Which rows of 'status' you would like to publish." +
-                " Telnet host port' and type stats and hit enter to see " +
-                " the list of possibilities. Leave unset to publish all.",
-            'hosts':
-                "List of hosts, and ports to collect. Set an alias by " +
-                " prefixing the host:port with alias@",
-            'publish_queues':
-                "Publish queue stats (defaults to True)",
-        })
+        config_help.update(
+            {
+                "publish": "Which rows of 'status' you would like to publish."
+                + " Telnet host port' and type stats and hit enter to see "
+                + " the list of possibilities. Leave unset to publish all.",
+                "hosts": "List of hosts, and ports to collect. Set an alias by "
+                + " prefixing the host:port with alias@",
+                "publish_queues": "Publish queue stats (defaults to True)",
+            }
+        )
 
         return config_help
 
@@ -55,24 +50,24 @@ class DarnerCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(DarnerCollector, self).get_default_config()
-        config.update({
-            'path':     'darner',
-
-            # Which rows of 'status' you would like to publish.
-            # 'telnet host port' and type stats and hit enter to see the list
-            # of possibilities.
-            # Leave unset to publish all
-            # 'publish': ''
-            'publish_queues': True,
-
-            # Connection settings
-            'hosts': ['localhost:22133']
-        })
+        config.update(
+            {
+                "path": "darner",
+                # Which rows of 'status' you would like to publish.
+                # 'telnet host port' and type stats and hit enter to see the list
+                # of possibilities.
+                # Leave unset to publish all
+                # 'publish': ''
+                "publish_queues": True,
+                # Connection settings
+                "hosts": ["localhost:22133"],
+            }
+        )
 
         return config
 
     def get_raw_stats(self, host, port):
-        data = ''
+        data = ""
 
         # connect
         try:
@@ -84,18 +79,18 @@ class DarnerCollector(diamond.collector.Collector):
                 sock.connect((host, int(port)))
 
             # request stats
-            sock.send('stats\n')
+            sock.send("stats\n")
 
             # something big enough to get whatever is sent back
             data = sock.recv(4096)
         except socket.error:
-            self.log.exception('Failed to get stats from %s:%s', host, port)
+            self.log.exception("Failed to get stats from %s:%s", host, port)
 
         return data
 
     def get_stats(self, host, port):
         # stuff that's always ignored, aren't 'stats'
-        ignored = ('time', 'version')
+        ignored = ("time", "version")
 
         stats = {}
         queues = {}
@@ -103,14 +98,16 @@ class DarnerCollector(diamond.collector.Collector):
 
         # parse stats
         for line in data.splitlines():
-            pieces = line.split(' ')
+            pieces = line.split(" ")
 
-            if pieces[0] != 'STAT' or pieces[1] in ignored:
+            if pieces[0] != "STAT" or pieces[1] in ignored:
                 continue
 
-            if re.match(r'^queue', pieces[1]):
-                queue_match = re.match(r'^queue_(.*)_(items|waiters|open_transactions)$', pieces[1])
-                queue_name = queue_match.group(1).replace('.', '_')
+            if re.match(r"^queue", pieces[1]):
+                queue_match = re.match(
+                    r"^queue_(.*)_(items|waiters|open_transactions)$", pieces[1]
+                )
+                queue_name = queue_match.group(1).replace(".", "_")
 
                 if queue_name not in queues:
                     queues[queue_name] = {}
@@ -122,14 +119,14 @@ class DarnerCollector(diamond.collector.Collector):
         return stats, queues
 
     def collect(self):
-        hosts = self.config.get('hosts')
+        hosts = self.config.get("hosts")
 
         # Convert a string config value to be an array
         if isinstance(hosts, str):
             hosts = [hosts]
 
         for host in hosts:
-            matches = re.search('((.+)\@)?([^:]+)(:(\d+))?', host)
+            matches = re.search("((.+)\@)?([^:]+)(:(\d+))?", host)
             alias = matches.group(2)
             hostname = matches.group(3)
             port = matches.group(5)
@@ -140,13 +137,16 @@ class DarnerCollector(diamond.collector.Collector):
             stats, queues = self.get_stats(hostname, port)
 
             # Publish queue stats if configured
-            if diamond.collector.str_to_bool(self.config['publish_queues']):
+            if diamond.collector.str_to_bool(self.config["publish_queues"]):
                 for queue in queues:
                     for queue_stat in queues[queue]:
-                        self.publish_gauge(alias + ".queues." + queue + "." + queue_stat, queues[queue][queue_stat])
+                        self.publish_gauge(
+                            alias + ".queues." + queue + "." + queue_stat,
+                            queues[queue][queue_stat],
+                        )
 
             # figure out what we're configured to get, defaulting to everything
-            desired = self.config.get('publish', stats.keys())
+            desired = self.config.get("publish", stats.keys())
 
             # for everything we want
             for stat in desired:
@@ -159,4 +159,7 @@ class DarnerCollector(diamond.collector.Collector):
                         self.publish_counter(alias + "." + stat, stats[stat])
                 else:
                     # we don't, must be something configured in publish so we should log an error about it
-                    self.log.error("No such key '%s' available, issue 'stats' for a full list", stat)
+                    self.log.error(
+                        "No such key '%s' available, issue 'stats' for a full list",
+                        stat,
+                    )

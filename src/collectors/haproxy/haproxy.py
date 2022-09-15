@@ -21,14 +21,16 @@ import diamond.collector
 class HAProxyCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(HAProxyCollector, self).get_default_config_help()
-        config_help.update({
-            'method': "Method to use for data collection. Possible values: http, unix",
-            'url': "Url to stats in csv format",
-            'user': "Username",
-            'pass': "Password",
-            'sock': "Path to admin UNIX-domain socket",
-            'ignore_servers': "Ignore servers, just collect frontend and backend stats",
-        })
+        config_help.update(
+            {
+                "method": "Method to use for data collection. Possible values: http, unix",
+                "url": "Url to stats in csv format",
+                "user": "Username",
+                "pass": "Password",
+                "sock": "Path to admin UNIX-domain socket",
+                "ignore_servers": "Ignore servers, just collect frontend and backend stats",
+            }
+        )
 
         return config_help
 
@@ -37,15 +39,17 @@ class HAProxyCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(HAProxyCollector, self).get_default_config()
-        config.update({
-            'method': 'http',
-            'path': 'haproxy',
-            'url': 'http://localhost/haproxy?stats;csv',
-            'user': 'admin',
-            'pass': 'password',
-            'sock': '/var/run/haproxy.sock',
-            'ignore_servers': False,
-        })
+        config.update(
+            {
+                "method": "http",
+                "path": "haproxy",
+                "url": "http://localhost/haproxy?stats;csv",
+                "user": "admin",
+                "pass": "password",
+                "sock": "/var/run/haproxy.sock",
+                "ignore_servers": False,
+            }
+        )
 
         return config
 
@@ -64,44 +68,53 @@ class HAProxyCollector(diamond.collector.Collector):
         Request stats from HAProxy Server
         """
         metrics = []
-        req = urllib.request.Request(self._get_config_value(section, 'url'))
+        req = urllib.request.Request(self._get_config_value(section, "url"))
 
         try:
             handle = urllib.request.urlopen(req)
 
             return handle.readlines()
         except Exception as e:
-            if not hasattr(e, 'code') or e.code != 401:
+            if not hasattr(e, "code") or e.code != 401:
                 self.log.error("Error retrieving HAProxy stats. %s", e)
 
                 return metrics
 
         # get the www-authenticate line from the headers
         # which has the authentication scheme and realm in it
-        authline = e.headers['www-authenticate']
+        authline = e.headers["www-authenticate"]
 
         # this regular expression is used to extract scheme and realm
-        authre = r'''(?:\s*www-authenticate\s*:)?\s*(\w*)\s+realm=['"]([^'"]+)['"]'''
+        authre = r"""(?:\s*www-authenticate\s*:)?\s*(\w*)\s+realm=['"]([^'"]+)['"]"""
         authobj = re.compile(authre, re.IGNORECASE)
         matchobj = authobj.match(authline)
 
         if not matchobj:
             # if the authline isn't matched by the regular expression
             # then something is wrong
-            self.log.error('The authentication header is malformed.')
+            self.log.error("The authentication header is malformed.")
 
             return metrics
 
         scheme = matchobj.group(1)
 
         # here we've extracted the scheme and the realm from the header
-        if scheme.lower() != 'basic':
-            self.log.error('Invalid authentication scheme.')
+        if scheme.lower() != "basic":
+            self.log.error("Invalid authentication scheme.")
 
             return metrics
 
-        base64string = base64.b64encode(bytes('%s:%s' % (self._get_config_value(section, 'user'), self._get_config_value(section, 'pass')), 'utf-8'))
-        authheader = 'Basic %s' % base64string
+        base64string = base64.b64encode(
+            bytes(
+                "%s:%s"
+                % (
+                    self._get_config_value(section, "user"),
+                    self._get_config_value(section, "pass"),
+                ),
+                "utf-8",
+            )
+        )
+        authheader = "Basic %s" % base64string
         req.add_header("Authorization", authheader)
 
         try:
@@ -111,7 +124,9 @@ class HAProxyCollector(diamond.collector.Collector):
             return metrics
         except IOError as e:
             # here we shouldn't fail if the USER/PASS is right
-            self.log.error("Error retrieving HAProxy stats. (Invalid username or password?) %s", e)
+            self.log.error(
+                "Error retrieving HAProxy stats. (Invalid username or password?) %s", e
+            )
 
             return metrics
 
@@ -120,8 +135,8 @@ class HAProxyCollector(diamond.collector.Collector):
         data = str()
 
         try:
-            sock.connect(self.config['sock'])
-            sock.send(b'show stat\n')
+            sock.connect(self.config["sock"])
+            sock.send(b"show stat\n")
 
             while 1:
                 buf = sock.recv(4096)
@@ -135,7 +150,7 @@ class HAProxyCollector(diamond.collector.Collector):
 
             return []
 
-        return data.strip().split('\n')
+        return data.strip().split("\n")
 
     def _generate_headings(self, row):
         headings = {}
@@ -149,25 +164,27 @@ class HAProxyCollector(diamond.collector.Collector):
         """
         Collect HAProxy Stats
         """
-        if self.config['method'] == 'http':
+        if self.config["method"] == "http":
             csv_data = self.http_get_csv_data(section)
-        elif self.config['method'] == 'unix':
+        elif self.config["method"] == "unix":
             csv_data = self.unix_get_csv_data()
         else:
-            self.log.error("Unknown collection method: %s", self.config['method'])
+            self.log.error("Unknown collection method: %s", self.config["method"])
             csv_data = []
 
         data = list(csv.reader(csv_data))
         headings = self._generate_headings(data[0])
-        section_name = section and self._sanitize(section.lower()) + '.' or ''
+        section_name = section and self._sanitize(section.lower()) + "." or ""
 
         for row in data:
-            if self._get_config_value(section, 'ignore_servers') and row[1].lower() not in ['frontend', 'backend']:
+            if self._get_config_value(section, "ignore_servers") and row[
+                1
+            ].lower() not in ["frontend", "backend"]:
                 continue
 
             part_one = self._sanitize(row[0].lower())
             part_two = self._sanitize(row[1].lower())
-            metric_name = '%s%s.%s' % (section_name, part_one, part_two)
+            metric_name = "%s%s.%s" % (section_name, part_one, part_two)
 
             for index, metric_string in enumerate(row):
                 try:
@@ -175,20 +192,19 @@ class HAProxyCollector(diamond.collector.Collector):
                 except ValueError:
                     continue
 
-                stat_name = '%s.%s' % (metric_name, headings[index])
-                self.publish(stat_name, metric_value, metric_type='GAUGE')
+                stat_name = "%s.%s" % (metric_name, headings[index])
+                self.publish(stat_name, metric_value, metric_type="GAUGE")
 
     def collect(self):
-        if 'servers' in self.config:
-            if isinstance(self.config['servers'], list):
-                for serv in self.config['servers']:
+        if "servers" in self.config:
+            if isinstance(self.config["servers"], list):
+                for serv in self.config["servers"]:
                     self._collect(serv)
             else:
-                self._collect(self.config['servers'])
+                self._collect(self.config["servers"])
         else:
             self._collect()
 
     def _sanitize(self, s):
-        """Sanitize the name of a metric to remove unwanted chars
-        """
-        return re.sub('[^w-]', '_', s)
+        """Sanitize the name of a metric to remove unwanted chars"""
+        return re.sub("[^w-]", "_", s)

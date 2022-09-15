@@ -52,7 +52,7 @@ import diamond.collector
 
 
 class MdStatCollector(diamond.collector.Collector):
-    MDSTAT_PATH = '/proc/mdstat'
+    MDSTAT_PATH = "/proc/mdstat"
 
     def get_default_config_help(self):
         config_help = super(MdStatCollector, self).get_default_config_help()
@@ -60,9 +60,11 @@ class MdStatCollector(diamond.collector.Collector):
 
     def get_default_config(self):
         config = super(MdStatCollector, self).get_default_config()
-        config.update({
-            'path': 'mdstat',
-        })
+        config.update(
+            {
+                "path": "mdstat",
+            }
+        )
         return config
 
     def process_config(self):
@@ -70,7 +72,8 @@ class MdStatCollector(diamond.collector.Collector):
 
     def collect(self):
         """Publish all mdstat metrics."""
-        def traverse(d, metric_name=''):
+
+        def traverse(d, metric_name=""):
             """
             Traverse the given nested dict using depth-first search.
 
@@ -80,19 +83,21 @@ class MdStatCollector(diamond.collector.Collector):
             """
             for key, value in iter(d.items()):
                 if isinstance(value, dict):
-                    if metric_name == '':
+                    if metric_name == "":
                         metric_name_next = key
                     else:
-                        metric_name_next = metric_name + '.' + key
+                        metric_name_next = metric_name + "." + key
 
                     traverse(value, metric_name_next)
                 else:
-                    metric_name_finished = metric_name + '.' + key
-                    self.publish_gauge(name=metric_name_finished, value=value, precision=1)
+                    metric_name_finished = metric_name + "." + key
+                    self.publish_gauge(
+                        name=metric_name_finished, value=value, precision=1
+                    )
 
         md_state = self._parse_mdstat()
 
-        traverse(md_state, '')
+        traverse(md_state, "")
 
     def _parse_mdstat(self):
         """
@@ -110,13 +115,17 @@ class MdStatCollector(diamond.collector.Collector):
         """
 
         arrays = {}
-        mdstat_array_blocks = ''
+        mdstat_array_blocks = ""
 
         try:
-            with open(self.MDSTAT_PATH, 'r') as f:
+            with open(self.MDSTAT_PATH, "r") as f:
                 lines = f.readlines()
         except IOError as err:
-            self.log.exception('Error opening {mdstat_path} for reading: {err}'.format(mdstat_path=self.MDSTAT_PATH, err=err))
+            self.log.exception(
+                "Error opening {mdstat_path} for reading: {err}".format(
+                    mdstat_path=self.MDSTAT_PATH, err=err
+                )
+            )
 
             return arrays
 
@@ -124,11 +133,11 @@ class MdStatCollector(diamond.collector.Collector):
         for line in lines[1:-1]:
             mdstat_array_blocks += line
 
-        if mdstat_array_blocks == '':
+        if mdstat_array_blocks == "":
             # no md arrays found
             return arrays
 
-        for block in mdstat_array_blocks.split('\n\n'):
+        for block in mdstat_array_blocks.split("\n\n"):
             md_device_name = self._parse_device_name(block)
 
             if md_device_name:
@@ -136,8 +145,8 @@ class MdStatCollector(diamond.collector.Collector):
 
                 # 'member_count' and 'status' are mandatory keys
                 arrays[md_device_name] = {
-                    'member_count': self._parse_array_member_state(block),
-                    'status': self._parse_array_status(block),
+                    "member_count": self._parse_array_member_state(block),
+                    "status": self._parse_array_status(block),
                 }
 
                 # 'bitmap' and 'recovery' are optional keys
@@ -145,10 +154,10 @@ class MdStatCollector(diamond.collector.Collector):
                 recovery_status = self._parse_array_recovery(block)
 
                 if bitmap_status:
-                    arrays[md_device_name].update({'bitmap': bitmap_status})
+                    arrays[md_device_name].update({"bitmap": bitmap_status})
 
                 if recovery_status:
-                    arrays[md_device_name].update({'recovery': recovery_status})
+                    arrays[md_device_name].update({"recovery": recovery_status})
 
         return arrays
 
@@ -165,7 +174,7 @@ class MdStatCollector(diamond.collector.Collector):
         :return: parsed device name
         :rtype: string
         """
-        return block.split('\n')[0].split(' : ')[0]
+        return block.split("\n")[0].split(" : ")[0]
 
     def _parse_array_member_state(self, block):
         """
@@ -184,29 +193,25 @@ class MdStatCollector(diamond.collector.Collector):
         :return: dictionary of states with according count
         :rtype: dict
         """
-        members = block.split('\n')[0].split(' : ')[1].split(' ')[2:]
+        members = block.split("\n")[0].split(" : ")[1].split(" ")[2:]
 
         device_regexp = re.compile(
-            '^(?P<member_name>.*)'
-            '\[(?P<member_role_number>\d*)\]'
-            '\(?(?P<member_state>[FS])?\)?$'
+            "^(?P<member_name>.*)"
+            "\[(?P<member_role_number>\d*)\]"
+            "\(?(?P<member_state>[FS])?\)?$"
         )
 
-        ret = {
-            'active': 0,
-            'faulty': 0,
-            'spare': 0
-        }
+        ret = {"active": 0, "faulty": 0, "spare": 0}
 
         for member in members:
             member_dict = device_regexp.match(member).groupdict()
 
-            if member_dict['member_state'] == 'S':
-                ret['spare'] += 1
-            elif member_dict['member_state'] == 'F':
-                ret['faulty'] += 1
+            if member_dict["member_state"] == "S":
+                ret["spare"] += 1
+            elif member_dict["member_state"] == "F":
+                ret["faulty"] += 1
             else:
-                ret['active'] += 1
+                ret["active"] += 1
 
         return ret
 
@@ -229,16 +234,16 @@ class MdStatCollector(diamond.collector.Collector):
         :rtype: dict
         """
         array_status_regexp = re.compile(
-            '^ *(?P<blocks>\d*) blocks '
-            '(?:super (?P<superblock_version>\d\.\d) )?'
-            '(?:level (?P<raid_level>\d), '
-            '(?P<chunk_size>\d*)k chunk, '
-            'algorithm (?P<algorithm>\d) )?'
-            '(?:\[(?P<total_members>\d*)/(?P<actual_members>\d*)\])?'
-            '(?:(?P<rounding_factor>\d*)k rounding)?.*$'
+            "^ *(?P<blocks>\d*) blocks "
+            "(?:super (?P<superblock_version>\d\.\d) )?"
+            "(?:level (?P<raid_level>\d), "
+            "(?P<chunk_size>\d*)k chunk, "
+            "algorithm (?P<algorithm>\d) )?"
+            "(?:\[(?P<total_members>\d*)/(?P<actual_members>\d*)\])?"
+            "(?:(?P<rounding_factor>\d*)k rounding)?.*$"
         )
 
-        array_status_dict = array_status_regexp.match(block.split('\n')[1]).groupdict()
+        array_status_dict = array_status_regexp.match(block.split("\n")[1]).groupdict()
 
         array_status_dict_sanitizied = {}
 
@@ -247,18 +252,18 @@ class MdStatCollector(diamond.collector.Collector):
             if not value:
                 continue
 
-            if key == 'superblock_version':
+            if key == "superblock_version":
                 array_status_dict_sanitizied[key] = float(value)
             else:
                 array_status_dict_sanitizied[key] = int(value)
 
-        if 'chunk_size' in array_status_dict_sanitizied:
+        if "chunk_size" in array_status_dict_sanitizied:
             # convert chunk size from kBytes to Bytes
-            array_status_dict_sanitizied['chunk_size'] *= 1024
+            array_status_dict_sanitizied["chunk_size"] *= 1024
 
-        if 'rounding_factor' in array_status_dict_sanitizied:
+        if "rounding_factor" in array_status_dict_sanitizied:
             # convert rounding_factor from kBytes to Bytes
-            array_status_dict_sanitizied['rounding_factor'] *= 1024
+            array_status_dict_sanitizied["rounding_factor"] *= 1024
 
         return array_status_dict_sanitizied
 
@@ -281,11 +286,11 @@ class MdStatCollector(diamond.collector.Collector):
         :rtype: dict
         """
         array_bitmap_regexp = re.compile(
-            '^ *bitmap: (?P<allocated_pages>[0-9]*)/'
-            '(?P<total_pages>[0-9]*) pages '
-            '\[(?P<page_size>[0-9]*)KB\], '
-            '(?P<chunk_size>[0-9]*)KB chunk.*$',
-            re.MULTILINE
+            "^ *bitmap: (?P<allocated_pages>[0-9]*)/"
+            "(?P<total_pages>[0-9]*) pages "
+            "\[(?P<page_size>[0-9]*)KB\], "
+            "(?P<chunk_size>[0-9]*)KB chunk.*$",
+            re.MULTILINE,
         )
 
         regexp_res = array_bitmap_regexp.search(block)
@@ -305,10 +310,10 @@ class MdStatCollector(diamond.collector.Collector):
             array_bitmap_dict_sanitizied[key] = int(value)
 
         # convert page_size to bytes
-        array_bitmap_dict_sanitizied['page_size'] *= 1024
+        array_bitmap_dict_sanitizied["page_size"] *= 1024
 
         # convert chunk_size to bytes
-        array_bitmap_dict_sanitizied['chunk_size'] *= 1024
+        array_bitmap_dict_sanitizied["chunk_size"] *= 1024
 
         return array_bitmap_dict
 
@@ -332,10 +337,10 @@ class MdStatCollector(diamond.collector.Collector):
         :rtype: dict
         """
         array_recovery_regexp = re.compile(
-            '^ *\[.*\] *recovery = (?P<percent>\d*\.?\d*)%'
-            ' \(\d*/\d*\) finish=(?P<remaining_time>\d*\.?\d*)min '
-            'speed=(?P<speed>\d*)K/sec$',
-            re.MULTILINE
+            "^ *\[.*\] *recovery = (?P<percent>\d*\.?\d*)%"
+            " \(\d*/\d*\) finish=(?P<remaining_time>\d*\.?\d*)min "
+            "speed=(?P<speed>\d*)K/sec$",
+            re.MULTILINE,
         )
 
         regexp_res = array_recovery_regexp.search(block)
@@ -346,12 +351,14 @@ class MdStatCollector(diamond.collector.Collector):
 
         array_recovery_dict = regexp_res.groupdict()
 
-        array_recovery_dict['percent'] = float(array_recovery_dict['percent'])
+        array_recovery_dict["percent"] = float(array_recovery_dict["percent"])
 
         # convert speed to bits
-        array_recovery_dict['speed'] = int(array_recovery_dict['speed']) * 1024
+        array_recovery_dict["speed"] = int(array_recovery_dict["speed"]) * 1024
 
         # convert minutes to milliseconds
-        array_recovery_dict['remaining_time'] = int(float(array_recovery_dict['remaining_time'])*60*1000)
+        array_recovery_dict["remaining_time"] = int(
+            float(array_recovery_dict["remaining_time"]) * 60 * 1000
+        )
 
         return array_recovery_dict

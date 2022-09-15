@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestnetappDisk(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('netappDisk', {})
+        config = get_collector_config("netappDisk", {})
         self.collector = netappDisk(config, None)
 
     def test_import(self):

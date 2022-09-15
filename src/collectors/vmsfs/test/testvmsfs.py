@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestVMSFSCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('VMSFSCollector', {})
+        config = get_collector_config("VMSFSCollector", {})
         self.collector = VMSFSCollector(config, None)
 
     def test_import(self):

@@ -11,7 +11,7 @@ class TestOpenLDAPCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('OpenLDAPCollector', {})
+        config = get_collector_config("OpenLDAPCollector", {})
         self.collector = OpenLDAPCollector(config, None)
 
     def test_import(self):

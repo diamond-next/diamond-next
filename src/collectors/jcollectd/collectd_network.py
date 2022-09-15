@@ -40,7 +40,7 @@ DEFAULT_IPv4_GROUP = "239.192.74.66"
 DEFAULT_IPv6_GROUP = "ff18::efc0:4a42"
 """Default IPv6 multicast group"""
 
-HR_TIME_DIV = (2.0 ** 30)
+HR_TIME_DIV = 2.0**30
 
 # Message kinds
 TYPE_HOST = 0x0000
@@ -64,7 +64,7 @@ DS_TYPE_GAUGE = 1
 DS_TYPE_DERIVE = 2
 DS_TYPE_ABSOLUTE = 3
 
-if hasattr(struct, 'Struct'):
+if hasattr(struct, "Struct"):
     header = struct.Struct("!2H")
     number = struct.Struct("!Q")
     short = struct.Struct("!H")
@@ -72,8 +72,7 @@ if hasattr(struct, 'Struct'):
 
 
 def decode_network_values(ptype, plen, buf):
-    """Decodes a list of DS values in collectd network format
-    """
+    """Decodes a list of DS values in collectd network format"""
     nvalues = short.unpack_from(buf, header.size)[0]
     off = header.size + short.size + nvalues
     valskip = double.size
@@ -83,7 +82,7 @@ def decode_network_values(ptype, plen, buf):
     assert double.size == number.size
 
     result = []
-    for dstype in [ord(x) for x in buf[header.size + short.size:off]]:
+    for dstype in [ord(x) for x in buf[header.size + short.size : off]]:
         if dstype == DS_TYPE_COUNTER:
             result.append((dstype, number.unpack_from(buf, off)[0]))
             off += valskip
@@ -103,37 +102,34 @@ def decode_network_values(ptype, plen, buf):
 
 
 def decode_network_number(ptype, plen, buf):
-    """Decodes a number (64-bit unsigned) from collectd network format.
-    """
+    """Decodes a number (64-bit unsigned) from collectd network format."""
     return number.unpack_from(buf, header.size)[0]
 
 
 def decode_network_string(msgtype, plen, buf):
-    """Decodes a string from collectd network format.
-    """
-    return buf[header.size:plen - 1]
+    """Decodes a string from collectd network format."""
+    return buf[header.size : plen - 1]
 
 
 # Mapping of message types to decoding functions.
 _decoders = {
-    TYPE_VALUES:            decode_network_values,
-    TYPE_TIME:              decode_network_number,
-    TYPE_TIME_HR:           decode_network_number,
-    TYPE_INTERVAL:          decode_network_number,
-    TYPE_INTERVAL_HR:       decode_network_number,
-    TYPE_HOST:              decode_network_string,
-    TYPE_PLUGIN:            decode_network_string,
-    TYPE_PLUGIN_INSTANCE:   decode_network_string,
-    TYPE_TYPE:              decode_network_string,
-    TYPE_TYPE_INSTANCE:     decode_network_string,
-    TYPE_MESSAGE:           decode_network_string,
-    TYPE_SEVERITY:          decode_network_number,
+    TYPE_VALUES: decode_network_values,
+    TYPE_TIME: decode_network_number,
+    TYPE_TIME_HR: decode_network_number,
+    TYPE_INTERVAL: decode_network_number,
+    TYPE_INTERVAL_HR: decode_network_number,
+    TYPE_HOST: decode_network_string,
+    TYPE_PLUGIN: decode_network_string,
+    TYPE_PLUGIN_INSTANCE: decode_network_string,
+    TYPE_TYPE: decode_network_string,
+    TYPE_TYPE_INSTANCE: decode_network_string,
+    TYPE_MESSAGE: decode_network_string,
+    TYPE_SEVERITY: decode_network_number,
 }
 
 
 def decode_network_packet(buf):
-    """Decodes a network packet in collectd format.
-    """
+    """Decodes a network packet in collectd format."""
     off = 0
     blen = len(buf)
 
@@ -196,7 +192,7 @@ class Notification(Data):
     SEVERITY = {
         FAILURE: "FAILURE",
         WARNING: "WARNING",
-        OKAY:    "OKAY",
+        OKAY: "OKAY",
     }
 
     __severity = 0
@@ -214,13 +210,13 @@ class Notification(Data):
 
     def __str__(self):
         return "%s [%s] %s" % (
-               super(Notification, self).__str__(),
-               self.severitystring,
-               self.message)
+            super(Notification, self).__str__(),
+            self.severitystring,
+            self.message,
+        )
 
 
 class Values(Data, list):
-
     def __str__(self):
         return "%s %s" % (Data.__str__(self), list.__str__(self))
 
@@ -264,6 +260,7 @@ class Reader(object):
     Listens on the network in a given address, which can be a multicast
     group address, and handles reading data when it arrives.
     """
+
     addr = None
     host = None
     port = DEFAULT_PORT
@@ -289,10 +286,8 @@ class Reader(object):
             sock_type = socket.AF_UNSPEC
 
         family, socktype, proto, canonname, sockaddr = socket.getaddrinfo(
-            hostname,
-            self.port,
-            sock_type,
-            socket.SOCK_DGRAM, 0, socket.AI_PASSIVE)[0]
+            hostname, self.port, sock_type, socket.SOCK_DGRAM, 0, socket.AI_PASSIVE
+        )[0]
 
         self._sock = socket.socket(family, socktype, proto)
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -317,19 +312,16 @@ class Reader(object):
             else:
                 sock_type = socket.IPPROTO_IP
 
-            self._sock.setsockopt(
-                sock_type,
-                socket.IP_ADD_MEMBERSHIP, val)
-            self._sock.setsockopt(
-                sock_type,
-                socket.IP_MULTICAST_LOOP, 0)
+            self._sock.setsockopt(sock_type, socket.IP_ADD_MEMBERSHIP, val)
+            self._sock.setsockopt(sock_type, socket.IP_MULTICAST_LOOP, 0)
 
         self._readlist = [self._sock]
 
     def receive(self, poll_interval):
-        """Receives a single raw collect network packet.
-        """
-        readable, writeable, errored = select.select(self._readlist, [], [], poll_interval)
+        """Receives a single raw collect network packet."""
+        readable, writeable, errored = select.select(
+            self._readlist, [], [], poll_interval
+        )
         for s in readable:
             data, addr = s.recvfrom(self.BUFFER_SIZE)
             if data:
@@ -338,8 +330,7 @@ class Reader(object):
         return None
 
     def decode(self, poll_interval, buf=None):
-        """Decodes a given buffer or the next received packet.
-        """
+        """Decodes a given buffer or the next received packet."""
         if buf is None:
             buf = self.receive(poll_interval)
         if buf is None:
@@ -347,8 +338,7 @@ class Reader(object):
         return decode_network_packet(buf)
 
     def interpret(self, iterable=None, poll_interval=0.2):
-        """Interprets a sequence
-        """
+        """Interprets a sequence"""
         if iterable is None:
             iterable = self.decode(poll_interval)
             if iterable is None:

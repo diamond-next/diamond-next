@@ -16,12 +16,13 @@ import diamond.collector
 
 class CpuAcctCgroupCollector(diamond.collector.Collector):
     def get_default_config_help(self):
-        config_help = super(
-            CpuAcctCgroupCollector, self).get_default_config_help()
-        config_help.update({
-            'path': """Directory path to where cpuacct is located,
+        config_help = super(CpuAcctCgroupCollector, self).get_default_config_help()
+        config_help.update(
+            {
+                "path": """Directory path to where cpuacct is located,
 defaults to /sys/fs/cgroup/cpuacct/. Redhat/CentOS/SL use /cgroup"""
-        })
+            }
+        )
 
         return config_help
 
@@ -30,9 +31,7 @@ defaults to /sys/fs/cgroup/cpuacct/. Redhat/CentOS/SL use /cgroup"""
         Returns the default collector settings
         """
         config = super(CpuAcctCgroupCollector, self).get_default_config()
-        config.update({
-            'path': '/sys/fs/cgroup/cpuacct/'
-        })
+        config.update({"path": "/sys/fs/cgroup/cpuacct/"})
 
         return config
 
@@ -40,18 +39,18 @@ defaults to /sys/fs/cgroup/cpuacct/. Redhat/CentOS/SL use /cgroup"""
         # find all cpuacct.stat files
         matches = []
 
-        for root, dirnames, filenames in os.walk(self.config['path']):
+        for root, dirnames, filenames in os.walk(self.config["path"]):
             for filename in filenames:
-                if filename == 'cpuacct.stat':
+                if filename == "cpuacct.stat":
                     # matches will contain a tuple contain path to cpuacct.stat
                     # and the parent of the stat
-                    parent = root.replace(self.config['path'], "").replace("/", ".")
+                    parent = root.replace(self.config["path"], "").replace("/", ".")
 
-                    if parent == '':
-                        parent = 'system'
+                    if parent == "":
+                        parent = "system"
 
                     # If the parent starts with a dot, remove it
-                    if parent[0] == '.':
+                    if parent[0] == ".":
                         parent = parent[1:]
 
                     matches.append((parent, os.path.join(root, filename)))
@@ -71,7 +70,7 @@ defaults to /sys/fs/cgroup/cpuacct/. Redhat/CentOS/SL use /cgroup"""
         # create metrics from collected utimes and stimes for cgroups
         for parent, cpuacct in iter(results.items()):
             for key, value in iter(cpuacct.items()):
-                metric_name = '.'.join([parent, key])
-                self.publish(metric_name, value, metric_type='GAUGE')
+                metric_name = ".".join([parent, key])
+                self.publish(metric_name, value, metric_type="GAUGE")
 
         return True

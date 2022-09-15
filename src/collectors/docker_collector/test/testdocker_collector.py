@@ -15,7 +15,7 @@ except ImportError:
 
 from docker_collector import DockerCollector
 
-fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
+fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/")
 
 
 def run_only_if_docker_client_is_available(func):
@@ -31,9 +31,12 @@ def run_only_if_docker_client_is_available(func):
 
 class TestDockerCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('DockerCollector', {
-            'interval': 10,
-        })
+        config = get_collector_config(
+            "DockerCollector",
+            {
+                "interval": 10,
+            },
+        )
 
         self.collector = DockerCollector(config, None)
 

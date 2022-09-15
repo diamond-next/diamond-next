@@ -28,11 +28,11 @@ class MultiGraphitePickleHandler(Handler):
         self.handlers = []
 
         # Initialize Options
-        hosts = self.config['host']
+        hosts = self.config["host"]
 
         for host in hosts:
             config = deepcopy(self.config)
-            config['host'] = host
+            config["host"] = host
             self.handlers.append(GraphitePickleHandler(config))
 
     def get_default_config_help(self):
@@ -41,15 +41,17 @@ class MultiGraphitePickleHandler(Handler):
         """
         config = super(MultiGraphitePickleHandler, self).get_default_config_help()
 
-        config.update({
-            'host': 'Hostname, Hostname, Hostname',
-            'port': 'Port',
-            'proto': 'udp or tcp',
-            'timeout': '',
-            'batch': 'How many to store before sending to the graphite server',
-            'max_backlog_multiplier': 'how many batches to store before trimming',  # NOQA
-            'trim_backlog_multiplier': 'Trim down how many batches',
-        })
+        config.update(
+            {
+                "host": "Hostname, Hostname, Hostname",
+                "port": "Port",
+                "proto": "udp or tcp",
+                "timeout": "",
+                "batch": "How many to store before sending to the graphite server",
+                "max_backlog_multiplier": "how many batches to store before trimming",  # NOQA
+                "trim_backlog_multiplier": "Trim down how many batches",
+            }
+        )
 
         return config
 
@@ -59,15 +61,17 @@ class MultiGraphitePickleHandler(Handler):
         """
         config = super(MultiGraphitePickleHandler, self).get_default_config()
 
-        config.update({
-            'host': ['localhost'],
-            'port': 2003,
-            'proto': 'tcp',
-            'timeout': 15,
-            'batch': 1,
-            'max_backlog_multiplier': 5,
-            'trim_backlog_multiplier': 4,
-        })
+        config.update(
+            {
+                "host": ["localhost"],
+                "port": 2003,
+                "proto": "tcp",
+                "timeout": 15,
+                "batch": 1,
+                "max_backlog_multiplier": 5,
+                "trim_backlog_multiplier": 4,
+            }
+        )
 
         return config
 

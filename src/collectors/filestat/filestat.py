@@ -39,56 +39,58 @@ import re
 
 import diamond.collector
 
-_RE = re.compile(r'(\d+)\s+(\d+)\s+(\d+)')
+_RE = re.compile(r"(\d+)\s+(\d+)\s+(\d+)")
 
 
 class FilestatCollector(diamond.collector.Collector):
-    PROC = '/proc/sys/fs/file-nr'
+    PROC = "/proc/sys/fs/file-nr"
 
     def get_default_config_help(self):
         config_help = super(FilestatCollector, self).get_default_config_help()
-        config_help.update({
-            'user_include': "This is list of users to collect data for."
-                            " If this is left empty, its a wildcard"
-                            " to collector for all users"
-                            " (default = None)",
-            'user_exclude': "This is a list of users to exclude"
-                            " from collecting data. If this is left empty,"
-                            " no specific users will be excluded"
-                            " (default = None)",
-            'group_include': "This is a list of groups to include"
-                             " in data collection. This DOES NOT"
-                             " override user_exclude."
-                             " (default = None)",
-            'group_exclude': "This is a list of groups to exclude"
-                             " from collecting data. It DOES NOT override"
-                             " user_include. (default = None)",
-            'uid_min': "This creates a floor for the user's uid."
-                       " This means that it WILL NOT collect data"
-                       " for any user with a uid LOWER"
-                       " than the specified minimum,"
-                       " unless the user is told to be included"
-                       " by user_include (default = 0)",
-            'uid_max': "This creates a ceiling for the user's uid."
-                       " This means that it WILL NOT collect data"
-                       " for any user with a uid HIGHER"
-                       " than the specified maximum,"
-                       " unless the user is told to be included"
-                       " by user_include (default = 65536)",
-            'type_include': "This is a list of file types to collect"
-                            " ('REG', 'DIR', 'FIFO', etc). If left empty,"
-                            " will collect for all file types."
-                            "(Note: it's suggested to not leave"
-                            " type_include empty,"
-                            " as it would add significant load"
-                            " to your graphite box(es) (default = None)",
-            'type_exclude': "This is a list of tile types to exclude"
-                            " from being collected for. If left empty,"
-                            " no file types will be excluded. (default = None)",
-            'collect_user_data': "This enables or disables"
-                                 " the collection of user specific"
-                                 " file handles. (default = False)"
-        })
+        config_help.update(
+            {
+                "user_include": "This is list of users to collect data for."
+                " If this is left empty, its a wildcard"
+                " to collector for all users"
+                " (default = None)",
+                "user_exclude": "This is a list of users to exclude"
+                " from collecting data. If this is left empty,"
+                " no specific users will be excluded"
+                " (default = None)",
+                "group_include": "This is a list of groups to include"
+                " in data collection. This DOES NOT"
+                " override user_exclude."
+                " (default = None)",
+                "group_exclude": "This is a list of groups to exclude"
+                " from collecting data. It DOES NOT override"
+                " user_include. (default = None)",
+                "uid_min": "This creates a floor for the user's uid."
+                " This means that it WILL NOT collect data"
+                " for any user with a uid LOWER"
+                " than the specified minimum,"
+                " unless the user is told to be included"
+                " by user_include (default = 0)",
+                "uid_max": "This creates a ceiling for the user's uid."
+                " This means that it WILL NOT collect data"
+                " for any user with a uid HIGHER"
+                " than the specified maximum,"
+                " unless the user is told to be included"
+                " by user_include (default = 65536)",
+                "type_include": "This is a list of file types to collect"
+                " ('REG', 'DIR', 'FIFO', etc). If left empty,"
+                " will collect for all file types."
+                "(Note: it's suggested to not leave"
+                " type_include empty,"
+                " as it would add significant load"
+                " to your graphite box(es) (default = None)",
+                "type_exclude": "This is a list of tile types to exclude"
+                " from being collected for. If left empty,"
+                " no file types will be excluded. (default = None)",
+                "collect_user_data": "This enables or disables"
+                " the collection of user specific"
+                " file handles. (default = False)",
+            }
+        )
 
         return config_help
 
@@ -97,18 +99,20 @@ class FilestatCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(FilestatCollector, self).get_default_config()
-        config.update({
-            'path': 'files',
-            'user_include': None,
-            'user_exclude': None,
-            'group_include': None,
-            'group_exclude': None,
-            'uid_min': 0,
-            'uid_max': 65536,
-            'type_include': None,
-            'type_exclude': None,
-            'collect_user_data': False
-        })
+        config.update(
+            {
+                "path": "files",
+                "user_include": None,
+                "user_exclude": None,
+                "group_include": None,
+                "group_exclude": None,
+                "uid_min": 0,
+                "uid_max": 65536,
+                "type_include": None,
+                "type_exclude": None,
+                "collect_user_data": False,
+            }
+        )
 
         return config
 
@@ -118,23 +122,23 @@ class FilestatCollector(diamond.collector.Collector):
         based on the variables user_include and user_exclude
         """
         # convert user/group lists to arrays if strings
-        if isinstance(self.config['user_include'], str):
-            self.config['user_include'] = self.config['user_include'].split()
+        if isinstance(self.config["user_include"], str):
+            self.config["user_include"] = self.config["user_include"].split()
 
-        if isinstance(self.config['user_exclude'], str):
-            self.config['user_exclude'] = self.config['user_exclude'].split()
+        if isinstance(self.config["user_exclude"], str):
+            self.config["user_exclude"] = self.config["user_exclude"].split()
 
-        if isinstance(self.config['group_include'], str):
-            self.config['group_include'] = self.config['group_include'].split()
+        if isinstance(self.config["group_include"], str):
+            self.config["group_include"] = self.config["group_include"].split()
 
-        if isinstance(self.config['group_exclude'], str):
-            self.config['group_exclude'] = self.config['group_exclude'].split()
+        if isinstance(self.config["group_exclude"], str):
+            self.config["group_exclude"] = self.config["group_exclude"].split()
 
         rawusers = os.popen("lsof | awk '{ print $3 }' | sort | uniq -d").read().split()
         userlist = []
 
         # remove any not on the user include list
-        if self.config['user_include'] is None or len(self.config['user_include']) == 0:
+        if self.config["user_include"] is None or len(self.config["user_include"]) == 0:
             userlist = rawusers
         else:
             # only work with specified include list, which is added at the end
@@ -143,21 +147,27 @@ class FilestatCollector(diamond.collector.Collector):
         # add any user in the group include list
         added_by_group = []
 
-        if self.config['group_include'] is not None and len(self.config['group_include']) > 0:
+        if (
+            self.config["group_include"] is not None
+            and len(self.config["group_include"]) > 0
+        ):
             for u in rawusers:
                 self.log.info(u)
 
                 # get list of groups of user
                 user_groups = os.popen("id -Gn %s" % u).read().split()
 
-                for gi in self.config['group_include']:
+                for gi in self.config["group_include"]:
                     if gi in user_groups and u not in userlist:
                         userlist.append(u)
                         added_by_group.append(u)
                         break
 
         # remove any user in the exclude group list
-        if self.config['group_exclude'] is not None and len(self.config['group_exclude']) > 0:
+        if (
+            self.config["group_exclude"] is not None
+            and len(self.config["group_exclude"]) > 0
+        ):
             # create tmp list to iterate over while editing userlist
             tmplist = userlist[:]
 
@@ -165,36 +175,53 @@ class FilestatCollector(diamond.collector.Collector):
                 # get list of groups of user
                 groups = os.popen("id -Gn %s" % u).read().split()
 
-                for gi in self.config['group_exclude']:
+                for gi in self.config["group_exclude"]:
                     if gi in groups:
                         userlist.remove(u)
                         break
 
         # remove any that aren't within the uid limits make sure uid_min/max are ints
-        self.config['uid_min'] = int(self.config['uid_min'])
-        self.config['uid_max'] = int(self.config['uid_max'])
+        self.config["uid_min"] = int(self.config["uid_min"])
+        self.config["uid_max"] = int(self.config["uid_max"])
         tmplist = userlist[:]
 
         for u in tmplist:
-            if self.config['user_include'] is None or u not in self.config['user_include']:
+            if (
+                self.config["user_include"] is None
+                or u not in self.config["user_include"]
+            ):
                 if u not in added_by_group:
                     uid = int(os.popen("id -u %s" % u).read())
 
-                    if uid < self.config['uid_min'] and self.config['uid_min'] is not None and u in userlist:
+                    if (
+                        uid < self.config["uid_min"]
+                        and self.config["uid_min"] is not None
+                        and u in userlist
+                    ):
                         userlist.remove(u)
 
-                    if uid > self.config['uid_max'] and self.config['uid_max'] is not None and u in userlist:
+                    if (
+                        uid > self.config["uid_max"]
+                        and self.config["uid_max"] is not None
+                        and u in userlist
+                    ):
                         userlist.remove(u)
 
         # add users that are in the users include list
-        if self.config['user_include'] is not None and len(self.config['user_include']) > 0:
-            for u in self.config['user_include']:
+        if (
+            self.config["user_include"] is not None
+            and len(self.config["user_include"]) > 0
+        ):
+            for u in self.config["user_include"]:
                 if u in rawusers and u not in userlist:
                     userlist.append(u)
 
         # remove any that is on the user exclude list
-        if self.config['user_exclude'] is not None and len(self.config['user_exclude']) > 0:
-            for u in self.config['user_exclude']:
+        if (
+            self.config["user_exclude"] is not None
+            and len(self.config["user_exclude"]) > 0
+        ):
+            for u in self.config["user_exclude"]:
                 if u in userlist:
                     userlist.remove(u)
 
@@ -207,21 +234,26 @@ class FilestatCollector(diamond.collector.Collector):
         typelist = []
 
         # convert type list into arrays if strings
-        if isinstance(self.config['type_include'], str):
-            self.config['type_include'] = self.config['type_include'].split()
+        if isinstance(self.config["type_include"], str):
+            self.config["type_include"] = self.config["type_include"].split()
 
-        if isinstance(self.config['type_exclude'], str):
-            self.config['type_exclude'] = self.config['type_exclude'].split()
+        if isinstance(self.config["type_exclude"], str):
+            self.config["type_exclude"] = self.config["type_exclude"].split()
 
         # remove any not in include list
-        if self.config['type_include'] is None or len(self.config['type_include']) == 0:
-            typelist = os.popen("lsof | awk '{ print $5 }' | sort | uniq -d").read().split()
+        if self.config["type_include"] is None or len(self.config["type_include"]) == 0:
+            typelist = (
+                os.popen("lsof | awk '{ print $5 }' | sort | uniq -d").read().split()
+            )
         else:
-            typelist = self.config['type_include']
+            typelist = self.config["type_include"]
 
         # remove any in the exclude list
-        if self.config['type_exclude'] is not None and len(self.config['type_include']) > 0:
-            for t in self.config['type_exclude']:
+        if (
+            self.config["type_exclude"] is not None
+            and len(self.config["type_include"]) > 0
+        ):
+            for t in self.config["type_exclude"]:
                 if t in typelist:
                     typelist.remove(t)
 
@@ -254,17 +286,19 @@ class FilestatCollector(diamond.collector.Collector):
             match = _RE.match(line)
 
             if match:
-                self.publish('assigned', int(match.group(1)))
-                self.publish('unused', int(match.group(2)))
-                self.publish('max', int(match.group(3)))
+                self.publish("assigned", int(match.group(1)))
+                self.publish("unused", int(match.group(2)))
+                self.publish("max", int(match.group(3)))
 
         file.close()
 
         # collect open files per user per type
-        if self.config['collect_user_data']:
+        if self.config["collect_user_data"]:
             data = self.process_lsof(self.get_userlist(), self.get_typelist())
 
             for ukey in iter(data.keys()):
                 for tkey in iter(data[ukey].keys()):
-                    self.log.debug('files.user.%s.%s %s' % (ukey, tkey, int(data[ukey][tkey])))
-                    self.publish('user.%s.%s' % (ukey, tkey), int(data[ukey][tkey]))
+                    self.log.debug(
+                        "files.user.%s.%s %s" % (ukey, tkey, int(data[ukey][tkey]))
+                    )
+                    self.publish("user.%s.%s" % (ukey, tkey), int(data[ukey][tkey]))

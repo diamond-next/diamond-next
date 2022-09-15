@@ -11,6 +11,7 @@ from test import get_collector_config
 
 try:
     import sensors
+
     sensors
 except ImportError:
     sensors = None
@@ -44,40 +45,46 @@ class ChipMock:
 @unittest.skipIf(sensors is None, "No PySensors module found")
 class TestLMSensorsCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('LMSensorsCollector', {})
+        config = get_collector_config("LMSensorsCollector", {})
         self.collector = LMSensorsCollector(config, None)
 
     def test_import(self):
         self.assertTrue(LMSensorsCollector)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(Collector, "publish")
     def test_simple_sensor(self, publish_mock):
-        feature = FeatureMock('Core 0', 10)
+        feature = FeatureMock("Core 0", 10)
         chip = ChipMock("coretemp-isa-0000", [feature])
-        patch_detected_chips_iter = patch('sensors.iter_detected_chips', return_value=[chip])
+        patch_detected_chips_iter = patch(
+            "sensors.iter_detected_chips", return_value=[chip]
+        )
         patch_detected_chips_iter.start()
         self.collector.collect()
         patch_detected_chips_iter.stop()
-        self.assertPublished(publish_mock, 'coretemp-isa-0000.Core-0', 10)
+        self.assertPublished(publish_mock, "coretemp-isa-0000.Core-0", 10)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(Collector, "publish")
     def test_empty_sensor(self, publish_mock):
-        feature = FeatureMock('Core 0')
-        chip = ChipMock('coretemp-isa-0000', [feature])
-        patch_detected_chips_iter = patch('sensors.iter_detected_chips', return_value=[chip])
+        feature = FeatureMock("Core 0")
+        chip = ChipMock("coretemp-isa-0000", [feature])
+        patch_detected_chips_iter = patch(
+            "sensors.iter_detected_chips", return_value=[chip]
+        )
         patch_detected_chips_iter.start()
         self.collector.collect()
         patch_detected_chips_iter.stop()
-        self.assertUnpublished(publish_mock, 'coretemp-isa-0000.Core-0', None)
+        self.assertUnpublished(publish_mock, "coretemp-isa-0000.Core-0", None)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(Collector, "publish")
     def test_empty_zero_sensor(self, publish_mock):
-        self.collector.config['send_zero'] = True
+        self.collector.config["send_zero"] = True
 
-        feature = FeatureMock('Core 0')
-        chip = ChipMock('coretemp-isa-0000', [feature])
-        patch_detected_chips_iter = patch('sensors.iter_detected_chips', return_value=[chip])
+        feature = FeatureMock("Core 0")
+        chip = ChipMock("coretemp-isa-0000", [feature])
+        patch_detected_chips_iter = patch(
+            "sensors.iter_detected_chips", return_value=[chip]
+        )
         patch_detected_chips_iter.start()
         self.collector.collect()
         patch_detected_chips_iter.stop()
-        self.assertPublished(publish_mock, 'coretemp-isa-0000.Core-0', 0)
+        self.assertPublished(publish_mock, "coretemp-isa-0000.Core-0", 0)

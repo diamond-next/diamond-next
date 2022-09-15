@@ -70,54 +70,52 @@ import diamond.collector
 
 
 class NagiosPerfdataCollector(diamond.collector.Collector):
-    """Diamond collector for Nagios performance data
-    """
+    """Diamond collector for Nagios performance data"""
 
-    GENERIC_FIELDS = ['DATATYPE', 'HOSTNAME', 'TIMET']
-    HOST_FIELDS = ['HOSTPERFDATA']
-    SERVICE_FIELDS = ['SERVICEDESC', 'SERVICEPERFDATA']
+    GENERIC_FIELDS = ["DATATYPE", "HOSTNAME", "TIMET"]
+    HOST_FIELDS = ["HOSTPERFDATA"]
+    SERVICE_FIELDS = ["SERVICEDESC", "SERVICEPERFDATA"]
     TOKENIZER_RE = (
-        r"([^\s]+|'[^']+')=([-.\d]+)(c|s|ms|us|B|KB|MB|GB|TB|%)?" +
-        r"(?:;([-.\d]+))?(?:;([-.\d]+))?(?:;([-.\d]+))?(?:;([-.\d]+))?")
+        r"([^\s]+|'[^']+')=([-.\d]+)(c|s|ms|us|B|KB|MB|GB|TB|%)?"
+        + r"(?:;([-.\d]+))?(?:;([-.\d]+))?(?:;([-.\d]+))?(?:;([-.\d]+))?"
+    )
 
     def get_default_config_help(self):
-        config_help = super(NagiosPerfdataCollector,
-                            self).get_default_config_help()
-        config_help.update({
-            'perfdata_dir': 'The directory containing Nagios perfdata files'
-        })
+        config_help = super(NagiosPerfdataCollector, self).get_default_config_help()
+        config_help.update(
+            {"perfdata_dir": "The directory containing Nagios perfdata files"}
+        )
         return config_help
 
     def get_default_config(self):
         config = super(NagiosPerfdataCollector, self).get_default_config()
-        config.update({
-            'path': 'nagiosperfdata',
-            'perfdata_dir': '/var/spool/diamond/nagiosperfdata',
-        })
+        config.update(
+            {
+                "path": "nagiosperfdata",
+                "perfdata_dir": "/var/spool/diamond/nagiosperfdata",
+            }
+        )
         return config
 
     def collect(self):
-        """Collect statistics from a Nagios perfdata directory.
-        """
-        perfdata_dir = self.config['perfdata_dir']
+        """Collect statistics from a Nagios perfdata directory."""
+        perfdata_dir = self.config["perfdata_dir"]
 
         try:
             filenames = os.listdir(perfdata_dir)
         except OSError:
-            self.log.error("Cannot read directory `{dir}'".format(
-                dir=perfdata_dir))
+            self.log.error("Cannot read directory `{dir}'".format(dir=perfdata_dir))
             return
 
         for filename in filenames:
             self._process_file(os.path.join(perfdata_dir, filename))
 
     def _extract_fields(self, line):
-        """Extract the key/value fields from a line of performance data
-        """
+        """Extract the key/value fields from a line of performance data"""
         acc = {}
         field_tokens = line.split("\t")
         for field_token in field_tokens:
-            kv_tokens = field_token.split('::')
+            kv_tokens = field_token.split("::")
             if len(kv_tokens) == 2:
                 (key, value) = kv_tokens
                 acc[key] = value
@@ -132,13 +130,13 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
         If the perfdata does not contain all fields required for that
         type, return False. Otherwise, return True.
         """
-        if 'DATATYPE' not in d:
+        if "DATATYPE" not in d:
             return False
 
-        datatype = d['DATATYPE']
-        if datatype == 'HOSTPERFDATA':
+        datatype = d["DATATYPE"]
+        if datatype == "HOSTPERFDATA":
             fields = self.GENERIC_FIELDS + self.HOST_FIELDS
-        elif datatype == 'SERVICEPERFDATA':
+        elif datatype == "SERVICEPERFDATA":
             fields = self.GENERIC_FIELDS + self.SERVICE_FIELDS
         else:
             return False
@@ -156,24 +154,23 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
         byte-based units. Sadly, the Nagios-Plugins specification doesn't
         disambiguate base-1000 (KB) and base-1024 (KiB).
         """
-        if unit == 'ms':
+        if unit == "ms":
             return value / 1000.0
-        if unit == 'us':
+        if unit == "us":
             return value / 1000000.0
-        if unit == 'KB':
+        if unit == "KB":
             return value * 1024
-        if unit == 'MB':
+        if unit == "MB":
             return value * 1024 * 1024
-        if unit == 'GB':
+        if unit == "GB":
             return value * 1024 * 1024 * 1024
-        if unit == 'TB':
+        if unit == "TB":
             return value * 1024 * 1024 * 1024 * 1024
 
         return value
 
     def _parse_perfdata(self, s):
-        """Parse performance data from a perfdata string
-        """
+        """Parse performance data from a perfdata string"""
         metrics = []
         counters = re.findall(self.TOKENIZER_RE, s)
 
@@ -186,13 +183,14 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
                 norm_value = self._normalize_to_unit(float(value), uom)
                 metrics.append((key, norm_value))
             except ValueError:
-                self.log.warning("Couldn't convert value '{value}' to float".format(value=value))
+                self.log.warning(
+                    "Couldn't convert value '{value}' to float".format(value=value)
+                )
 
         return metrics
 
     def _process_file(self, path):
-        """Parse and submit the metrics from a file
-        """
+        """Parse and submit the metrics from a file"""
         try:
             f = open(path)
             for line in f:
@@ -200,32 +198,37 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
 
             os.remove(path)
         except IOError as ex:
-            self.log.error("Could not open file `{path}': {error}".format(path=path, error=ex.strerror))
+            self.log.error(
+                "Could not open file `{path}': {error}".format(
+                    path=path, error=ex.strerror
+                )
+            )
 
     def _process_line(self, line):
-        """Parse and submit the metrics from a line of perfdata output
-        """
+        """Parse and submit the metrics from a line of perfdata output"""
         fields = self._extract_fields(line)
 
         if not self._fields_valid(fields):
-            self.log.warning("Missing required fields for line: {line}".format(line=line))
+            self.log.warning(
+                "Missing required fields for line: {line}".format(line=line)
+            )
 
         metric_path_base = []
-        graphite_prefix = fields.get('GRAPHITEPREFIX')
-        graphite_postfix = fields.get('GRAPHITEPOSTFIX')
+        graphite_prefix = fields.get("GRAPHITEPREFIX")
+        graphite_postfix = fields.get("GRAPHITEPOSTFIX")
 
         if graphite_prefix:
             metric_path_base.append(graphite_prefix)
 
-        hostname = fields['HOSTNAME'].lower()
+        hostname = fields["HOSTNAME"].lower()
         metric_path_base.append(hostname)
-        datatype = fields['DATATYPE']
+        datatype = fields["DATATYPE"]
 
-        if datatype == 'HOSTPERFDATA':
-            metric_path_base.append('host')
-        elif datatype == 'SERVICEPERFDATA':
-            service_desc = fields.get('SERVICEDESC')
-            graphite_postfix = fields.get('GRAPHITEPOSTFIX')
+        if datatype == "HOSTPERFDATA":
+            metric_path_base.append("host")
+        elif datatype == "SERVICEPERFDATA":
+            service_desc = fields.get("SERVICEDESC")
+            graphite_postfix = fields.get("GRAPHITEPOSTFIX")
 
             if graphite_postfix:
                 metric_path_base.append(graphite_postfix)
@@ -238,10 +241,9 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
         for (counter, value) in counters:
             metric_path = metric_path_base + [counter]
             metric_path = [self._sanitize(x) for x in metric_path]
-            metric_name = '.'.join(metric_path)
+            metric_name = ".".join(metric_path)
             self.publish(metric_name, value)
 
     def _sanitize(self, s):
-        """Sanitize the name of a metric to remove unwanted chars
-        """
+        """Sanitize the name of a metric to remove unwanted chars"""
         return re.sub("[^\w-]", "_", s)

@@ -41,6 +41,7 @@ import diamond.convertor
 
 try:
     import psutil
+
     psutil
 except ImportError:
     psutil = None
@@ -59,17 +60,17 @@ def match_process(pid, name, cmdline, exe, cfg):
     :return: True if it matches
     :rtype: bool
     """
-    if cfg['selfmon'] and pid == os.getpid():
+    if cfg["selfmon"] and pid == os.getpid():
         return True
 
-    for exe_re in cfg['exe']:
+    for exe_re in cfg["exe"]:
         if exe_re.search(exe):
             return True
-    for name_re in cfg['name']:
+    for name_re in cfg["name"]:
         if name_re.search(name):
             return True
-    for cmdline_re in cfg['cmdline']:
-        if cmdline_re.search(' '.join(cmdline)):
+    for cmdline_re in cfg["cmdline"]:
+        if cmdline_re.search(" ".join(cmdline)):
             return True
 
     return False
@@ -83,7 +84,7 @@ def process_info(process, info_keys):
     for key, value in metrics:
         if type(value) in [float, int]:
             results.update({key: value})
-        elif hasattr(value, '_asdict'):
+        elif hasattr(value, "_asdict"):
             for subkey, subvalue in iter(value._asdict().items()):
                 results.update({"%s.%s" % (key, subkey): subvalue})
 
@@ -116,10 +117,10 @@ class ProcessResourcesCollector(diamond.collector.Collector):
         self.processes = {}
         self.processes_info = {}
 
-        for pg_name, cfg in self.config['process'].items():
+        for pg_name, cfg in self.config["process"].items():
             pg_cfg = {}
 
-            for key in ('exe', 'name', 'cmdline'):
+            for key in ("exe", "name", "cmdline"):
                 pg_cfg[key] = cfg.get(key, [])
 
                 if not isinstance(pg_cfg[key], list):
@@ -127,21 +128,25 @@ class ProcessResourcesCollector(diamond.collector.Collector):
 
                 pg_cfg[key] = [re.compile(e) for e in pg_cfg[key]]
 
-            pg_cfg['selfmon'] = cfg.get('selfmon', '').lower() == 'true'
-            pg_cfg['count_workers'] = cfg.get('count_workers', '').lower() == 'true'
+            pg_cfg["selfmon"] = cfg.get("selfmon", "").lower() == "true"
+            pg_cfg["count_workers"] = cfg.get("count_workers", "").lower() == "true"
             self.processes[pg_name] = pg_cfg
             self.processes_info[pg_name] = {}
 
     def get_default_config_help(self):
         config_help = super(ProcessResourcesCollector, self).get_default_config_help()
-        config_help.update({
-            'info_keys': 'List of process metrics to collect. ' +
-                         'Valid list of metrics can be found ' +
-                         '[here](https://pythonhosted.org/psutil/)',
-            'unit': 'The unit in which memory data is collected.',
-            'process': ("A subcategory of settings inside of which each "
-                        "collected process has it's configuration"),
-        })
+        config_help.update(
+            {
+                "info_keys": "List of process metrics to collect. "
+                + "Valid list of metrics can be found "
+                + "[here](https://pythonhosted.org/psutil/)",
+                "unit": "The unit in which memory data is collected.",
+                "process": (
+                    "A subcategory of settings inside of which each "
+                    "collected process has it's configuration"
+                ),
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -154,14 +159,23 @@ class ProcessResourcesCollector(diamond.collector.Collector):
             unit: 'B'
         """
         config = super(ProcessResourcesCollector, self).get_default_config()
-        config.update({
-            'info_keys': ['num_ctx_switches', 'cpu_percent', 'cpu_times',
-                          'io_counters', 'num_threads', 'num_fds',
-                          'memory_percent', 'memory_info_ex', ],
-            'path': 'process',
-            'unit': 'B',
-            'process': {},
-        })
+        config.update(
+            {
+                "info_keys": [
+                    "num_ctx_switches",
+                    "cpu_percent",
+                    "cpu_times",
+                    "io_counters",
+                    "num_threads",
+                    "num_fds",
+                    "memory_percent",
+                    "memory_info_ex",
+                ],
+                "path": "process",
+                "unit": "B",
+                "process": {},
+            }
+        )
         return config
 
     def save_process_info(self, pg_name, process_info):
@@ -173,24 +187,24 @@ class ProcessResourcesCollector(diamond.collector.Collector):
 
     def collect_process_info(self, process):
         try:
-            pid = get_value(process, 'pid')
-            name = get_value(process, 'name')
-            cmdline = get_value(process, 'cmdline')
+            pid = get_value(process, "pid")
+            name = get_value(process, "name")
+            cmdline = get_value(process, "cmdline")
 
             try:
-                exe = get_value(process, 'exe')
+                exe = get_value(process, "exe")
             except psutil.AccessDenied:
                 exe = ""
 
             for pg_name, cfg in self.processes.items():
                 if match_process(pid, name, cmdline, exe, cfg):
-                    pi = process_info(process, self.config['info_keys'])
+                    pi = process_info(process, self.config["info_keys"])
 
-                    if cfg['count_workers']:
-                        pi.update({'workers_count': 1})
+                    if cfg["count_workers"]:
+                        pi.update({"workers_count": 1})
 
-                    uptime = time.time() - get_value(process, 'create_time')
-                    pi.update({'uptime': uptime})
+                    uptime = time.time() - get_value(process, "create_time")
+                    pi.update({"uptime": uptime})
                     self.save_process_info(pg_name, pi)
         except psutil.NoSuchProcess as e:
             self.log.info("Process exited while trying to get info: %s", e)
@@ -201,8 +215,8 @@ class ProcessResourcesCollector(diamond.collector.Collector):
         `process` subsection of the config file
         """
         if not psutil:
-            self.log.error('Unable to import psutil')
-            self.log.error('No process resource metrics retrieved')
+            self.log.error("Unable to import psutil")
+            self.log.error("No process resource metrics retrieved")
             return None
 
         for process in psutil.process_iter():
@@ -216,8 +230,8 @@ class ProcessResourcesCollector(diamond.collector.Collector):
                     for key, value in iter(counters.items())
                 )
             else:
-                if self.processes[pg_name]['count_workers']:
-                    metrics = (('%s.workers_count' % pg_name, 0), )
+                if self.processes[pg_name]["count_workers"]:
+                    metrics = (("%s.workers_count" % pg_name, 0),)
                 else:
                     metrics = ()
 

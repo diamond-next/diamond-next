@@ -34,20 +34,20 @@ import diamond.collector
 import diamond.convertor
 
 _KEY_MAPPING = [
-    'cache',
-    'rss',
-    'swap',
-    'total_rss',
-    'total_cache',
-    'total_swap',
+    "cache",
+    "rss",
+    "swap",
+    "total_rss",
+    "total_cache",
+    "total_swap",
 ]
 
 
 class MemoryCgroupCollector(diamond.collector.Collector):
     def process_config(self):
         super(MemoryCgroupCollector, self).process_config()
-        self.memory_path = self.config['memory_path']
-        self.skip = self.config['skip']
+        self.memory_path = self.config["memory_path"]
+        self.skip = self.config["skip"]
 
         if not isinstance(self.skip, list):
             self.skip = [self.skip]
@@ -72,11 +72,13 @@ class MemoryCgroupCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(MemoryCgroupCollector, self).get_default_config()
-        config.update({
-            'path': 'memory_cgroup',
-            'memory_path': '/sys/fs/cgroup/memory/',
-            'skip': [],
-        })
+        config.update(
+            {
+                "path": "memory_cgroup",
+                "memory_path": "/sys/fs/cgroup/memory/",
+                "skip": [],
+            }
+        )
 
         return config
 
@@ -87,12 +89,12 @@ class MemoryCgroupCollector(diamond.collector.Collector):
         for root, dirnames, filenames in os.walk(self.memory_path):
             if not self.should_skip(root):
                 for filename in filenames:
-                    if filename == 'memory.stat':
+                    if filename == "memory.stat":
                         # matches will contain a tuple contain path to cpuacct.stat and the parent of the stat
                         parent = root.replace(self.memory_path, "").replace("/", ".")
 
-                        if parent == '':
-                            parent = 'system'
+                        if parent == "":
+                            parent = "system"
 
                         matches.append((parent, os.path.join(root, filename)))
 
@@ -111,8 +113,10 @@ class MemoryCgroupCollector(diamond.collector.Collector):
                 if name not in _KEY_MAPPING:
                     continue
 
-                for unit in self.config['byte_unit']:
-                    value = diamond.convertor.binary.convert(value=value, old_unit='B', new_unit=unit)
+                for unit in self.config["byte_unit"]:
+                    value = diamond.convertor.binary.convert(
+                        value=value, old_unit="B", new_unit=unit
+                    )
                     results[match[0]][name] = value
                     # TODO: We only support one unit node here. Fix it!
                     break
@@ -120,7 +124,7 @@ class MemoryCgroupCollector(diamond.collector.Collector):
         # create metrics from collected utimes and stimes for cgroups
         for parent, cpuacct in iter(results.items()):
             for key, value in iter(cpuacct.items()):
-                metric_name = '.'.join([parent, key])
-                self.publish(metric_name, value, metric_type='GAUGE')
+                metric_name = ".".join([parent, key])
+                self.publish(metric_name, value, metric_type="GAUGE")
 
         return True

@@ -31,23 +31,22 @@ class CassandraJolokiaCollector(jolokia.JolokiaCollector):
     # override to allow setting which percentiles will be collected
     def get_default_config_help(self):
         config_help = super(CassandraJolokiaCollector, self).get_default_config_help()
-        config_help.update({
-            'percentiles':
-            'Comma separated list of percentiles to be collected '
-            '(e.g., "50,95,99").',
-            'histogram_regex':
-            'Filter to only process attributes that match this regex'
-        })
+        config_help.update(
+            {
+                "percentiles": "Comma separated list of percentiles to be collected "
+                '(e.g., "50,95,99").',
+                "histogram_regex": "Filter to only process attributes that match this regex",
+            }
+        )
 
         return config_help
 
     # override to allow setting which percentiles will be collected
     def get_default_config(self):
         config = super(CassandraJolokiaCollector, self).get_default_config()
-        config.update({
-            'percentiles': ['50', '95', '99'],
-            'histogram_regex': '.*HistogramMicros$'
-        })
+        config.update(
+            {"percentiles": ["50", "95", "99"], "histogram_regex": ".*HistogramMicros$"}
+        )
 
         return config
 
@@ -57,11 +56,11 @@ class CassandraJolokiaCollector(jolokia.JolokiaCollector):
         self.update_config(self.config)
 
     def update_config(self, config):
-        if 'percentiles' in config:
-            self.percentiles = map(int, config['percentiles'])
+        if "percentiles" in config:
+            self.percentiles = map(int, config["percentiles"])
 
-        if 'histogram_regex' in config:
-            self.histogram_regex = re.compile(config['histogram_regex'])
+        if "histogram_regex" in config:
+            self.histogram_regex = re.compile(config["histogram_regex"])
 
     # override: Interpret beans that match the `histogram_regex` as histograms,
     # and collect percentiles from them.
@@ -92,7 +91,9 @@ class CassandraJolokiaCollector(jolokia.JolokiaCollector):
         if non_zero_points_sum == 0:
             return 0
 
-        middle_point_index = math.floor(non_zero_points_sum * (percentile_int / float(100)))
+        middle_point_index = math.floor(
+            non_zero_points_sum * (percentile_int / float(100))
+        )
         points_seen = 0
 
         for index, bucket in enumerate(buckets):

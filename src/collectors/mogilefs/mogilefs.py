@@ -18,25 +18,25 @@ import diamond.collector
 class MogilefsCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(MogilefsCollector, self).get_default_config_help()
-        config_help.update({
-            'path': 'Metric path',
-        })
+        config_help.update(
+            {
+                "path": "Metric path",
+            }
+        )
 
         return config_help
 
     def get_default_config(self):
         config = super(MogilefsCollector, self).get_default_config()
-        config.update({
-            'path': 'mogilefs'
-        })
+        config.update({"path": "mogilefs"})
 
         return config
 
     def collect(self):
         tn = telnetlib.Telnet("127.0.0.1", 7001, 3)
         time.sleep(1)
-        tn.write("!stats" + '\r\n')
-        out = tn.read_until('.', 3)
+        tn.write("!stats" + "\r\n")
+        out = tn.read_until(".", 3)
 
         myvars = {}
 

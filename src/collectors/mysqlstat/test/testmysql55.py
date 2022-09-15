@@ -11,10 +11,9 @@ class TestMySQLPerfCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('MySQLPerfCollector', {
-            'allowed_names': allowed_names,
-            'interval': 1
-        })
+        config = get_collector_config(
+            "MySQLPerfCollector", {"allowed_names": allowed_names, "interval": 1}
+        )
         self.collector = MySQLPerfCollector(config, None)
 
     def test_import(self):

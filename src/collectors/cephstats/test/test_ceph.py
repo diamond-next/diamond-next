@@ -7,8 +7,8 @@ import sys
 
 curdir = os.path.dirname(os.path.abspath(__file__))
 os.chdir(curdir)
-sys.path.insert(0, '../')
-sys.path.insert(0, '../../ceph')
+sys.path.insert(0, "../")
+sys.path.insert(0, "../../ceph")
 
 from cephstats import process_ceph_status
 
@@ -17,12 +17,13 @@ class TestCephStats(unittest.TestCase):
     """
     Test collect ceph data
     """
+
     def test_sample_data(self):
         """
         Get ceph information from sample data
         """
-        f = open('sample.txt')
-        ret = {'rd': '8643000.0', 'wr': '4821000.0', 'iops': '481'}
+        f = open("sample.txt")
+        ret = {"rd": "8643000.0", "wr": "4821000.0", "iops": "481"}
         self.assertEqual(process_ceph_status(f.read()), ret)
         f.close()
 
@@ -30,10 +31,10 @@ class TestCephStats(unittest.TestCase):
         """
         Get ceph information from sample data, missing the 'client io'
         """
-        f = open('sample-noio.txt')
+        f = open("sample-noio.txt")
         self.assertEqual(process_ceph_status(f.read()), {})
         f.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

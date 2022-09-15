@@ -23,14 +23,16 @@ except ImportError:
 
 
 class NetworkCollector(diamond.collector.Collector):
-    PROC = '/proc/net/dev'
+    PROC = "/proc/net/dev"
 
     def get_default_config_help(self):
         config_help = super(NetworkCollector, self).get_default_config_help()
-        config_help.update({
-            'interfaces': 'List of interface types to collect',
-            'greedy': 'Greedy match interfaces',
-        })
+        config_help.update(
+            {
+                "interfaces": "List of interface types to collect",
+                "greedy": "Greedy match interfaces",
+            }
+        )
 
         return config_help
 
@@ -39,12 +41,14 @@ class NetworkCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(NetworkCollector, self).get_default_config()
-        config.update({
-            'path': 'network',
-            'interfaces': ['eth', 'bond', 'em', 'p1p', 'eno', 'enp', 'ens', 'enx'],
-            'byte_unit': ['bit', 'byte'],
-            'greedy': 'true',
-        })
+        config.update(
+            {
+                "path": "network",
+                "interfaces": ["eth", "bond", "em", "p1p", "eno", "enp", "ens", "enx"],
+                "byte_unit": ["bit", "byte"],
+                "greedy": "true",
+            }
+        )
         return config
 
     def collect(self):
@@ -59,29 +63,30 @@ class NetworkCollector(diamond.collector.Collector):
             # Open File
             file = open(self.PROC)
             # Build Regular Expression
-            greed = ''
+            greed = ""
 
-            if diamond.collector.str_to_bool(self.config['greedy']):
-                greed = '\S*'
+            if diamond.collector.str_to_bool(self.config["greedy"]):
+                greed = "\S*"
 
-            exp = (('^(?:\s*)((?:%s)%s):(?:\s*)' +
-                    '(?P<rx_bytes>\d+)(?:\s*)' +
-                    '(?P<rx_packets>\w+)(?:\s*)' +
-                    '(?P<rx_errors>\d+)(?:\s*)' +
-                    '(?P<rx_drop>\d+)(?:\s*)' +
-                    '(?P<rx_fifo>\d+)(?:\s*)' +
-                    '(?P<rx_frame>\d+)(?:\s*)' +
-                    '(?P<rx_compressed>\d+)(?:\s*)' +
-                    '(?P<rx_multicast>\d+)(?:\s*)' +
-                    '(?P<tx_bytes>\d+)(?:\s*)' +
-                    '(?P<tx_packets>\w+)(?:\s*)' +
-                    '(?P<tx_errors>\d+)(?:\s*)' +
-                    '(?P<tx_drop>\d+)(?:\s*)' +
-                    '(?P<tx_fifo>\d+)(?:\s*)' +
-                    '(?P<tx_colls>\d+)(?:\s*)' +
-                    '(?P<tx_carrier>\d+)(?:\s*)' +
-                    '(?P<tx_compressed>\d+)(?:.*)$') %
-                   (('|'.join(self.config['interfaces'])), greed))
+            exp = (
+                "^(?:\s*)((?:%s)%s):(?:\s*)"
+                + "(?P<rx_bytes>\d+)(?:\s*)"
+                + "(?P<rx_packets>\w+)(?:\s*)"
+                + "(?P<rx_errors>\d+)(?:\s*)"
+                + "(?P<rx_drop>\d+)(?:\s*)"
+                + "(?P<rx_fifo>\d+)(?:\s*)"
+                + "(?P<rx_frame>\d+)(?:\s*)"
+                + "(?P<rx_compressed>\d+)(?:\s*)"
+                + "(?P<rx_multicast>\d+)(?:\s*)"
+                + "(?P<tx_bytes>\d+)(?:\s*)"
+                + "(?P<tx_packets>\w+)(?:\s*)"
+                + "(?P<tx_errors>\d+)(?:\s*)"
+                + "(?P<tx_drop>\d+)(?:\s*)"
+                + "(?P<tx_fifo>\d+)(?:\s*)"
+                + "(?P<tx_colls>\d+)(?:\s*)"
+                + "(?P<tx_carrier>\d+)(?:\s*)"
+                + "(?P<tx_compressed>\d+)(?:.*)$"
+            ) % (("|".join(self.config["interfaces"])), greed)
             reg = re.compile(exp)
             # Match Interfaces
 
@@ -96,8 +101,8 @@ class NetworkCollector(diamond.collector.Collector):
             file.close()
         else:
             if not psutil:
-                self.log.error('Unable to import psutil')
-                self.log.error('No network metrics retrieved')
+                self.log.error("Unable to import psutil")
+                self.log.error("No network metrics retrieved")
                 return None
 
             network_stats = psutil.network_io_counters(True)
@@ -105,28 +110,34 @@ class NetworkCollector(diamond.collector.Collector):
             for device in network_stats.keys():
                 network_stat = network_stats[device]
                 results[device] = {}
-                results[device]['rx_bytes'] = network_stat.bytes_recv
-                results[device]['tx_bytes'] = network_stat.bytes_sent
-                results[device]['rx_packets'] = network_stat.packets_recv
-                results[device]['tx_packets'] = network_stat.packets_sent
+                results[device]["rx_bytes"] = network_stat.bytes_recv
+                results[device]["tx_bytes"] = network_stat.bytes_sent
+                results[device]["rx_packets"] = network_stat.packets_recv
+                results[device]["tx_packets"] = network_stat.packets_sent
 
         for device in results:
             stats = results[device]
 
             for s, v in stats.items():
                 # Get Metric Name
-                metric_name = '.'.join([device, s])
+                metric_name = ".".join([device, s])
 
                 # Get Metric Value
-                metric_value = self.derivative(metric_name, int(v), diamond.collector.MAX_COUNTER)
+                metric_value = self.derivative(
+                    metric_name, int(v), diamond.collector.MAX_COUNTER
+                )
 
                 # Convert rx_bytes and tx_bytes
-                if s == 'rx_bytes' or s == 'tx_bytes':
-                    convertor = diamond.convertor.binary(value=metric_value, unit='byte')
+                if s == "rx_bytes" or s == "tx_bytes":
+                    convertor = diamond.convertor.binary(
+                        value=metric_value, unit="byte"
+                    )
 
-                    for u in self.config['byte_unit']:
+                    for u in self.config["byte_unit"]:
                         # Public Converted Metric
-                        self.publish(metric_name.replace('bytes', u), convertor.get(unit=u), 2)
+                        self.publish(
+                            metric_name.replace("bytes", u), convertor.get(unit=u), 2
+                        )
                 else:
                     # Publish Metric Derivative
                     self.publish(metric_name, metric_value)

@@ -25,36 +25,46 @@ class AmavisCollector(diamond.collector.Collector):
     # db, and I don't even want to get there
 
     matchers = [
-        re.compile(r'^\s*(?P<name>[\w]+)\s+(?P<time>[\d]+) s\s+'
-                   r'(?P<frequency>[\d.]+) s/msg\s+\([\w]+\)\s*$'),
-        re.compile(r'^\s*(?P<name>[\w.-]+)\s+(?P<count>[\d]+)\s+'
-                   r'(?P<frequency>[\d.]+)/h\s+(?P<percentage>[\d.]+) %'
-                   r'\s\([\w]+\)\s*$'),
-        re.compile(r'^\s*(?P<name>[\w.-]+)\s+(?P<size>[\d]+)MB\s+'
-                   r'(?P<frequency>[\d.]+)MB/h\s+(?P<percentage>[\d.]+) %'
-                   r'\s\([\w]+\)\s*$'),
+        re.compile(
+            r"^\s*(?P<name>[\w]+)\s+(?P<time>[\d]+) s\s+"
+            r"(?P<frequency>[\d.]+) s/msg\s+\([\w]+\)\s*$"
+        ),
+        re.compile(
+            r"^\s*(?P<name>[\w.-]+)\s+(?P<count>[\d]+)\s+"
+            r"(?P<frequency>[\d.]+)/h\s+(?P<percentage>[\d.]+) %"
+            r"\s\([\w]+\)\s*$"
+        ),
+        re.compile(
+            r"^\s*(?P<name>[\w.-]+)\s+(?P<size>[\d]+)MB\s+"
+            r"(?P<frequency>[\d.]+)MB/h\s+(?P<percentage>[\d.]+) %"
+            r"\s\([\w]+\)\s*$"
+        ),
     ]
 
     def get_default_config_help(self):
         config_help = super(AmavisCollector, self).get_default_config_help()
-        config_help.update({
-            'amavisd_exe': 'The path to amavisd-agent',
-            'use_sudo': 'Call amavisd-agent using sudo',
-            'sudo_exe': 'The path to sudo',
-            'sudo_user': 'The user to use if using sudo',
-        })
+        config_help.update(
+            {
+                "amavisd_exe": "The path to amavisd-agent",
+                "use_sudo": "Call amavisd-agent using sudo",
+                "sudo_exe": "The path to sudo",
+                "sudo_user": "The user to use if using sudo",
+            }
+        )
 
         return config_help
 
     def get_default_config(self):
         config = super(AmavisCollector, self).get_default_config()
-        config.update({
-            'path': 'amavis',
-            'amavisd_exe': '/usr/sbin/amavisd-agent',
-            'use_sudo': False,
-            'sudo_exe': '/usr/bin/sudo',
-            'sudo_user': 'amavis',
-        })
+        config.update(
+            {
+                "path": "amavis",
+                "amavisd_exe": "/usr/sbin/amavisd-agent",
+                "use_sudo": False,
+                "sudo_exe": "/usr/bin/sudo",
+                "sudo_user": "amavis",
+            }
+        )
 
         return config
 
@@ -63,15 +73,20 @@ class AmavisCollector(diamond.collector.Collector):
         Collect memory stats
         """
         try:
-            if diamond.collector.str_to_bool(self.config['use_sudo']):
+            if diamond.collector.str_to_bool(self.config["use_sudo"]):
                 # Use -u instead of --user as the former is more portable. Not
                 # all versions of sudo support the long form --user.
                 cmdline = [
-                    self.config['sudo_exe'], '-u', self.config['sudo_user'],
-                    '--', self.config['amavisd_exe'], '-c', '1'
+                    self.config["sudo_exe"],
+                    "-u",
+                    self.config["sudo_user"],
+                    "--",
+                    self.config["amavisd_exe"],
+                    "-c",
+                    "1",
                 ]
             else:
-                cmdline = [self.config['amavisd_exe'], '-c', '1']
+                cmdline = [self.config["amavisd_exe"], "-c", "1"]
 
             agent = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
             agent_out = agent.communicate()[0]
@@ -83,23 +98,28 @@ class AmavisCollector(diamond.collector.Collector):
 
                     if res:
                         groups = res.groupdict()
-                        name = groups['name']
+                        name = groups["name"]
 
                         for metric, value in groups.items():
-                            if metric == 'name':
+                            if metric == "name":
                                 continue
 
-                            mtype = 'GAUGE'
+                            mtype = "GAUGE"
                             precision = 2
 
-                            if metric in ('count', 'time'):
-                                mtype = 'COUNTER'
+                            if metric in ("count", "time"):
+                                mtype = "COUNTER"
                                 precision = 0
 
-                            self.publish("{}.{}".format(name, metric), value, metric_type=mtype, precision=precision)
+                            self.publish(
+                                "{}.{}".format(name, metric),
+                                value,
+                                metric_type=mtype,
+                                precision=precision,
+                            )
 
         except OSError as err:
-            self.log.error("Could not run %s: %s", self.config['amavisd_exe'], err)
+            self.log.error("Could not run %s: %s", self.config["amavisd_exe"], err)
             return None
 
         return True

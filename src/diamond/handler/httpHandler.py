@@ -15,8 +15,8 @@ class HttpPostHandler(diamond.handler.Handler.Handler):
     def __init__(self, config=None):
         diamond.handler.Handler.Handler.__init__(self, config)
         self.metrics = []
-        self.batch_size = int(self.config['batch'])
-        self.url = self.config.get('url')
+        self.batch_size = int(self.config["batch"])
+        self.url = self.config.get("url")
 
     def get_default_config_help(self):
         """
@@ -24,10 +24,12 @@ class HttpPostHandler(diamond.handler.Handler.Handler):
         """
         config = super(HttpPostHandler, self).get_default_config_help()
 
-        config.update({
-            'url': 'Fully qualified url to send metrics to',
-            'batch': 'How many to store before sending to the graphite server',
-        })
+        config.update(
+            {
+                "url": "Fully qualified url to send metrics to",
+                "batch": "How many to store before sending to the graphite server",
+            }
+        )
 
         return config
 
@@ -37,10 +39,12 @@ class HttpPostHandler(diamond.handler.Handler.Handler):
         """
         config = super(HttpPostHandler, self).get_default_config()
 
-        config.update({
-            'url': 'http://localhost/blah/blah/blah',
-            'batch': 100,
-        })
+        config.update(
+            {
+                "url": "http://localhost/blah/blah/blah",
+                "batch": 100,
+            }
+        )
 
         return config
 

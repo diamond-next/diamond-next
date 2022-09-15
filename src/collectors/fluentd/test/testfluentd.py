@@ -10,21 +10,24 @@ from test import get_collector_config
 
 from fluentd import FluentdCollector
 
-fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
+fixtures_path = os.path.join(os.path.dirname(__file__), "fixtures/")
 
 
 class TestFluentdCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('FluentdCollector', {
-            'interval': 10,
-            'collect': {
-                'kinesis': [
-                    'buffer_queue_length',
-                    'buffer_total_queued_size',
-                    'retry_count'
-                ]
-            }
-        })
+        config = get_collector_config(
+            "FluentdCollector",
+            {
+                "interval": 10,
+                "collect": {
+                    "kinesis": [
+                        "buffer_queue_length",
+                        "buffer_total_queued_size",
+                        "retry_count",
+                    ]
+                },
+            },
+        )
 
         self.collector = FluentdCollector(config, None)
 

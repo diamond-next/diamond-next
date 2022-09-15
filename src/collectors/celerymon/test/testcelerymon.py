@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestCelerymonCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('CelerymonCollector', {})
+        config = get_collector_config("CelerymonCollector", {})
         self.collector = CelerymonCollector(config, None)
 
     def test_import(self):

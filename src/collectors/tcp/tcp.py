@@ -182,25 +182,24 @@ import diamond.collector
 
 
 class TCPCollector(diamond.collector.Collector):
-    PROC = [
-        '/proc/net/netstat',
-        '/proc/net/snmp'
-    ]
+    PROC = ["/proc/net/netstat", "/proc/net/snmp"]
 
     def process_config(self):
         super(TCPCollector, self).process_config()
-        if self.config['allowed_names'] is None:
-            self.config['allowed_names'] = []
+        if self.config["allowed_names"] is None:
+            self.config["allowed_names"] = []
 
-        if self.config['gauges'] is None:
-            self.config['gauges'] = ['CurrEstab', 'MaxConn']
+        if self.config["gauges"] is None:
+            self.config["gauges"] = ["CurrEstab", "MaxConn"]
 
     def get_default_config_help(self):
         config_help = super(TCPCollector, self).get_default_config_help()
-        config_help.update({
-            'allowed_names': 'list of entries to collect, empty to collect all',
-            'gauges': 'list of metrics to be published as gauges',
-        })
+        config_help.update(
+            {
+                "allowed_names": "list of entries to collect, empty to collect all",
+                "gauges": "list of metrics to be published as gauges",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -208,16 +207,17 @@ class TCPCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(TCPCollector, self).get_default_config()
-        config.update({
-            'path': 'tcp',
-            'allowed_names':
-                'ListenOverflows, ListenDrops, TCPLoss, ' +
-                'TCPTimeouts, TCPFastRetrans, TCPLostRetransmit, ' +
-                'TCPForwardRetrans, TCPSlowStartRetrans, CurrEstab, ' +
-                'TCPAbortOnMemory, TCPBacklogDrop, AttemptFails, ' +
-                'EstabResets, InErrs, ActiveOpens, PassiveOpens',
-            'gauges': 'CurrEstab, MaxConn',
-        })
+        config.update(
+            {
+                "path": "tcp",
+                "allowed_names": "ListenOverflows, ListenDrops, TCPLoss, "
+                + "TCPTimeouts, TCPFastRetrans, TCPLostRetransmit, "
+                + "TCPForwardRetrans, TCPSlowStartRetrans, CurrEstab, "
+                + "TCPAbortOnMemory, TCPBacklogDrop, AttemptFails, "
+                + "EstabResets, InErrs, ActiveOpens, PassiveOpens",
+                "gauges": "CurrEstab, MaxConn",
+            }
+        )
         return config
 
     def collect(self):
@@ -225,17 +225,17 @@ class TCPCollector(diamond.collector.Collector):
 
         for filepath in self.PROC:
             if not os.access(filepath, os.R_OK):
-                self.log.error('Permission to access %s denied', filepath)
+                self.log.error("Permission to access %s denied", filepath)
                 continue
 
-            header = ''
-            data = ''
+            header = ""
+            data = ""
 
             # Seek the file for the lines that start with Tcp
             file = open(filepath)
 
             if not file:
-                self.log.error('Failed to open %s', filepath)
+                self.log.error("Failed to open %s", filepath)
                 continue
 
             while True:
@@ -254,8 +254,8 @@ class TCPCollector(diamond.collector.Collector):
             file.close()
 
             # No data from the file?
-            if header == '' or data == '':
-                self.log.error('%s has no lines with Tcp', filepath)
+            if header == "" or data == "":
+                self.log.error("%s has no lines with Tcp", filepath)
                 continue
 
             header = header.split()
@@ -265,13 +265,16 @@ class TCPCollector(diamond.collector.Collector):
                 metrics[header[i]] = data[i]
 
         for metric_name in metrics.keys():
-            if len(self.config['allowed_names']) > 0 and metric_name not in self.config['allowed_names']:
+            if (
+                len(self.config["allowed_names"]) > 0
+                and metric_name not in self.config["allowed_names"]
+            ):
                 continue
 
             value = int(metrics[metric_name])
 
             # Publish the metric
-            if metric_name in self.config['gauges']:
+            if metric_name in self.config["gauges"]:
                 self.publish_gauge(metric_name, value, 0)
             else:
                 self.publish_counter(metric_name, value, 0)

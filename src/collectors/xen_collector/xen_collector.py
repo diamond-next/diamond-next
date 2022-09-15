@@ -30,9 +30,7 @@ class XENCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(XENCollector, self).get_default_config()
-        config.update({
-            'path': 'xen'
-        })
+        config.update({"path": "xen"})
         return config
 
     def collect(self):
@@ -40,7 +38,7 @@ class XENCollector(diamond.collector.Collector):
         Collect libvirt data
         """
         if libvirt is None:
-            self.log.error('Unable to import either libvirt')
+            self.log.error("Unable to import either libvirt")
             return {}
 
         # Open a restricted (non-root) connection to the hypervisor
@@ -61,7 +59,7 @@ class XENCollector(diamond.collector.Collector):
             totalcores = dom_u.info()[3]
 
         # Free Space
-        s = os.statvfs('/')
+        s = os.statvfs("/")
         free_space = (s.f_bavail * s.f_frsize) / 1024
 
         # Calculate allocated memory and cores
@@ -78,13 +76,13 @@ class XENCollector(diamond.collector.Collector):
                 coresallocated += dominfo[3]
 
         results = {
-            'InstalledMem': conninfo[1],
-            'MemAllocated': memallocated / 1024,
-            'MemFree': conninfo[1] - (memallocated / 1024),
-            'AllocatedCores': coresallocated,
-            'DiskFree': free_space,
-            'TotalCores': totalcores,
-            'FreeCores': (totalcores - coresallocated)
+            "InstalledMem": conninfo[1],
+            "MemAllocated": memallocated / 1024,
+            "MemFree": conninfo[1] - (memallocated / 1024),
+            "AllocatedCores": coresallocated,
+            "DiskFree": free_space,
+            "TotalCores": totalcores,
+            "FreeCores": (totalcores - coresallocated),
         }
 
         for k in results.keys():

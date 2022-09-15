@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestJbossApiCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('JbossApiCollector', {})
+        config = get_collector_config("JbossApiCollector", {})
         self.collector = JbossApiCollector(config, None)
 
     def test_import(self):

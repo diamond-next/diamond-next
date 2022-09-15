@@ -13,13 +13,15 @@ import diamond.metric
 
 
 class HBaseCollector(diamond.collector.Collector):
-    re_log = re.compile(r'^(?P<timestamp>\d+) (?P<name>\S+): (?P<metrics>.*)$')
+    re_log = re.compile(r"^(?P<timestamp>\d+) (?P<name>\S+): (?P<metrics>.*)$")
 
     def get_default_config_help(self):
         config_help = super(HBaseCollector, self).get_default_config_help()
-        config_help.update({
-            'metrics': "List of paths to process metrics from",
-        })
+        config_help.update(
+            {
+                "metrics": "List of paths to process metrics from",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -27,14 +29,16 @@ class HBaseCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(HBaseCollector, self).get_default_config()
-        config.update({
-            'path': 'hbase',
-            'metrics': ['/var/log/hbase/*.metrics'],
-        })
+        config.update(
+            {
+                "path": "hbase",
+                "metrics": ["/var/log/hbase/*.metrics"],
+            }
+        )
         return config
 
     def collect(self):
-        metrics = self.config['metrics']
+        metrics = self.config["metrics"]
         if not isinstance(metrics, list):
             metrics = [str(metrics)]
 
@@ -47,7 +51,7 @@ class HBaseCollector(diamond.collector.Collector):
             self.log.error('HBaseCollector unable to read "%s"', filename)
             return False
 
-        fd = open(filename, 'r+')
+        fd = open(filename, "r+")
         for line in fd:
             match = self.re_log.match(line)
             if not match:
@@ -57,49 +61,73 @@ class HBaseCollector(diamond.collector.Collector):
 
             data = match.groupdict()
 
-            for metric in data['metrics'].split(','):
+            for metric in data["metrics"].split(","):
                 metric = metric.strip()
 
-                if '=' in metric:
-                    key, value = metric.split('=', 1)
+                if "=" in metric:
+                    key, value = metric.split("=", 1)
                     metrics[key] = value
 
             for metric in metrics.keys():
                 try:
-                    if data['name'] == 'jvm.metrics':
-                        path = self.get_metric_path('.'.join([
-                            data['name'],
-                            metrics['hostName'].replace('.', '_'),
-                            metrics['processName'].replace(' ', '_'),
-                            metric, ]))
+                    if data["name"] == "jvm.metrics":
+                        path = self.get_metric_path(
+                            ".".join(
+                                [
+                                    data["name"],
+                                    metrics["hostName"].replace(".", "_"),
+                                    metrics["processName"].replace(" ", "_"),
+                                    metric,
+                                ]
+                            )
+                        )
 
-                    elif data['name'] == 'mapred.job':
-                        path = self.get_metric_path('.'.join([
-                            data['name'],
-                            metrics['hostName'].replace('.', '_'),
-                            metrics['group'].replace(' ', '_'),
-                            metrics['counter'].replace(' ', '_'),
-                            metric, ]))
+                    elif data["name"] == "mapred.job":
+                        path = self.get_metric_path(
+                            ".".join(
+                                [
+                                    data["name"],
+                                    metrics["hostName"].replace(".", "_"),
+                                    metrics["group"].replace(" ", "_"),
+                                    metrics["counter"].replace(" ", "_"),
+                                    metric,
+                                ]
+                            )
+                        )
 
-                    elif data['name'] == 'rpc.metrics':
+                    elif data["name"] == "rpc.metrics":
 
-                        if metric == 'port':
+                        if metric == "port":
                             continue
 
-                        path = self.get_metric_path('.'.join([
-                            data['name'],
-                            metrics['hostName'].replace('.', '_'),
-                            metrics['port'],
-                            metric, ]))
+                        path = self.get_metric_path(
+                            ".".join(
+                                [
+                                    data["name"],
+                                    metrics["hostName"].replace(".", "_"),
+                                    metrics["port"],
+                                    metric,
+                                ]
+                            )
+                        )
 
                     else:
-                        path = self.get_metric_path('.'.join([
-                            data['name'],
-                            metric, ]))
+                        path = self.get_metric_path(
+                            ".".join(
+                                [
+                                    data["name"],
+                                    metric,
+                                ]
+                            )
+                        )
 
                     value = float(metrics[metric])
 
-                    self.publish_metric(diamond.metric.Metric(path, value, timestamp=int(data['timestamp']) / 1000))
+                    self.publish_metric(
+                        diamond.metric.Metric(
+                            path, value, timestamp=int(data["timestamp"]) / 1000
+                        )
+                    )
                 except ValueError:
                     pass
 

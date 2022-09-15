@@ -19,12 +19,14 @@ from diamond.collector import str_to_bool
 class UPSCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(UPSCollector, self).get_default_config_help()
-        config_help.update({
-            'ups_name': 'The name of the ups to collect data for',
-            'bin': 'The path to the upsc binary',
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-        })
+        config_help.update(
+            {
+                "ups_name": "The name of the ups to collect data for",
+                "bin": "The path to the upsc binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+            }
+        )
 
         return config_help
 
@@ -34,25 +36,27 @@ class UPSCollector(diamond.collector.Collector):
         """
 
         config = super(UPSCollector, self).get_default_config()
-        config.update({
-            'path': 'ups',
-            'ups_name': 'cyberpower',
-            'bin': '/bin/upsc',
-            'use_sudo': False,
-            'sudo_cmd': '/usr/bin/sudo',
-        })
+        config.update(
+            {
+                "path": "ups",
+                "ups_name": "cyberpower",
+                "bin": "/bin/upsc",
+                "use_sudo": False,
+                "sudo_cmd": "/usr/bin/sudo",
+            }
+        )
 
         return config
 
     def collect(self):
-        if not os.access(self.config['bin'], os.X_OK):
-            self.log.error("%s is not executable", self.config['bin'])
+        if not os.access(self.config["bin"], os.X_OK):
+            self.log.error("%s is not executable", self.config["bin"])
             return False
 
-        command = [self.config['bin'], self.config['ups_name']]
+        command = [self.config["bin"], self.config["ups_name"]]
 
-        if str_to_bool(self.config['use_sudo']):
-            command.insert(0, self.config['sudo_cmd'])
+        if str_to_bool(self.config["use_sudo"]):
+            command.insert(0, self.config["sudo_cmd"])
 
         p = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
 

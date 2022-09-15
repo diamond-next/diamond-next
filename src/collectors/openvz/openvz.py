@@ -16,17 +16,16 @@ import diamond.collector
 
 
 class OpenvzCollector(diamond.collector.Collector):
-    _FIELDS = (
-        'laverage',
-        'uptime'
-    )
+    _FIELDS = ("laverage", "uptime")
 
     def get_default_config_help(self):
         config_help = super(OpenvzCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'The path to the vzlist',
-            'keyname': 'key name for hostname metric value (hostname)',
-        })
+        config_help.update(
+            {
+                "bin": "The path to the vzlist",
+                "keyname": "key name for hostname metric value (hostname)",
+            }
+        )
 
         return config_help
 
@@ -35,11 +34,9 @@ class OpenvzCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(OpenvzCollector, self).get_default_config()
-        config.update({
-            'path': 'openvz',
-            'bin': '/usr/sbin/vzlist',
-            'keyname': 'hostname'
-        })
+        config.update(
+            {"path": "openvz", "bin": "/usr/sbin/vzlist", "keyname": "hostname"}
+        )
 
         return config
 
@@ -52,15 +49,15 @@ class OpenvzCollector(diamond.collector.Collector):
             return
 
         for instance_values in instances_infos:
-            serverkey = instance_values[self.config['keyname']].replace('.', '_')
+            serverkey = instance_values[self.config["keyname"]].replace(".", "_")
 
             for keyvalue in instance_values:
-                sfield = ['held', 'maxheld', 'usage']
+                sfield = ["held", "maxheld", "usage"]
 
                 # Get Array values
                 if isinstance(instance_values[keyvalue], dict):
                     for subkey in instance_values[keyvalue]:
-                        stat_name = '%s.%s.%s' % (serverkey, keyvalue, subkey)
+                        stat_name = "%s.%s.%s" % (serverkey, keyvalue, subkey)
 
                         if subkey in sfield:
                             try:
@@ -73,8 +70,8 @@ class OpenvzCollector(diamond.collector.Collector):
                     # Get field value
                     if keyvalue in self._FIELDS:
                         # Get Load average values
-                        if keyvalue == 'laverage':
-                            submetric_name = ['01', '05', '15']
+                        if keyvalue == "laverage":
+                            submetric_name = ["01", "05", "15"]
 
                             for idx in range(0, 3):
                                 try:
@@ -82,7 +79,11 @@ class OpenvzCollector(diamond.collector.Collector):
                                 except ValueError:
                                     continue
 
-                                stat_name = '%s.%s.%s' % (serverkey, keyvalue, submetric_name[idx])
+                                stat_name = "%s.%s.%s" % (
+                                    serverkey,
+                                    keyvalue,
+                                    submetric_name[idx],
+                                )
 
                                 self.publish(stat_name, metric_value, precision=5)
                         else:
@@ -92,12 +93,12 @@ class OpenvzCollector(diamond.collector.Collector):
                             except ValueError:
                                 continue
 
-                            stat_name = '%s.%s' % (serverkey, keyvalue)
+                            stat_name = "%s.%s" % (serverkey, keyvalue)
                             self.publish(stat_name, metric_value, precision=5)
 
     def poll(self):
         try:
-            command = [self.config['bin'], '-j']
+            command = [self.config["bin"], "-j"]
             output = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
         except OSError:
             output = ""

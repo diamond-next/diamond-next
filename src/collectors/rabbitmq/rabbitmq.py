@@ -38,80 +38,83 @@ class RabbitMQClient(object):
     """
     Tiny interface into the rabbit http api
     """
+
     def __init__(self, log, host, user, password, timeout=5, scheme="http"):
         self.log = log
-        self.base_url = '%s://%s/api/' % (scheme, host)
+        self.base_url = "%s://%s/api/" % (scheme, host)
         self.timeout = timeout
-        base64string = base64.b64encode(bytes('%s:%s' % (user, password), 'utf-8'))
-        self._authorization = 'Basic %s' % base64string
+        base64string = base64.b64encode(bytes("%s:%s" % (user, password), "utf-8"))
+        self._authorization = "Basic %s" % base64string
 
     def do_call(self, path):
         url = urllib.parse.urljoin(self.base_url, path)
         req = urllib.request.Request(url)
-        req.add_header('Authorization', self._authorization)
+        req.add_header("Authorization", self._authorization)
 
         return json.load(urllib.request.urlopen(req, timeout=self.timeout))
 
     def get_all_vhosts(self):
-        return self.do_call('vhosts')
+        return self.do_call("vhosts")
 
     def get_vhost_names(self):
-        return [i['name'] for i in self.get_all_vhosts()]
+        return [i["name"] for i in self.get_all_vhosts()]
 
     def get_queue(self, vhost, queue_name):
-        path = 'queues'
+        path = "queues"
 
         if vhost:
-            vhost = urllib.parse.quote(vhost, '')
-            queue_name = urllib.parse.quote(queue_name, '')
-            path += '/%s/%s' % (vhost, queue_name)
+            vhost = urllib.parse.quote(vhost, "")
+            queue_name = urllib.parse.quote(queue_name, "")
+            path += "/%s/%s" % (vhost, queue_name)
 
         try:
             queue = self.do_call(path)
             return queue or None
         except Exception as e:
-            self.log.error('Error querying queue %s/%s: %s' % (vhost, queue_name, e))
+            self.log.error("Error querying queue %s/%s: %s" % (vhost, queue_name, e))
             return None
 
     def get_queues(self, vhost):
-        path = 'queues'
-        vhost = urllib.parse.quote(vhost, '')
-        path += '/%s' % vhost
+        path = "queues"
+        vhost = urllib.parse.quote(vhost, "")
+        path += "/%s" % vhost
 
         try:
             queues = self.do_call(path)
             return queues or []
         except Exception as e:
-            self.log.error('Error querying queues %s: %s' % (vhost, e))
+            self.log.error("Error querying queues %s: %s" % (vhost, e))
             return []
 
     def get_overview(self):
-        return self.do_call('overview')
+        return self.do_call("overview")
 
     def get_nodes(self):
-        return self.do_call('nodes')
+        return self.do_call("nodes")
 
     def get_node(self, node):
-        return self.do_call('nodes/%s' % node)
+        return self.do_call("nodes/%s" % node)
 
 
 class RabbitMQCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(RabbitMQCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Hostname and port to collect from',
-            'user': 'Username',
-            'password': 'Password',
-            'replace_dot': 'A value to replace dot in queue names and vhosts names by',
-            'replace_slash': 'A value to replace a slash in queue names and vhosts names by',
-            'queues': 'Queues to publish. Leave empty to publish all.',
-            'vhosts': 'A list of vhosts and queues for which we want to collect',
-            'queues_ignored': 'A list of queues or regexes for queue names not to report on.',
-            'cluster': 'If this node is part of a cluster, will collect metrics on the cluster health',
-            'query_individual_queues': 'If specific queues are set, query their metrics individually.'
-            ' When this is False, queue metrics will be queried in bulk and'
-            ' filtered, which can time out for vhosts with many queues.'
-        })
+        config_help.update(
+            {
+                "host": "Hostname and port to collect from",
+                "user": "Username",
+                "password": "Password",
+                "replace_dot": "A value to replace dot in queue names and vhosts names by",
+                "replace_slash": "A value to replace a slash in queue names and vhosts names by",
+                "queues": "Queues to publish. Leave empty to publish all.",
+                "vhosts": "A list of vhosts and queues for which we want to collect",
+                "queues_ignored": "A list of queues or regexes for queue names not to report on.",
+                "cluster": "If this node is part of a cluster, will collect metrics on the cluster health",
+                "query_individual_queues": "If specific queues are set, query their metrics individually."
+                " When this is False, queue metrics will be queried in bulk and"
+                " filtered, which can time out for vhosts with many queues.",
+            }
+        )
 
         return config_help
 
@@ -120,55 +123,57 @@ class RabbitMQCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(RabbitMQCollector, self).get_default_config()
-        config.update({
-            'path': 'rabbitmq',
-            'host': 'localhost:55672',
-            'user': 'guest',
-            'password': 'guest',
-            'replace_dot': False,
-            'replace_slash': False,
-            'queues_ignored': '',
-            'cluster': False,
-            'scheme': 'http',
-            'query_individual_queues': False,
-        })
+        config.update(
+            {
+                "path": "rabbitmq",
+                "host": "localhost:55672",
+                "user": "guest",
+                "password": "guest",
+                "replace_dot": False,
+                "replace_slash": False,
+                "queues_ignored": "",
+                "cluster": False,
+                "scheme": "http",
+                "query_individual_queues": False,
+            }
+        )
 
         return config
 
     def collect_health(self):
         health_metrics = [
-            'fd_used',
-            'fd_total',
-            'mem_used',
-            'mem_limit',
-            'sockets_used',
-            'sockets_total',
-            'disk_free_limit',
-            'disk_free',
-            'proc_used',
-            'proc_total',
+            "fd_used",
+            "fd_total",
+            "mem_used",
+            "mem_limit",
+            "sockets_used",
+            "sockets_total",
+            "disk_free_limit",
+            "disk_free",
+            "proc_used",
+            "proc_total",
         ]
 
         try:
             client = RabbitMQClient(
                 self.log,
-                self.config['host'],
-                self.config['user'],
-                self.config['password'],
-                scheme=self.config['scheme']
+                self.config["host"],
+                self.config["user"],
+                self.config["password"],
+                scheme=self.config["scheme"],
             )
-            node_name = client.get_overview()['node']
+            node_name = client.get_overview()["node"]
             node_data = client.get_node(node_name)
 
             for metric in health_metrics:
-                self.publish('health.{}'.format(metric), node_data[metric])
+                self.publish("health.{}".format(metric), node_data[metric])
 
-            if self.config['cluster']:
-                self.publish('cluster.partitions', len(node_data['partitions']))
+            if self.config["cluster"]:
+                self.publish("cluster.partitions", len(node_data["partitions"]))
                 content = client.get_nodes()
-                self.publish('cluster.nodes', len(content))
+                self.publish("cluster.nodes", len(content))
         except:
-            self.log.exception('Could not connect to rabbitmq')
+            self.log.exception("Could not connect to rabbitmq")
             return {}
 
     def get_queue_metrics(self, client, vhost, queues):
@@ -180,11 +185,11 @@ class RabbitMQCollector(diamond.collector.Collector):
         allowed_queues = queues.split()
         matchers = []
 
-        if self.config['queues_ignored']:
-            for reg in self.config['queues_ignored'].split():
+        if self.config["queues_ignored"]:
+            for reg in self.config["queues_ignored"].split():
                 matchers.append(re.compile(reg))
 
-        if len(allowed_queues) and self.config['query_individual_queues']:
+        if len(allowed_queues) and self.config["query_individual_queues"]:
             for queue_name in allowed_queues:
                 if matchers and any([m.match(queue_name) for m in matchers]):
                     continue
@@ -196,10 +201,10 @@ class RabbitMQCollector(diamond.collector.Collector):
         else:
             for queue in client.get_queues(vhost):
                 # If queues are defined and it doesn't match, then skip.
-                if queue['name'] not in allowed_queues and len(allowed_queues) > 0:
+                if queue["name"] not in allowed_queues and len(allowed_queues) > 0:
                     continue
 
-                if matchers and any([m.match(queue['name']) for m in matchers]):
+                if matchers and any([m.match(queue["name"]) for m in matchers]):
                     continue
 
                 yield queue
@@ -207,8 +212,8 @@ class RabbitMQCollector(diamond.collector.Collector):
     def get_vhost_conf(self, vhost_names):
         legacy = False
 
-        if 'vhosts' in self.config:
-            vhost_conf = self.config['vhosts']
+        if "vhosts" in self.config:
+            vhost_conf = self.config["vhosts"]
         else:
             # Legacy configurations, those that don't include the [vhosts]
             # section require special care so that we do not break metric
@@ -216,8 +221,8 @@ class RabbitMQCollector(diamond.collector.Collector):
             # the update to support vhosts.
             legacy = True
 
-            if 'queues' in self.config:
-                vhost_conf = {"*": self.config['queues']}
+            if "queues" in self.config:
+                vhost_conf = {"*": self.config["queues"]}
             else:
                 vhost_conf = {"*": ""}
 
@@ -226,7 +231,7 @@ class RabbitMQCollector(diamond.collector.Collector):
                 # Copy the glob queue list to each vhost not
                 # specifically defined in the configuration.
                 if vhost not in vhost_conf:
-                    vhost_conf[vhost] = vhost_conf['*']
+                    vhost_conf[vhost] = vhost_conf["*"]
 
             del vhost_conf["*"]
 
@@ -238,10 +243,10 @@ class RabbitMQCollector(diamond.collector.Collector):
         try:
             client = RabbitMQClient(
                 self.log,
-                self.config['host'],
-                self.config['user'],
-                self.config['password'],
-                scheme=self.config['scheme']
+                self.config["host"],
+                self.config["user"],
+                self.config["password"],
+                scheme=self.config["scheme"],
             )
 
             vhost_names = client.get_vhost_names()
@@ -251,11 +256,11 @@ class RabbitMQCollector(diamond.collector.Collector):
             for vhost, queues in iter(vhost_conf.items()):
                 vhost_name = vhost
 
-                if self.config['replace_dot']:
-                    vhost_name = vhost_name.replace('.', self.config['replace_dot'])
+                if self.config["replace_dot"]:
+                    vhost_name = vhost_name.replace(".", self.config["replace_dot"])
 
-                if self.config['replace_slash']:
-                    vhost_name = vhost_name.replace('/', self.config['replace_slash'])
+                if self.config["replace_slash"]:
+                    vhost_name = vhost_name.replace("/", self.config["replace_slash"])
 
                 for queue in self.get_queue_metrics(client, vhost, queues):
                     for key in queue:
@@ -264,24 +269,28 @@ class RabbitMQCollector(diamond.collector.Collector):
                         if not legacy:
                             prefix = "vhosts.%s.%s" % (vhost_name, "queues")
 
-                        queue_name = queue['name']
+                        queue_name = queue["name"]
 
-                        if self.config['replace_dot']:
-                            queue_name = queue_name.replace('.', self.config['replace_dot'])
+                        if self.config["replace_dot"]:
+                            queue_name = queue_name.replace(
+                                ".", self.config["replace_dot"]
+                            )
 
-                        if self.config['replace_slash']:
-                            queue_name = queue_name.replace('/', self.config['replace_slash'])
+                        if self.config["replace_slash"]:
+                            queue_name = queue_name.replace(
+                                "/", self.config["replace_slash"]
+                            )
 
-                        name = '{}.{}'.format(prefix, queue_name)
+                        name = "{}.{}".format(prefix, queue_name)
 
                         self._publish_metrics(name, [], key, queue)
 
             overview = client.get_overview()
 
             for key in overview:
-                self._publish_metrics('', [], key, overview)
+                self._publish_metrics("", [], key, overview)
         except:
-            self.log.exception('An error occurred collecting from RabbitMQ')
+            self.log.exception("An error occurred collecting from RabbitMQ")
             return {}
 
     def _publish_metrics(self, name, prev_keys, key, data):
@@ -293,10 +302,10 @@ class RabbitMQCollector(diamond.collector.Collector):
             for new_key in value:
                 self._publish_metrics(name, keys, new_key, value)
         elif isinstance(value, (float, int)):
-            joined_keys = '.'.join(keys)
+            joined_keys = ".".join(keys)
 
             if name:
-                publish_key = '{}.{}'.format(name, joined_keys)
+                publish_key = "{}.{}".format(name, joined_keys)
             else:
                 publish_key = joined_keys
             if isinstance(value, bool):

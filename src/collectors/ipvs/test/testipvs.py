@@ -12,23 +12,21 @@ from test import get_collector_config
 
 class TestIPVSCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('IPVSCollector', {
-            'interval': 10,
-            'bin': 'true',
-            'use_sudo': False
-        })
+        config = get_collector_config(
+            "IPVSCollector", {"interval": 10, "bin": "true", "use_sudo": False}
+        )
 
         self.collector = IPVSCollector(config, None)
 
     def test_import(self):
         self.assertTrue(IPVSCollector)
 
-    @patch('os.access', Mock(return_value=True))
-    @patch.object(Collector, 'publish')
+    @patch("os.access", Mock(return_value=True))
+    @patch.object(Collector, "publish")
     def test_should_work_with_real_data(self, publish_mock):
         patch_communicate = patch(
-            'subprocess.Popen.communicate',
-            Mock(return_value=(self.getFixture('ipvsadm').getvalue(), ''))
+            "subprocess.Popen.communicate",
+            Mock(return_value=(self.getFixture("ipvsadm").getvalue(), "")),
         )
 
         patch_communicate.start()
@@ -42,7 +40,11 @@ class TestIPVSCollector(CollectorTestCase):
             "TCP_172_16_1_56:443.10_68_15_66:443.outbytes": 216873,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
+        self.setDocExample(
+            collector=self.collector.__class__.__name__,
+            metrics=metrics,
+            defaultpath=self.collector.config["path"],
+        )
         self.assertPublishedMany(publish_mock, metrics)
 
 

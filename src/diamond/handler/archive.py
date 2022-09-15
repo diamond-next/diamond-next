@@ -15,6 +15,7 @@ class ArchiveHandler(Handler):
     """
     Implements the Handler abstract class, archiving data to a log file
     """
+
     def __init__(self, config):
         """
         Create a new instance of the ArchiveHandler class
@@ -23,20 +24,20 @@ class ArchiveHandler(Handler):
         Handler.__init__(self, config)
 
         # Create Archive Logger
-        self.archive = logging.getLogger('archive')
+        self.archive = logging.getLogger("archive")
         self.archive.setLevel(logging.DEBUG)
-        self.archive.propagate = self.config['propagate']
+        self.archive.propagate = self.config["propagate"]
 
         # Create Archive Log Formatter
-        formatter = logging.Formatter('%(message)s')
+        formatter = logging.Formatter("%(message)s")
 
         # Create Archive Log Handler
         handler = logging.handlers.TimedRotatingFileHandler(
-            filename=self.config['log_file'],
-            when=self.config['when'],
-            interval=int(self.config['rollover_interval']),
-            backupCount=int(self.config['days']),
-            encoding=self.config['encoding']
+            filename=self.config["log_file"],
+            when=self.config["when"],
+            interval=int(self.config["rollover_interval"]),
+            backupCount=int(self.config["days"]),
+            encoding=self.config["encoding"],
         )
         handler.setFormatter(formatter)
         handler.setLevel(logging.DEBUG)
@@ -48,14 +49,16 @@ class ArchiveHandler(Handler):
         """
         config = super(ArchiveHandler, self).get_default_config_help()
 
-        config.update({
-            'log_file': 'Path to the logfile',
-            'when': 'type of interval; S, M, H, D, Weekday, midnight',
-            'days': 'How many days to store',
-            'rollover_interval': 'rollover interval length',
-            'encoding': '',
-            'propagate': 'Pass handled metrics to configured root logger',
-        })
+        config.update(
+            {
+                "log_file": "Path to the logfile",
+                "when": "type of interval; S, M, H, D, Weekday, midnight",
+                "days": "How many days to store",
+                "rollover_interval": "rollover interval length",
+                "encoding": "",
+                "propagate": "Pass handled metrics to configured root logger",
+            }
+        )
 
         return config
 
@@ -65,14 +68,16 @@ class ArchiveHandler(Handler):
         """
         config = super(ArchiveHandler, self).get_default_config()
 
-        config.update({
-            'log_file': '',
-            'when': 'midnight',
-            'days': 7,
-            'rollover_interval': 1,
-            'encoding': None,
-            'propagate': False,
-        })
+        config.update(
+            {
+                "log_file": "",
+                "when": "midnight",
+                "days": 7,
+                "rollover_interval": 1,
+                "encoding": None,
+                "propagate": False,
+            }
+        )
 
         return config
 

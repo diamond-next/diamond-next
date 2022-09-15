@@ -11,10 +11,9 @@ class TestServerTechPDUCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('ServerTechPDUCollector', {
-            'allowed_names': allowed_names,
-            'interval': 1
-        })
+        config = get_collector_config(
+            "ServerTechPDUCollector", {"allowed_names": allowed_names, "interval": 1}
+        )
         self.collector = ServerTechPDUCollector(config, None)
 
     def test_import(self):

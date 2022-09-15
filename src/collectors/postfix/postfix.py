@@ -22,17 +22,19 @@ try:
 except ImportError:
     import simplejson as json
 
-DOTS_TO_UNDERS = {ord(u'.'): u'_'}
+DOTS_TO_UNDERS = {ord("."): "_"}
 
 
 class PostfixCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PostfixCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Hostname to connect to',
-            'port': 'Port to connect to',
-            'include_clients': 'Include client connection stats',
-        })
+        config_help.update(
+            {
+                "host": "Hostname to connect to",
+                "port": "Port to connect to",
+                "include_clients": "Include client connection stats",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -40,23 +42,25 @@ class PostfixCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(PostfixCollector, self).get_default_config()
-        config.update({
-            'path': 'postfix',
-            'host': 'localhost',
-            'port': 7777,
-            'include_clients': True,
-        })
+        config.update(
+            {
+                "path": "postfix",
+                "host": "localhost",
+                "port": 7777,
+                "include_clients": True,
+            }
+        )
         return config
 
     def get_json(self):
-        json_string = ''
-        address = (self.config['host'], int(self.config['port']))
+        json_string = ""
+        address = (self.config["host"], int(self.config["port"]))
         s = None
 
         try:
             try:
                 s = socket.create_connection(address, timeout=1)
-                s.sendall('stats\n')
+                s.sendall("stats\n")
 
                 while 1:
                     data = s.recv(4096)
@@ -67,12 +71,12 @@ class PostfixCollector(diamond.collector.Collector):
                     json_string += data
             except socket.error:
                 self.log.exception("Error talking to postfix-stats")
-                return '{}'
+                return "{}"
         finally:
             if s:
                 s.close()
 
-        return json_string or '{}'
+        return json_string or "{}"
 
     def get_data(self):
         json_string = self.get_json()
@@ -91,29 +95,32 @@ class PostfixCollector(diamond.collector.Collector):
         if not data:
             return
 
-        if diamond.collector.str_to_bool(self.config['include_clients']) and u'clients' in data:
-            for client, value in iter(data['clients'].items()):
+        if (
+            diamond.collector.str_to_bool(self.config["include_clients"])
+            and "clients" in data
+        ):
+            for client, value in iter(data["clients"].items()):
                 # translate dots to underscores in client names
-                metric = u'.'.join(['clients', client.translate(DOTS_TO_UNDERS)])
+                metric = ".".join(["clients", client.translate(DOTS_TO_UNDERS)])
 
                 dvalue = self.derivative(metric, value)
 
                 self.publish(metric, dvalue, precision=4)
 
-        for action in (u'in', u'recv', u'send'):
+        for action in ("in", "recv", "send"):
             if action not in data:
                 continue
 
             for sect, stats in iter(data[action].items()):
                 for status, value in iter(stats.items()):
-                    metric = '.'.join([action, sect, status.translate(DOTS_TO_UNDERS)])
+                    metric = ".".join([action, sect, status.translate(DOTS_TO_UNDERS)])
                     dvalue = self.derivative(metric, value)
 
                     self.publish(metric, dvalue, precision=4)
 
-        if u'local' in data:
-            for key, value in iter(data[u'local'].items()):
-                metric = '.'.join(['local', key])
+        if "local" in data:
+            for key, value in iter(data["local"].items()):
+                metric = ".".join(["local", key])
                 dvalue = self.derivative(metric, value)
 
                 self.publish(metric, dvalue, precision=4)

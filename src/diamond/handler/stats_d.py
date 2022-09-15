@@ -48,18 +48,20 @@ class StatsdHandler(Handler):
         logging.debug("Initialized statsd handler.")
 
         if not statsd:
-            self.log.error('statsd import failed. Handler disabled')
+            self.log.error("statsd import failed. Handler disabled")
             self.enabled = False
 
             return
 
-        if not hasattr(statsd, 'StatsClient'):
-            self.log.warn('python-statsd support is deprecated and will be removed in the future. Please use https://pypi.python.org/pypi/statsd/')
+        if not hasattr(statsd, "StatsClient"):
+            self.log.warn(
+                "python-statsd support is deprecated and will be removed in the future. Please use https://pypi.python.org/pypi/statsd/"
+            )
 
         # Initialize Options
-        self.host = self.config['host']
-        self.port = int(self.config['port'])
-        self.batch_size = int(self.config['batch'])
+        self.host = self.config["host"]
+        self.port = int(self.config["port"])
+        self.batch_size = int(self.config["batch"])
         self.metrics = []
         self.old_values = {}
 
@@ -72,11 +74,13 @@ class StatsdHandler(Handler):
         """
         config = super(StatsdHandler, self).get_default_config_help()
 
-        config.update({
-            'host': '',
-            'port': '',
-            'batch': '',
-        })
+        config.update(
+            {
+                "host": "",
+                "port": "",
+                "batch": "",
+            }
+        )
 
         return config
 
@@ -86,11 +90,13 @@ class StatsdHandler(Handler):
         """
         config = super(StatsdHandler, self).get_default_config()
 
-        config.update({
-            'host': '',
-            'port': 1234,
-            'batch': 1,
-        })
+        config.update(
+            {
+                "host": "",
+                "port": 1234,
+                "batch": 1,
+            }
+        )
 
         return config
 
@@ -121,8 +127,8 @@ class StatsdHandler(Handler):
             (prefix, name) = metric.path.rsplit(".", 1)
             logging.debug("Sending %s %s|g", name, metric.value)
 
-            if metric.metric_type == 'GAUGE':
-                if hasattr(statsd, 'StatsClient'):
+            if metric.metric_type == "GAUGE":
+                if hasattr(statsd, "StatsClient"):
                     self.connection.gauge(metric.path, metric.value)
                 else:
                     statsd.Gauge(prefix, self.connection).send(name, metric.value)
@@ -136,12 +142,12 @@ class StatsdHandler(Handler):
 
                 self.old_values[metric.path] = metric.raw_value
 
-                if hasattr(statsd, 'StatsClient'):
+                if hasattr(statsd, "StatsClient"):
                     self.connection.incr(metric.path, value)
                 else:
                     statsd.Counter(prefix, self.connection).increment(name, value)
 
-        if hasattr(statsd, 'StatsClient'):
+        if hasattr(statsd, "StatsClient"):
             self.connection.send()
 
         self.metrics = []
@@ -157,8 +163,12 @@ class StatsdHandler(Handler):
         if not statsd:
             return
 
-        if hasattr(statsd, 'StatsClient'):
-            self.connection = statsd.StatsClient(host=self.host, port=self.port).pipeline()
+        if hasattr(statsd, "StatsClient"):
+            self.connection = statsd.StatsClient(
+                host=self.host, port=self.port
+            ).pipeline()
         else:
             # Create socket
-            self.connection = statsd.Connection(host=self.host, port=self.port, sample_rate=1.0)
+            self.connection = statsd.Connection(
+                host=self.host, port=self.port, sample_rate=1.0
+            )

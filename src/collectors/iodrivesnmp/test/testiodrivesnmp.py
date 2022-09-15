@@ -11,10 +11,9 @@ class TestIODriveSNMPCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('IODriveSNMPCollector', {
-            'allowed_names': allowed_names,
-            'interval': 1
-        })
+        config = get_collector_config(
+            "IODriveSNMPCollector", {"allowed_names": allowed_names, "interval": 1}
+        )
         self.collector = IODriveSNMPCollector(config, None)
 
     def test_import(self):

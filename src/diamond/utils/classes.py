@@ -15,7 +15,7 @@ from diamond.collector import Collector
 from diamond.handler.Handler import Handler
 from diamond.util import load_class_from_name
 
-logger = logging.getLogger('diamond')
+logger = logging.getLogger("diamond")
 
 
 def load_include_path(paths):
@@ -65,7 +65,7 @@ def load_handlers(config, handler_names):
         handler_names = [handler_names]
 
     for handler in handler_names:
-        logger.debug('Loading Handler %s', handler)
+        logger.debug("Loading Handler %s", handler)
 
         try:
             # Load Handler Class
@@ -76,16 +76,19 @@ def load_handlers(config, handler_names):
             handler_config = configobj.ConfigObj()
 
             # Merge default Handler default config
-            handler_config.merge(config['handlers']['handlersDefault'])
+            handler_config.merge(config["handlers"]["handlersDefault"])
 
             # Check if Handler config exists
-            if cls_name in config['handlers']:
+            if cls_name in config["handlers"]:
                 # Merge Handler config section
-                handler_config.merge(config['handlers'][cls_name])
+                handler_config.merge(config["handlers"][cls_name])
 
             # Check for config file in config directory
-            if 'handlers_config_path' in config['server']:
-                configfile = os.path.join(config['server']['handlers_config_path'], cls_name) + '.conf'
+            if "handlers_config_path" in config["server"]:
+                configfile = (
+                    os.path.join(config["server"]["handlers_config_path"], cls_name)
+                    + ".conf"
+                )
 
                 if os.path.exists(configfile):
                     # Merge Collector config file
@@ -97,7 +100,9 @@ def load_handlers(config, handler_names):
 
         except (ImportError, SyntaxError):
             # Log Error
-            logger.warning("Failed to load handler %s. %s", handler, traceback.format_exc())
+            logger.warning(
+                "Failed to load handler %s. %s", handler, traceback.format_exc()
+            )
             continue
 
     return handlers
@@ -108,7 +113,7 @@ def load_collectors(paths):
     Load all collectors
     """
     collectors = load_collectors_from_paths(paths)
-    collectors.update(load_collectors_from_entry_point('diamond.collectors'))
+    collectors.update(load_collectors_from_entry_point("diamond.collectors"))
 
     return collectors
 
@@ -124,7 +129,7 @@ def load_collectors_from_paths(paths):
         return
 
     if isinstance(paths, str):
-        paths = paths.split(',')
+        paths = paths.split(",")
         paths = list(map(str.strip, paths))
 
     load_include_path(paths)
@@ -134,7 +139,7 @@ def load_collectors_from_paths(paths):
         if not os.path.exists(path):
             raise OSError("Directory does not exist: %s" % path)
 
-        if path.endswith('tests') or path.endswith('fixtures'):
+        if path.endswith("tests") or path.endswith("fixtures"):
             return collectors
 
         # Load all the files in path
@@ -149,16 +154,26 @@ def load_collectors_from_paths(paths):
                     collectors[key] = subcollectors[key]
 
             # Ignore anything that isn't a .py file
-            elif os.path.isfile(fpath) and len(f) > 3 and f[-3:] == '.py' and f[0:4] != 'test' and f[0] != '.':
+            elif (
+                os.path.isfile(fpath)
+                and len(f) > 3
+                and f[-3:] == ".py"
+                and f[0:4] != "test"
+                and f[0] != "."
+            ):
                 modname = f[:-3]
 
-                spec = importlib.util.spec_from_file_location(modname, "%s/%s.py" % (path, modname))
+                spec = importlib.util.spec_from_file_location(
+                    modname, "%s/%s.py" % (path, modname)
+                )
 
                 try:
                     # Import the module
                     mod = spec.loader.load_module(modname)
                 except (KeyboardInterrupt, SystemExit) as err:
-                    logger.error("System or keyboard interrupt while loading module %s" % modname)
+                    logger.error(
+                        "System or keyboard interrupt while loading module %s" % modname
+                    )
 
                     if isinstance(err, SystemExit):
                         sys.exit(err.code)
@@ -166,7 +181,11 @@ def load_collectors_from_paths(paths):
                     raise KeyboardInterrupt
                 except Exception:
                     # Log error
-                    logger.error("Failed to import module: %s. %s", modname, traceback.format_exc())
+                    logger.error(
+                        "Failed to import module: %s. %s",
+                        modname,
+                        traceback.format_exc(),
+                    )
                 else:
                     for name, cls in get_collectors_from_module(mod):
                         collectors[name] = cls
@@ -185,7 +204,9 @@ def load_collectors_from_entry_point(path):
         try:
             mod = ep.load()
         except Exception:
-            logger.error('Failed to import entry_point: %s. %s', ep.name, traceback.format_exc())
+            logger.error(
+                "Failed to import entry_point: %s. %s", ep.name, traceback.format_exc()
+            )
         else:
             collectors.update(get_collectors_from_module(mod))
 
@@ -201,11 +222,11 @@ def get_collectors_from_module(mod):
 
         # Only attempt to load classes that are infact classes are Collectors but are not the base Collector class
         if inspect.isclass(attr) and issubclass(attr, Collector) and attr != Collector:
-            if attrname.startswith('parent_'):
+            if attrname.startswith("parent_"):
                 continue
 
             # Get class name
-            fqcn = '.'.join([mod.__name__, attrname])
+            fqcn = ".".join([mod.__name__, attrname])
 
             try:
                 # Load Collector class
@@ -215,7 +236,9 @@ def get_collectors_from_module(mod):
                 yield cls.__name__, cls
             except Exception:
                 # Log error
-                logger.error("Failed to load Collector: %s. %s", fqcn, traceback.format_exc())
+                logger.error(
+                    "Failed to load Collector: %s. %s", fqcn, traceback.format_exc()
+                )
                 continue
 
 
@@ -230,7 +253,11 @@ def initialize_collector(cls, name=None, configfile=None, handlers=[]):
         collector = cls(name=name, configfile=configfile, handlers=handlers)
     except Exception:
         # Log error
-        logger.error("Failed to initialize Collector: %s. %s", cls.__name__, traceback.format_exc())
+        logger.error(
+            "Failed to initialize Collector: %s. %s",
+            cls.__name__,
+            traceback.format_exc(),
+        )
 
     # Return collector
     return collector

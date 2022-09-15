@@ -44,11 +44,13 @@ except ImportError:
 class PhpFpmCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PhpFpmCollector, self).get_default_config_help()
-        config_help.update({
-            'uri': 'Path part of the URL, with or without the leading /',
-            'host': 'Host part of the URL',
-            'port': 'Port part of the URL',
-        })
+        config_help.update(
+            {
+                "uri": "Path part of the URL, with or without the leading /",
+                "host": "Host part of the URL",
+                "port": "Port part of the URL",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -56,43 +58,48 @@ class PhpFpmCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(PhpFpmCollector, self).get_default_config()
-        config.update({
-            'host': 'localhost',
-            'port': 80,
-            'uri': 'fpm-status',
-            'byte_unit': ['byte'],
-            'path': 'phpfpm',
-        })
+        config.update(
+            {
+                "host": "localhost",
+                "port": 80,
+                "uri": "fpm-status",
+                "byte_unit": ["byte"],
+                "path": "phpfpm",
+            }
+        )
         return config
 
     def collect(self):
         # if there is a / in front remove it
-        if self.config['uri'][0] == '/':
-            self.config['uri'] = self.config['uri'][1:]
+        if self.config["uri"][0] == "/":
+            self.config["uri"] = self.config["uri"][1:]
 
         try:
-            response = urllib.request.urlopen("http://%s:%s/%s?json" % (self.config['host'], int(self.config['port']), self.config['uri']))
+            response = urllib.request.urlopen(
+                "http://%s:%s/%s?json"
+                % (self.config["host"], int(self.config["port"]), self.config["uri"])
+            )
         except Exception as e:
-            self.log.error('Could not connect to php-fpm status page: %s', e)
+            self.log.error("Could not connect to php-fpm status page: %s", e)
             return {}
 
         try:
             j = json.loads(response.read())
         except Exception as e:
-            self.log.error('Could not parse json: %s', e)
+            self.log.error("Could not parse json: %s", e)
             return {}
 
         valid_metrics = [
-            'accepted_conn',
-            'listen_queue',
-            'max_listen_queue',
-            'listen_queue_len',
-            'idle_processes',
-            'active_processes',
-            'total_processes',
-            'max_active_processes',
-            'max_children_reached',
-            'slow_requests'
+            "accepted_conn",
+            "listen_queue",
+            "max_listen_queue",
+            "listen_queue_len",
+            "idle_processes",
+            "active_processes",
+            "total_processes",
+            "max_active_processes",
+            "max_children_reached",
+            "slow_requests",
         ]
         for k, v in j.items():
             #

@@ -36,29 +36,26 @@ except ImportError:
 
 class TwemproxyCollector(diamond.collector.Collector):
     GAUGES = [
-        'uptime',
-        'curr_connections',
-        'client_connections',
-        'server_connections',
-        'server_ejected_at',
-        'in_queue',
-        'in_queue_bytes',
-        'out_queue',
-        'out_queue_bytes'
+        "uptime",
+        "curr_connections",
+        "client_connections",
+        "server_connections",
+        "server_ejected_at",
+        "in_queue",
+        "in_queue_bytes",
+        "out_queue",
+        "out_queue_bytes",
     ]
 
-    IGNORED = [
-        'service',
-        'source',
-        'timestamp',
-        'version'
-    ]
+    IGNORED = ["service", "source", "timestamp", "version"]
 
     def get_default_config_help(self):
         config_help = super(TwemproxyCollector, self).get_default_config_help()
-        config_help.update({
-            'hosts': "List of hosts, and ports to collect. Set an alias by  prefixing the host:port with alias@",
-        })
+        config_help.update(
+            {
+                "hosts": "List of hosts, and ports to collect. Set an alias by  prefixing the host:port with alias@",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -66,14 +63,11 @@ class TwemproxyCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(TwemproxyCollector, self).get_default_config()
-        config.update({
-            'path': 'twemproxy',
-            'hosts': ['localhost:22222']
-        })
+        config.update({"path": "twemproxy", "hosts": ["localhost:22222"]})
         return config
 
     def get_raw_stats(self, host, port):
-        stats_data = ''
+        stats_data = ""
 
         # connect
         try:
@@ -95,7 +89,7 @@ class TwemproxyCollector(diamond.collector.Collector):
             sock.close()
 
         except socket.error:
-            self.log.exception('Failed to get stats from %s:%s', host, port)
+            self.log.exception("Failed to get stats from %s:%s", host, port)
 
         try:
             return json.loads(stats_data)
@@ -107,7 +101,7 @@ class TwemproxyCollector(diamond.collector.Collector):
         data = self.get_raw_stats(host, port)
 
         if data is None:
-            self.log.error('Unable to import json')
+            self.log.error("Unable to import json")
             return {}
 
         stats = {}
@@ -116,17 +110,19 @@ class TwemproxyCollector(diamond.collector.Collector):
         for stat, value in iter(data.items()):
             # Test if this is a pool
             if isinstance(value, dict):
-                pool_name = stat.replace('.', '_')
+                pool_name = stat.replace(".", "_")
                 pools[pool_name] = {}
 
                 for pool_stat, pool_value in iter(value.items()):
                     # Test if this is a pool server
                     if isinstance(pool_value, dict):
-                        server_name = pool_stat.replace('.', '_')
+                        server_name = pool_stat.replace(".", "_")
                         pools[pool_name][server_name] = {}
 
                         for server_stat, server_value in iter(pool_value.items()):
-                            pools[pool_name][server_name][server_stat] = int(server_value)
+                            pools[pool_name][server_name][server_stat] = int(
+                                server_value
+                            )
                     else:
                         pools[pool_name][pool_stat] = int(pool_value)
             else:
@@ -138,14 +134,14 @@ class TwemproxyCollector(diamond.collector.Collector):
         return stats, pools
 
     def collect(self):
-        hosts = self.config.get('hosts')
+        hosts = self.config.get("hosts")
 
         # Convert a string config value to be an array
         if isinstance(hosts, str):
             hosts = [hosts]
 
         for host in hosts:
-            matches = re.search('((.+)\@)?([^:]+)(:(\d+))?', host)
+            matches = re.search("((.+)\@)?([^:]+)(:(\d+))?", host)
             alias = matches.group(2)
             hostname = matches.group(3)
             port = matches.group(5)
@@ -168,11 +164,33 @@ class TwemproxyCollector(diamond.collector.Collector):
                     if isinstance(stat_value, dict):
                         for server_stat, server_value in iter(stat_value.items()):
                             if server_stat in self.GAUGES:
-                                self.publish_gauge(alias + ".pools." + pool + ".servers." + stat + "." + server_stat, server_value)
+                                self.publish_gauge(
+                                    alias
+                                    + ".pools."
+                                    + pool
+                                    + ".servers."
+                                    + stat
+                                    + "."
+                                    + server_stat,
+                                    server_value,
+                                )
                             else:
-                                self.publish_counter(alias + ".pools." + pool + ".servers." + stat + "." + server_stat, server_value)
+                                self.publish_counter(
+                                    alias
+                                    + ".pools."
+                                    + pool
+                                    + ".servers."
+                                    + stat
+                                    + "."
+                                    + server_stat,
+                                    server_value,
+                                )
                     else:
                         if stat in self.GAUGES:
-                            self.publish_gauge(alias + ".pools." + pool + "." + stat, stat_value)
+                            self.publish_gauge(
+                                alias + ".pools." + pool + "." + stat, stat_value
+                            )
                         else:
-                            self.publish_counter(alias + ".pools." + pool + "." + stat, stat_value)
+                            self.publish_counter(
+                                alias + ".pools." + pool + "." + stat, stat_value
+                            )

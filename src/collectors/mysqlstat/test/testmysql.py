@@ -23,13 +23,16 @@ def run_only_if_mysqlclient_is_available(func):
 
 class TestMySQLCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('MySQLCollector', {
-            'slave': 'True',
-            'master': 'True',
-            'innodb': 'True',
-            'hosts': ['root:@localhost:3306/mysql'],
-            'interval': '1',
-        })
+        config = get_collector_config(
+            "MySQLCollector",
+            {
+                "slave": "True",
+                "master": "True",
+                "innodb": "True",
+                "hosts": ["root:@localhost:3306/mysql"],
+                "interval": "1",
+            },
+        )
 
         self.collector = MySQLCollector(config, None)
 
@@ -37,29 +40,30 @@ class TestMySQLCollector(CollectorTestCase):
         self.assertTrue(MySQLCollector)
 
     @run_only_if_mysqlclient_is_available
-    @patch.object(MySQLCollector, 'connect', Mock(return_value=True))
-    @patch.object(MySQLCollector, 'disconnect', Mock(return_value=True))
-    @patch.object(Collector, 'publish')
+    @patch.object(MySQLCollector, "connect", Mock(return_value=True))
+    @patch.object(MySQLCollector, "disconnect", Mock(return_value=True))
+    @patch.object(Collector, "publish")
     def test_real_data(self, publish_mock):
         p_global_status = patch.object(
             MySQLCollector,
-            'get_db_global_status',
-            Mock(return_value=self.getPickledResults(
-                'mysql_get_db_global_status_1.pkl')))
+            "get_db_global_status",
+            Mock(
+                return_value=self.getPickledResults("mysql_get_db_global_status_1.pkl")
+            ),
+        )
         p_master_status = patch.object(
             MySQLCollector,
-            'get_db_master_status',
-            Mock(return_value=self.getPickledResults(
-                'get_db_master_status_1.pkl')))
+            "get_db_master_status",
+            Mock(return_value=self.getPickledResults("get_db_master_status_1.pkl")),
+        )
         p_slave_status = patch.object(
             MySQLCollector,
-            'get_db_slave_status',
-            Mock(return_value=self.getPickledResults(
-                'get_db_slave_status_1.pkl')))
+            "get_db_slave_status",
+            Mock(return_value=self.getPickledResults("get_db_slave_status_1.pkl")),
+        )
         p_innodb_status = patch.object(
-            MySQLCollector,
-            'get_db_innodb_status',
-            Mock(return_value=[{}]))
+            MySQLCollector, "get_db_innodb_status", Mock(return_value=[{}])
+        )
 
         p_global_status.start()
         p_master_status.start()
@@ -75,23 +79,24 @@ class TestMySQLCollector(CollectorTestCase):
 
         p_global_status = patch.object(
             MySQLCollector,
-            'get_db_global_status',
-            Mock(return_value=self.getPickledResults(
-                'mysql_get_db_global_status_2.pkl')))
+            "get_db_global_status",
+            Mock(
+                return_value=self.getPickledResults("mysql_get_db_global_status_2.pkl")
+            ),
+        )
         p_master_status = patch.object(
             MySQLCollector,
-            'get_db_master_status',
-            Mock(return_value=self.getPickledResults(
-                'get_db_master_status_2.pkl')))
+            "get_db_master_status",
+            Mock(return_value=self.getPickledResults("get_db_master_status_2.pkl")),
+        )
         p_slave_status = patch.object(
             MySQLCollector,
-            'get_db_slave_status',
-            Mock(return_value=self.getPickledResults(
-                'get_db_slave_status_2.pkl')))
+            "get_db_slave_status",
+            Mock(return_value=self.getPickledResults("get_db_slave_status_2.pkl")),
+        )
         p_innodb_status = patch.object(
-            MySQLCollector,
-            'get_db_innodb_status',
-            Mock(return_value=[{}]))
+            MySQLCollector, "get_db_innodb_status", Mock(return_value=[{}])
+        )
 
         p_global_status.start()
         p_master_status.start()
@@ -104,16 +109,19 @@ class TestMySQLCollector(CollectorTestCase):
         p_innodb_status.stop()
 
         metrics = {}
-        metrics.update(self.getPickledResults(
-            'mysql_get_db_global_status_expected.pkl'))
-        metrics.update(self.getPickledResults(
-            'get_db_master_status_expected.pkl'))
-        metrics.update(self.getPickledResults(
-            'get_db_slave_status_expected.pkl'))
+        metrics.update(
+            self.getPickledResults("mysql_get_db_global_status_expected.pkl")
+        )
+        metrics.update(self.getPickledResults("get_db_master_status_expected.pkl"))
+        metrics.update(self.getPickledResults("get_db_slave_status_expected.pkl"))
 
         self.assertPublishedMany(publish_mock, metrics)
 
-        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
+        self.setDocExample(
+            collector=self.collector.__class__.__name__,
+            metrics=metrics,
+            defaultpath=self.collector.config["path"],
+        )
 
 
 if __name__ == "__main__":

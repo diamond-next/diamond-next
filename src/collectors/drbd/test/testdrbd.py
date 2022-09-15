@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestDRBDCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('DRBDCollector', {})
+        config = get_collector_config("DRBDCollector", {})
 
         self.collector = DRBDCollector(config, None)
 
