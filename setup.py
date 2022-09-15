@@ -10,18 +10,18 @@ from distro import linux_distribution
 
 
 def running_under_virtualenv():
-    if hasattr(sys, 'real_prefix'):
+    if hasattr(sys, "real_prefix"):
         return True
     elif sys.prefix != getattr(sys, "base_prefix", sys.prefix):
         return True
 
-    if os.getenv('VIRTUAL_ENV', False):
+    if os.getenv("VIRTUAL_ENV", False):
         return True
 
     return False
 
 
-if os.environ.get('USE_SETUPTOOLS'):
+if os.environ.get("USE_SETUPTOOLS"):
     from setuptools import setup
 
     setup_kwargs = dict(zip_safe=0)
@@ -30,67 +30,71 @@ else:
 
     setup_kwargs = dict()
 
-if os.name == 'nt':
-    base_files = os.path.join(os.environ['ProgramFiles'], 'diamond')
+if os.name == "nt":
+    base_files = os.path.join(os.environ["ProgramFiles"], "diamond")
     data_files = [
-        (base_files, ['LICENSE', 'version.txt']),
-        (os.path.join(base_files, 'user_scripts'), []),
-        (os.path.join(base_files, 'conf'), glob('conf/*.conf.*')),
-        (os.path.join(base_files, 'collectors'), glob('conf/collectors/*')),
-        (os.path.join(base_files, 'handlers'), glob('conf/handlers/*')),
+        (base_files, ["LICENSE", "version.txt"]),
+        (os.path.join(base_files, "user_scripts"), []),
+        (os.path.join(base_files, "conf"), glob("conf/*.conf.*")),
+        (os.path.join(base_files, "collectors"), glob("conf/collectors/*")),
+        (os.path.join(base_files, "handlers"), glob("conf/handlers/*")),
     ]
 else:
     base_files = []
     data_files = [
-        ('share/diamond', ['LICENSE', 'version.txt']),
-        ('share/diamond/user_scripts', []),
+        ("share/diamond", ["LICENSE", "version.txt"]),
+        ("share/diamond/user_scripts", []),
     ]
 
     distro_name = linux_distribution()[0]
-    distro_major_version = int(linux_distribution()[1].split('.')[0])
+    distro_major_version = int(linux_distribution()[1].split(".")[0])
 
     if not distro_name:
-        if 'amzn' in platform.uname()[2]:
-            distro_name = 'centos'
+        if "amzn" in platform.uname()[2]:
+            distro_name = "centos"
 
     if running_under_virtualenv():
-        data_files.append(('etc/diamond', glob('conf/*.conf.*')))
-        data_files.append(('etc/diamond/collectors', glob('conf/collectors/*')))
-        data_files.append(('etc/diamond/handlers', glob('conf/handlers/*')))
+        data_files.append(("etc/diamond", glob("conf/*.conf.*")))
+        data_files.append(("etc/diamond/collectors", glob("conf/collectors/*")))
+        data_files.append(("etc/diamond/handlers", glob("conf/handlers/*")))
     else:
-        data_files.append(('/etc/diamond', glob('conf/*.conf.*')))
-        data_files.append(('/etc/diamond/collectors', glob('conf/collectors/*')))
-        data_files.append(('/etc/diamond/handlers', glob('conf/handlers/*')))
-        data_files.append(('/var/log/diamond', ['.keep']))
+        data_files.append(("/etc/diamond", glob("conf/*.conf.*")))
+        data_files.append(("/etc/diamond/collectors", glob("conf/collectors/*")))
+        data_files.append(("/etc/diamond/handlers", glob("conf/handlers/*")))
+        data_files.append(("/var/log/diamond", [".keep"]))
 
-        if distro_name == 'Ubuntu':
+        if distro_name == "Ubuntu":
             if distro_major_version >= 16:
-                data_files.append(('/usr/lib/systemd/system', ['rpm/systemd/diamond.service']))
+                data_files.append(
+                    ("/usr/lib/systemd/system", ["rpm/systemd/diamond.service"])
+                )
             else:
-                data_files.append(('/etc/init', ['debian/diamond.upstart']))
+                data_files.append(("/etc/init", ["debian/diamond.upstart"]))
 
-        if distro_name in ['centos', 'redhat', 'debian', 'fedora', 'oracle']:
-            data_files.append(('/etc/init.d', ['bin/init.d/diamond']))
+        if distro_name in ["centos", "redhat", "debian", "fedora", "oracle"]:
+            data_files.append(("/etc/init.d", ["bin/init.d/diamond"]))
 
-            if distro_major_version >= 7 and not distro_name == 'debian':
-                data_files.append(('/usr/lib/systemd/system', ['rpm/systemd/diamond.service']))
-            elif distro_major_version >= 6 and not distro_name == 'debian':
-                data_files.append(('/etc/init', ['rpm/upstart/diamond.conf']))
+            if distro_major_version >= 7 and not distro_name == "debian":
+                data_files.append(
+                    ("/usr/lib/systemd/system", ["rpm/systemd/diamond.service"])
+                )
+            elif distro_major_version >= 6 and not distro_name == "debian":
+                data_files.append(("/etc/init", ["rpm/upstart/diamond.conf"]))
 
 
 def get_version():
     """
-        Read the version.txt file to get the new version string
-        Generate it if version.txt is not available. Generation
-        is required for pip installs
+    Read the version.txt file to get the new version string
+    Generate it if version.txt is not available. Generation
+    is required for pip installs
     """
     try:
-        f = open('version.txt')
+        f = open("version.txt")
     except IOError:
         os.system("./version.sh > version.txt")
-        f = open('version.txt')
+        f = open("version.txt")
 
-    version_name = ''.join(f.readlines()).rstrip()
+    version_name = "".join(f.readlines()).rstrip()
     f.close()
 
     return version_name
@@ -98,7 +102,7 @@ def get_version():
 
 def pkg_path(root, path, rpath="/"):
     """
-        Package up a path recursively
+    Package up a path recursively
     """
     global data_files
 
@@ -109,7 +113,7 @@ def pkg_path(root, path, rpath="/"):
 
     for spath in os.listdir(path):
         # Ignore test directories
-        if spath == 'test':
+        if spath == "test":
             continue
 
         subpath = os.path.join(path, spath)
@@ -124,30 +128,30 @@ def pkg_path(root, path, rpath="/"):
     data_files.append((root + rpath, files))
 
 
-if os.name == 'nt':
-    pkg_path(os.path.join(base_files, 'collectors'), 'src/collectors', '\\')
+if os.name == "nt":
+    pkg_path(os.path.join(base_files, "collectors"), "src/collectors", "\\")
 else:
-    pkg_path('share/diamond/collectors', 'src/collectors')
+    pkg_path("share/diamond/collectors", "src/collectors")
 
 version = get_version()
 
 setup(
-    name='diamond-next',
+    name="diamond-next",
     version=version,
-    url='https://github.com/diamond-next/diamond-next',
-    author='The Diamond (Next) Team',
-    author_email='krzysztof@warunek.net',
-    license='MIT License',
-    description='Smart data producer for graphite graphing package',
-    package_dir={'': 'src'},
-    packages=['diamond', 'diamond.handler', 'diamond.utils'],
-    scripts=['bin/diamond', 'bin/diamond-setup'],
+    url="https://github.com/diamond-next/diamond-next",
+    author="The Diamond (Next) Team",
+    author_email="krzysztof@warunek.net",
+    license="MIT License",
+    description="Smart data producer for graphite graphing package",
+    package_dir={"": "src"},
+    packages=["diamond", "diamond.handler", "diamond.utils"],
+    scripts=["bin/diamond", "bin/diamond-setup"],
     data_files=data_files,
-    python_requires='>=3.8',
-    install_requires=['configobj', 'psutil'],
+    python_requires=">=3.8",
+    install_requires=["configobj", "psutil"],
     classifiers=[
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
     ],
     **setup_kwargs
 )
