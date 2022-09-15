@@ -60,33 +60,33 @@ class NetAppCollector(diamond.collector.Collector):
     # This is needed since the API will return a mixture of percentages,
     # nanoseconds, milliseconds, bytes and kilobytes.
     METRICS = {
-        'aggregate': [
+        "aggregate": [
             ("user_reads", "user_read_iops", 1),
-            ("user_writes", "user_write_iops", 1)
+            ("user_writes", "user_write_iops", 1),
         ],
-        'disk': [
+        "disk": [
             ("disk_busy", "disk_busy_pct", 100),
             ("base_for_disk_busy", "base_for_disk_busy", 1),
             ("user_read_blocks", "user_read_blocks_per_sec", 1),
             ("user_write_blocks", "user_write_blocks_per_sec", 1),
             ("user_read_latency", "user_read_latency", 0.001),
-            ("user_write_latency", "user_write_latency", 0.001)
+            ("user_write_latency", "user_write_latency", 0.001),
         ],
-        'ifnet': [
+        "ifnet": [
             ("send_data", "tx_bytes_per_sec", 1),
-            ("recv_data", "rx_bytes_per_sec", 1)
+            ("recv_data", "rx_bytes_per_sec", 1),
         ],
-        'lun': [
+        "lun": [
             ("total_ops", "total_iops", 1),
             ("read_ops", "read_iops", 1),
             ("write_ops", "write_iops", 1),
-            ("avg_latency", "avg_latency", 1)
+            ("avg_latency", "avg_latency", 1),
         ],
-        'processor': [
+        "processor": [
             ("processor_busy", "processor_busy_pct", 100),
-            ("processor_elapsed_time", "processor_elapsed_time", 1)
+            ("processor_elapsed_time", "processor_elapsed_time", 1),
         ],
-        'system': [
+        "system": [
             ("nfs_ops", "nfs_iops", 1),
             ("cifs_ops", "cifs_iops", 1),
             ("http_ops", "http_iops", 1),
@@ -105,9 +105,9 @@ class NetAppCollector(diamond.collector.Collector):
             ("disk_data_written", "total_write_bytes_per_sec", 1000),
             ("sys_read_latency", "sys_read_latency", 1),
             ("sys_write_latency", "sys_write_latency", 1),
-            ("sys_avg_latency", "sys_avg_latency", 1)
+            ("sys_avg_latency", "sys_avg_latency", 1),
         ],
-        'vfiler': [
+        "vfiler": [
             ("vfiler_cpu_busy", "cpu_busy_pct", 100),
             ("vfiler_cpu_busy_base", "cpu_busy_base", 1),
             ("vfiler_net_data_recv", "rx_bytes_per_sec", 1000),
@@ -117,7 +117,7 @@ class NetAppCollector(diamond.collector.Collector):
             ("vfiler_read_bytes", "read_bytes_per_sec", 1000),
             ("vfiler_write_bytes", "write_bytes_per_sec", 1000),
         ],
-        'volume': [
+        "volume": [
             ("total_ops", "total_iops", 1),
             ("avg_latency", "avg_latency", 0.001),
             ("read_ops", "read_iops", 1),
@@ -149,7 +149,7 @@ class NetAppCollector(diamond.collector.Collector):
             ("nfs_read_latency", "nfs_read_latency", 0.001),
             ("nfs_write_latency", "nfs_write_latency", 0.001),
             ("nfs_read_ops", "nfs_read_iops", 1),
-            ("nfs_write_ops", "nfs_write_iops", 1)
+            ("nfs_write_ops", "nfs_write_iops", 1),
         ],
     }
 
@@ -199,8 +199,8 @@ class NetAppCollector(diamond.collector.Collector):
 
     def get_default_config(self):
         default_config = super(NetAppCollector, self).get_default_config()
-        default_config['path_prefix'] = "netapp"
-        default_config['netappsdkpath'] = "/opt/netapp/lib/python/NetApp"
+        default_config["path_prefix"] = "netapp"
+        default_config["netappsdkpath"] = "/opt/netapp/lib/python/NetApp"
         return default_config
 
     def _replace_and_publish(self, path, prettyname, value, device):
@@ -244,7 +244,9 @@ class NetAppCollector(diamond.collector.Collector):
             value = (float(primary_delta) / secondary_delta) * multiplier
             self._replace_and_publish(path, prettyname, value, device)
 
-    def _gen_delta_per_sec(self, path, value_delta, time_delta, multiplier, prettyname, device):
+    def _gen_delta_per_sec(
+        self, path, value_delta, time_delta, multiplier, prettyname, device
+    ):
         """
         Calulates the difference between to point, and scales is to per second.
         """
@@ -262,18 +264,20 @@ class NetAppCollector(diamond.collector.Collector):
         """
         This function collects the metrics for one filer.
         """
-        sys.path.append(self.config['netappsdkpath'])
+        sys.path.append(self.config["netappsdkpath"])
 
         try:
             import NaServer
         except ImportError:
-            self.log.error("Unable to load NetApp SDK from %s" % (self.config['netappsdkpath']))
+            self.log.error(
+                "Unable to load NetApp SDK from %s" % (self.config["netappsdkpath"])
+            )
             return
 
         # Set up the parameters
         server = NaServer.NaServer(ip, 1, 3)
-        server.set_transport_type('HTTPS')
-        server.set_style('LOGIN')
+        server.set_transport_type("HTTPS")
+        server.set_style("LOGIN")
         server.set_admin_user(user, password)
 
         # We're only able to query a single object at a time, so we'll loop over the objects.
@@ -310,7 +314,9 @@ class NetAppCollector(diamond.collector.Collector):
             res = server.invoke_elem(query)
 
             if res.results_status() == "failed":
-                self.log.error("Connection to filer %s failed; %s" % (device, res.results_reason()))
+                self.log.error(
+                    "Connection to filer %s failed; %s" % (device, res.results_reason())
+                )
                 return
 
             iter_tag = res.child_get_string("tag")
@@ -329,7 +335,10 @@ class NetAppCollector(diamond.collector.Collector):
                 res = server.invoke_elem(query)
 
                 if res.results_status() == "failed":
-                    print("Connection to filer %s failed; %s" % (device, res.results_reason()))
+                    print(
+                        "Connection to filer %s failed; %s"
+                        % (device, res.results_reason())
+                    )
                     return
 
                 num_records = res.child_get_int("records")
@@ -339,30 +348,45 @@ class NetAppCollector(diamond.collector.Collector):
                     instances = instances_list.children_get()
 
                     for instance in instances:
-                        raw_name = unicodedata.normalize('NFKD', instance.child_get_string("name")).encode('ascii', 'ignore')
+                        raw_name = unicodedata.normalize(
+                            "NFKD", instance.child_get_string("name")
+                        ).encode("ascii", "ignore")
 
                         # Shorten the name for disks as they are very long and padded with zeroes, eg: 5000C500:3A236B0B:00000000:00000000:00000000:...
                         if na_object == "disk":
                             non_zero_blocks = [
-                                block for block in raw_name.split(":")
+                                block
+                                for block in raw_name.split(":")
                                 if block != "00000000"
                             ]
                             raw_name = "".join(non_zero_blocks)
 
-                        instance_name = re.sub(r'\W', '_', raw_name)
+                        instance_name = re.sub(r"\W", "_", raw_name)
                         counters_list = instance.child_get("counters")
                         counters = counters_list.children_get()
 
                         for counter in counters:
-                            metricname = unicodedata.normalize('NFKD', counter.child_get_string("name")).encode('ascii', 'ignore')
+                            metricname = unicodedata.normalize(
+                                "NFKD", counter.child_get_string("name")
+                            ).encode("ascii", "ignore")
                             metricvalue = counter.child_get_string("value")
 
                             # We'll need a long complete pathname to not confuse self.derivative
-                            pathname = ".".join([self.config["path_prefix"], device, na_object, instance_name, metricname])
+                            pathname = ".".join(
+                                [
+                                    self.config["path_prefix"],
+                                    device,
+                                    na_object,
+                                    instance_name,
+                                    metricname,
+                                ]
+                            )
                             raw[pathname] = int(metricvalue)
 
             # Do the math
-            self.log.debug("Processing %i metrics for object %s" % (len(raw), na_object))
+            self.log.debug(
+                "Processing %i metrics for object %s" % (len(raw), na_object)
+            )
 
             # Since the derivative function both returns the derivative
             # and saves a new point, we'll need to store all derivatives
@@ -380,6 +404,10 @@ class NetAppCollector(diamond.collector.Collector):
                 if metricname in self.DROPMETRICS:
                     continue
                 elif metricname in self.DIVIDERS.keys():
-                    self._gen_delta_depend(key, derivative, multiplier, prettyname, device)
+                    self._gen_delta_depend(
+                        key, derivative, multiplier, prettyname, device
+                    )
                 else:
-                    self._gen_delta_per_sec(key, derivative[key], time_delta, multiplier, prettyname, device)
+                    self._gen_delta_per_sec(
+                        key, derivative[key], time_delta, multiplier, prettyname, device
+                    )

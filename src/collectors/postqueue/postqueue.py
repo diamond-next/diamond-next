@@ -17,11 +17,13 @@ import diamond.collector
 class PostqueueCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PostqueueCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'The path to the postqueue binary',
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-        })
+        config_help.update(
+            {
+                "bin": "The path to the postqueue binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -29,20 +31,22 @@ class PostqueueCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(PostqueueCollector, self).get_default_config()
-        config.update({
-            'path': 'postqueue',
-            'bin': '/usr/bin/postqueue',
-            'use_sudo': False,
-            'sudo_cmd': '/usr/bin/sudo',
-        })
+        config.update(
+            {
+                "path": "postqueue",
+                "bin": "/usr/bin/postqueue",
+                "use_sudo": False,
+                "sudo_cmd": "/usr/bin/sudo",
+            }
+        )
         return config
 
     def get_postqueue_output(self):
         try:
-            command = [self.config['bin'], '-p']
+            command = [self.config["bin"], "-p"]
 
-            if diamond.collector.str_to_bool(self.config['use_sudo']):
-                command.insert(0, self.config['sudo_cmd'])
+            if diamond.collector.str_to_bool(self.config["use_sudo"]):
+                command.insert(0, self.config["sudo_cmd"])
 
             return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
         except OSError:
@@ -56,4 +60,4 @@ class PostqueueCollector(diamond.collector.Collector):
         except:
             postqueue_count = 0
 
-        self.publish('count', postqueue_count)
+        self.publish("count", postqueue_count)

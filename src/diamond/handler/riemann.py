@@ -25,6 +25,7 @@ from diamond.handler.Handler import Handler
 try:
     from riemann_client.transport import TCPTransport, UDPTransport
     from riemann_client.client import Client
+
     riemann_client = True
 except ImportError:
     riemann_client = None
@@ -40,12 +41,12 @@ class RiemannHandler(Handler):
             return
 
         # Initialize options
-        self.host = self.config['host']
-        self.port = int(self.config['port'])
-        self.transport = self.config['transport']
+        self.host = self.config["host"]
+        self.port = int(self.config["port"])
+        self.transport = self.config["transport"]
 
         # Initialize client
-        if self.transport == 'tcp':
+        if self.transport == "tcp":
             self.transport = TCPTransport(self.host, self.port)
         else:
             self.transport = UDPTransport(self.host, self.port)
@@ -59,11 +60,13 @@ class RiemannHandler(Handler):
         """
         config = super(RiemannHandler, self).get_default_config_help()
 
-        config.update({
-            'host': '',
-            'port': '',
-            'transport': 'tcp or udp',
-        })
+        config.update(
+            {
+                "host": "",
+                "port": "",
+                "transport": "tcp or udp",
+            }
+        )
 
         return config
 
@@ -73,11 +76,13 @@ class RiemannHandler(Handler):
         """
         config = super(RiemannHandler, self).get_default_config()
 
-        config.update({
-            'host': '',
-            'port': 123,
-            'transport': 'tcp',
-        })
+        config.update(
+            {
+                "host": "",
+                "port": 123,
+                "transport": "tcp",
+            }
+        )
 
         return config
 
@@ -98,19 +103,21 @@ class RiemannHandler(Handler):
         """
 
         # Riemann has a separate "host" field, so remove from the path.
-        path = '%s.%s.%s' % (
+        path = "%s.%s.%s" % (
             metric.getPathPrefix(),
             metric.getCollectorPath(),
-            metric.getMetricPath()
+            metric.getMetricPath(),
         )
 
-        return self.client.create_event({
-            'host': metric.host,
-            'service': path,
-            'time': metric.timestamp,
-            'metric_f': float(metric.value),
-            'ttl': metric.ttl,
-        })
+        return self.client.create_event(
+            {
+                "host": metric.host,
+                "service": path,
+                "time": metric.timestamp,
+                "metric_f": float(metric.value),
+                "ttl": metric.ttl,
+            }
+        )
 
     def _connect(self):
         self.transport.connect()
@@ -119,7 +126,7 @@ class RiemannHandler(Handler):
         """
         Disconnect from Riemann.
         """
-        if hasattr(self, 'transport'):
+        if hasattr(self, "transport"):
             self.transport.disconnect()
 
     def __del__(self):

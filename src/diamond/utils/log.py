@@ -10,28 +10,30 @@ import sys
 class DebugFormatter(logging.Formatter):
     def __init__(self, fmt=None):
         if fmt is None:
-            fmt = '%(created)s\t[%(processName)s:%(process)d:%(levelname)s]\t%(message)s'
+            fmt = (
+                "%(created)s\t[%(processName)s:%(process)d:%(levelname)s]\t%(message)s"
+            )
 
         self.fmt_default = fmt
-        self.fmt_prefix = fmt.replace('%(message)s', '')
+        self.fmt_prefix = fmt.replace("%(message)s", "")
         logging.Formatter.__init__(self, fmt)
 
     def format(self, record):
         self._fmt = self.fmt_default
 
         if record.levelno in [logging.ERROR, logging.CRITICAL]:
-            self._fmt = ''
+            self._fmt = ""
             self._fmt += self.fmt_prefix
-            self._fmt += '%(message)s'
-            self._fmt += '\n'
+            self._fmt += "%(message)s"
+            self._fmt += "\n"
             self._fmt += self.fmt_prefix
-            self._fmt += '%(pathname)s:%(lineno)d'
+            self._fmt += "%(pathname)s:%(lineno)d"
 
         return logging.Formatter.format(self, record)
 
 
 def setup_logging(configfile, stdout=False):
-    log = logging.getLogger('diamond')
+    log = logging.getLogger("diamond")
 
     try:
         logging.config.fileConfig(configfile, disable_existing_loggers=False)

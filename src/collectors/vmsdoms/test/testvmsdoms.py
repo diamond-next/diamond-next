@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestVMSDomsCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('VMSDomsCollector', {})
+        config = get_collector_config("VMSDomsCollector", {})
         self.collector = VMSDomsCollector(config, None)
 
     def test_import(self):

@@ -22,15 +22,19 @@ except ImportError:
 
 class OpenstackSwiftReconCollector(diamond.collector.Collector):
     def get_default_config_help(self):
-        config_help = super(OpenstackSwiftReconCollector, self).get_default_config_help()
-        config_help.update({
-            'recon_account_cache': 'path to swift recon account cache '
-            '(default /var/cache/swift/account.recon)',
-            'recon_container_cache': 'path to swift recon container cache '
-            '(default /var/cache/swift/container.recon)',
-            'recon_object_cache': 'path to swift recon object cache '
-            '(default /var/cache/swift/object.recon)'
-        })
+        config_help = super(
+            OpenstackSwiftReconCollector, self
+        ).get_default_config_help()
+        config_help.update(
+            {
+                "recon_account_cache": "path to swift recon account cache "
+                "(default /var/cache/swift/account.recon)",
+                "recon_container_cache": "path to swift recon container cache "
+                "(default /var/cache/swift/container.recon)",
+                "recon_object_cache": "path to swift recon object cache "
+                "(default /var/cache/swift/object.recon)",
+            }
+        )
 
         return config_help
 
@@ -39,13 +43,15 @@ class OpenstackSwiftReconCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(OpenstackSwiftReconCollector, self).get_default_config()
-        config.update({
-            'path': 'swiftrecon',
-            'recon_account_cache': '/var/cache/swift/account.recon',
-            'recon_container_cache': '/var/cache/swift/container.recon',
-            'recon_object_cache': '/var/cache/swift/object.recon',
-            'interval': 300,
-        })
+        config.update(
+            {
+                "path": "swiftrecon",
+                "recon_account_cache": "/var/cache/swift/account.recon",
+                "recon_container_cache": "/var/cache/swift/container.recon",
+                "recon_object_cache": "/var/cache/swift/object.recon",
+                "interval": 300,
+            }
+        )
 
         return config
 
@@ -60,9 +66,9 @@ class OpenstackSwiftReconCollector(diamond.collector.Collector):
     def collect(self):
         self.metrics = []
         recon_cache = {
-            'account': self.config['recon_account_cache'],
-            'container': self.config['recon_container_cache'],
-            'object': self.config['recon_object_cache']
+            "account": self.config["recon_account_cache"],
+            "container": self.config["recon_container_cache"],
+            "object": self.config["recon_object_cache"],
         }
 
         for recon_type in recon_cache:
@@ -78,7 +84,7 @@ class OpenstackSwiftReconCollector(diamond.collector.Collector):
                     self._process_cache(rmetrics)
 
                     for k, v in self.metrics:
-                        metric_name = '%s.%s' % (recon_type, ".".join(k))
+                        metric_name = "%s.%s" % (recon_type, ".".join(k))
 
                         if isinstance(v, (int, float)):
                             self.publish(metric_name, v)

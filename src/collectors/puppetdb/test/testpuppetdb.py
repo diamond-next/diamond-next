@@ -10,9 +10,7 @@ from test import get_collector_config
 
 class TestPuppetDBCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('PuppetDBCollector', {
-            'interval': 10
-        })
+        config = get_collector_config("PuppetDBCollector", {"interval": 10})
 
         self.collector = PuppetDBCollector(config, None)
 

@@ -26,29 +26,28 @@ import diamond.collector
 
 
 class FluentdCollector(diamond.collector.Collector):
-    API_PATH = '/api/plugins.json'
+    API_PATH = "/api/plugins.json"
 
     def get_default_config_help(self):
         config_help = super(FluentdCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Fluentd host',
-            'port': 'Fluentd port',
-            'collect': 'Plugins and their metrics to collect'
-        })
+        config_help.update(
+            {
+                "host": "Fluentd host",
+                "port": "Fluentd port",
+                "collect": "Plugins and their metrics to collect",
+            }
+        )
         return config_help
 
     def get_default_config(self):
         config = super(FluentdCollector, self).get_default_config()
-        config.update({
-            'host': 'localhost',
-            'port': '24220',
-            'path': 'fluentd',
-            'collect': {}
-        })
+        config.update(
+            {"host": "localhost", "port": "24220", "path": "fluentd", "collect": {}}
+        )
         return config
 
     def collect(self):
-        params = (self.config['host'], self.config['port'], self.API_PATH)
+        params = (self.config["host"], self.config["port"], self.API_PATH)
         url = "http://%s:%s/%s" % params
 
         res = urllib.request.urlopen(url)
@@ -60,9 +59,9 @@ class FluentdCollector(diamond.collector.Collector):
 
     def parse_api_output(self, status):
         result = []
-        for p in status.get('plugins'):
-            if p['type'] in self.config['collect'].keys():
-                for m in self.config['collect'].get(p['type']):
-                    tag = ".".join([p['type'], m])
+        for p in status.get("plugins"):
+            if p["type"] in self.config["collect"].keys():
+                for m in self.config["collect"].get(p["type"]):
+                    tag = ".".join([p["type"], m])
                     result.append((tag, p.get(m)))
         return result

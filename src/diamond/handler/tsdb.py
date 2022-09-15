@@ -94,6 +94,7 @@ class TSDBHandler(diamond.handler.Handler.Handler):
     """
     Implements the abstract Handler class, sending data to OpenTSDB
     """
+
     def __init__(self, config=None):
         """
         Create a new instance of the TSDBHandler class
@@ -105,29 +106,29 @@ class TSDBHandler(diamond.handler.Handler.Handler):
         # Initialize Options
 
         # host
-        self.host = str(self.config['host'])
-        self.port = int(self.config['port'])
-        self.timeout = int(self.config['timeout'])
+        self.host = str(self.config["host"])
+        self.port = int(self.config["port"])
+        self.timeout = int(self.config["timeout"])
 
         # Authorization
-        self.user = str(self.config['user'])
-        self.password = str(self.config['password'])
+        self.user = str(self.config["user"])
+        self.password = str(self.config["password"])
 
         # data
-        self.batch = int(self.config['batch'])
-        self.compression = int(self.config['compression'])
+        self.batch = int(self.config["batch"])
+        self.compression = int(self.config["compression"])
 
         # prefix
-        if self.config['prefix'] != "":
-            self.prefix = str(self.config['prefix']) + '.'
+        if self.config["prefix"] != "":
+            self.prefix = str(self.config["prefix"]) + "."
         else:
             self.prefix = ""
 
         # tags
         self.tags = []
-        pattern = re.compile(r'([a-zA-Z0-9]+)=([a-zA-Z0-9]+)')
+        pattern = re.compile(r"([a-zA-Z0-9]+)=([a-zA-Z0-9]+)")
 
-        for (key, value) in re.findall(pattern, str(self.config['tags'])):
+        for (key, value) in re.findall(pattern, str(self.config["tags"])):
             self.tags.append([key, value])
 
         # headers
@@ -135,7 +136,9 @@ class TSDBHandler(diamond.handler.Handler.Handler):
 
         # Authorization
         if self.user != "":
-            base64string = base64.b64encode(bytes('%s:%s' % (self.user, self.password), 'utf-8'))
+            base64string = base64.b64encode(
+                bytes("%s:%s" % (self.user, self.password), "utf-8")
+            )
             self.httpheader["Authorization"] = "Basic %s" % base64string
 
         # compression
@@ -144,8 +147,8 @@ class TSDBHandler(diamond.handler.Handler.Handler):
 
         self.entrys = []
 
-        self.skipAggregates = self.config['skipAggregates']
-        self.cleanMetrics = self.config['cleanMetrics']
+        self.skipAggregates = self.config["skipAggregates"]
+        self.cleanMetrics = self.config["cleanMetrics"]
 
     def get_default_config_help(self):
         """
@@ -153,19 +156,21 @@ class TSDBHandler(diamond.handler.Handler.Handler):
         """
         config = super(TSDBHandler, self).get_default_config_help()
 
-        config.update({
-            'host': '',
-            'port': '',
-            'timeout': '',
-            'tags': '',
-            'prefix': '',
-            'batch': '',
-            'compression': '',
-            'user': '',
-            'password': '',
-            'cleanMetrics': True,
-            'skipAggregates': True,
-        })
+        config.update(
+            {
+                "host": "",
+                "port": "",
+                "timeout": "",
+                "tags": "",
+                "prefix": "",
+                "batch": "",
+                "compression": "",
+                "user": "",
+                "password": "",
+                "cleanMetrics": True,
+                "skipAggregates": True,
+            }
+        )
 
         return config
 
@@ -175,19 +180,21 @@ class TSDBHandler(diamond.handler.Handler.Handler):
         """
         config = super(TSDBHandler, self).get_default_config()
 
-        config.update({
-            'host': '127.0.0.1',
-            'port': 4242,
-            'timeout': 5,
-            'tags': '',
-            'prefix': '',
-            'batch': 1,
-            'compression': 0,
-            'user': '',
-            'password': '',
-            'cleanMetrics': True,
-            'skipAggregates': True,
-        })
+        config.update(
+            {
+                "host": "127.0.0.1",
+                "port": 4242,
+                "timeout": 5,
+                "tags": "",
+                "prefix": "",
+                "batch": 1,
+                "compression": 0,
+                "user": "",
+                "password": "",
+                "cleanMetrics": True,
+                "skipAggregates": True,
+            }
+        )
 
         return config
 
@@ -201,7 +208,7 @@ class TSDBHandler(diamond.handler.Handler.Handler):
         """
         Process a metric by sending it to TSDB
         """
-        entry = {'timestamp': metric.timestamp, 'value': metric.value, "tags": {}}
+        entry = {"timestamp": metric.timestamp, "value": metric.value, "tags": {}}
         entry["tags"]["hostname"] = metric.host
 
         if self.cleanMetrics:
@@ -213,7 +220,9 @@ class TSDBHandler(diamond.handler.Handler.Handler):
             for tagKey in metric.get_tags():
                 entry["tags"][tagKey] = metric.get_tags()[tagKey]
 
-        entry['metric'] = (self.prefix + metric.getCollectorPath() + '.' + metric.getMetricPath())
+        entry["metric"] = (
+            self.prefix + metric.getCollectorPath() + "." + metric.getMetricPath()
+        )
 
         for [key, value] in self.tags:
             entry["tags"][key] = value
@@ -226,7 +235,11 @@ class TSDBHandler(diamond.handler.Handler.Handler):
             if self.compression >= 1:
                 data = io.StringIO()
 
-                with contextlib.closing(gzip.GzipFile(fileobj=data, compresslevel=self.compression, mode="w")) as f:
+                with contextlib.closing(
+                    gzip.GzipFile(
+                        fileobj=data, compresslevel=self.compression, mode="w"
+                    )
+                ) as f:
                     f.write(json.dumps(self.entrys))
 
                 self._send(data.getvalue())
@@ -246,7 +259,11 @@ class TSDBHandler(diamond.handler.Handler.Handler):
             self.log.debug(content)
 
             try:
-                request = urllib.request.Request("http://" + self.host + ":" + str(self.port) + "/api/put", content, self.httpheader)
+                request = urllib.request.Request(
+                    "http://" + self.host + ":" + str(self.port) + "/api/put",
+                    content,
+                    self.httpheader,
+                )
                 response = urllib.request.urlopen(url=request, timeout=self.timeout)
 
                 if response.getcode() < 301:
@@ -281,6 +298,7 @@ class MetricWrapper(diamond.metric.Metric):
     """
     This method does nothing and therefore keeps the existing metric unchanged.
     """
+
     def process_default_metric(self):
         self.tags = {}
         self.aggregate = False
@@ -290,11 +308,12 @@ class MetricWrapper(diamond.metric.Metric):
     marks all metrics with 'total' as aggregates, so they can be skipped if
     the skipAggregates feature is active.
     """
-    def process_cpu_metric(self):
-        if len(self.getMetricPath().split('.')) > 1:
-            self.aggregate = self.getMetricPath().split('.')[0] == 'total'
 
-            cpu_id = self.delegate.getMetricPath().split('.')[0]
+    def process_cpu_metric(self):
+        if len(self.getMetricPath().split(".")) > 1:
+            self.aggregate = self.getMetricPath().split(".")[0] == "total"
+
+            cpu_id = self.delegate.getMetricPath().split(".")[0]
             self.tags["cpu_id"] = cpu_id
             self.path = self.path.replace("." + cpu_id + ".", ".")
 
@@ -303,12 +322,13 @@ class MetricWrapper(diamond.metric.Metric):
     server to which the backends send as tags. Counters with 'backend' as
     backend name are considered aggregates.
     """
-    def process_ha_proxy_metric(self):
-        if len(self.getMetricPath().split('.')) == 3:
-            self.aggregate = self.getMetricPath().split('.')[1] == 'backend'
 
-            backend = self.delegate.getMetricPath().split('.')[0]
-            server = self.delegate.getMetricPath().split('.')[1]
+    def process_ha_proxy_metric(self):
+        if len(self.getMetricPath().split(".")) == 3:
+            self.aggregate = self.getMetricPath().split(".")[1] == "backend"
+
+            backend = self.delegate.getMetricPath().split(".")[0]
+            server = self.delegate.getMetricPath().split(".")[1]
             self.tags["backend"] = backend
             self.tags["server"] = server
             self.path = self.path.replace("." + server + ".", ".")
@@ -318,21 +338,23 @@ class MetricWrapper(diamond.metric.Metric):
     Processes metrics of the DiskspaceCollector. It stores the mountpoint as a
     tag. There are no aggregates in this collector.
     """
-    def process_diskspace_metric(self):
-        if len(self.getMetricPath().split('.')) == 2:
 
-            mountpoint = self.delegate.getMetricPath().split('.')[0]
+    def process_diskspace_metric(self):
+        if len(self.getMetricPath().split(".")) == 2:
+
+            mountpoint = self.delegate.getMetricPath().split(".")[0]
 
             self.tags["mountpoint"] = mountpoint
-            self.path = self.path.replace("."+mountpoint+".", ".")
+            self.path = self.path.replace("." + mountpoint + ".", ".")
 
     """
     Processes metrics of the DiskusageCollector. It stores the device as a
     tag. There are no aggregates in this collector.
     """
+
     def process_diskusage_metric(self):
-        if len(self.getMetricPath().split('.')) == 2:
-            device = self.delegate.getMetricPath().split('.')[0]
+        if len(self.getMetricPath().split(".")) == 2:
+            device = self.delegate.getMetricPath().split(".")[0]
 
             self.tags["device"] = device
             self.path = self.path.replace("." + device + ".", ".")
@@ -341,29 +363,30 @@ class MetricWrapper(diamond.metric.Metric):
     Processes metrics of the NetworkCollector. It stores the interface as a
     tag. There are no aggregates in this collector.
     """
+
     def process_network_metric(self):
-        if len(self.getMetricPath().split('.')) == 2:
-            interface = self.delegate.getMetricPath().split('.')[0]
+        if len(self.getMetricPath().split(".")) == 2:
+            interface = self.delegate.getMetricPath().split(".")[0]
 
             self.tags["interface"] = interface
             self.path = self.path.replace("." + interface + ".", ".")
 
     def process_mattermost_metric(self):
-        split = self.getMetricPath().split('.')
+        split = self.getMetricPath().split(".")
 
         if len(split) > 2:
-            if split[0] == 'teamdetails' or split[0] == 'channeldetails':
+            if split[0] == "teamdetails" or split[0] == "channeldetails":
                 team = split[1]
                 self.tags["team"] = team
                 self.path = self.path.replace("." + team + ".", ".")
                 # fall through for channeldetails
 
-            if split[0] == 'channeldetails':
+            if split[0] == "channeldetails":
                 channel = split[2]
                 self.tags["channel"] = channel
                 self.path = self.path.replace("." + channel + ".", ".")
 
-            if split[0] == 'userdetails':
+            if split[0] == "userdetails":
                 user = split[1]
                 team = split[2]
                 channel = split[3]
@@ -375,13 +398,13 @@ class MetricWrapper(diamond.metric.Metric):
                 self.path = self.path.replace("." + channel + ".", ".")
 
     handlers = {
-        'cpu': process_cpu_metric,
-        'haproxy': process_ha_proxy_metric,
-        'mattermost': process_mattermost_metric,
-        'diskspace': process_diskspace_metric,
-        'iostat': process_diskusage_metric,
-        'network': process_network_metric,
-        'default': process_default_metric
+        "cpu": process_cpu_metric,
+        "haproxy": process_ha_proxy_metric,
+        "mattermost": process_mattermost_metric,
+        "diskspace": process_diskspace_metric,
+        "iostat": process_diskusage_metric,
+        "network": process_network_metric,
+        "default": process_default_metric,
     }
 
     def __init__(self, delegate, logger):
@@ -400,5 +423,5 @@ class MetricWrapper(diamond.metric.Metric):
         self.logger = logger
 
         # call the handler for that collector
-        handler = self.handlers.get(self.getCollectorPath(), self.handlers['default'])
+        handler = self.handlers.get(self.getCollectorPath(), self.handlers["default"])
         handler(self)

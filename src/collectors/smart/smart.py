@@ -19,12 +19,14 @@ import diamond.collector
 class SmartCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(SmartCollector, self).get_default_config_help()
-        config_help.update({
-            'devices': "device regex to collect stats on",
-            'bin': 'The path to the smartctl binary',
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-        })
+        config_help.update(
+            {
+                "devices": "device regex to collect stats on",
+                "bin": "The path to the smartctl binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -32,29 +34,36 @@ class SmartCollector(diamond.collector.Collector):
         Returns default configuration options.
         """
         config = super(SmartCollector, self).get_default_config()
-        config.update({
-            'path': 'smart',
-            'bin': 'smartctl',
-            'use_sudo': False,
-            'sudo_cmd': '/usr/bin/sudo',
-            'devices': '^disk[0-9]$|^sd[a-z]$|^hd[a-z]$',
-        })
+        config.update(
+            {
+                "path": "smart",
+                "bin": "smartctl",
+                "use_sudo": False,
+                "sudo_cmd": "/usr/bin/sudo",
+                "devices": "^disk[0-9]$|^sd[a-z]$|^hd[a-z]$",
+            }
+        )
         return config
 
     def collect(self):
         """
         Collect and publish S.M.A.R.T. attributes
         """
-        devices = re.compile(self.config['devices'])
+        devices = re.compile(self.config["devices"])
 
-        for device in os.listdir('/dev'):
+        for device in os.listdir("/dev"):
             if devices.match(device):
-                command = [self.config['bin'], "-A", os.path.join('/dev', device)]
+                command = [self.config["bin"], "-A", os.path.join("/dev", device)]
 
-                if diamond.collector.str_to_bool(self.config['use_sudo']):
-                    command.insert(0, self.config['sudo_cmd'])
+                if diamond.collector.str_to_bool(self.config["use_sudo"]):
+                    command.insert(0, self.config["sudo_cmd"])
 
-                attributes = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0].strip().splitlines()
+                attributes = (
+                    subprocess.Popen(command, stdout=subprocess.PIPE)
+                    .communicate()[0]
+                    .strip()
+                    .splitlines()
+                )
                 metrics = {}
                 start_line = self.find_attr_start_line(attributes)
 
@@ -67,11 +76,11 @@ class SmartCollector(diamond.collector.Collector):
                         metric = "%s.%s" % (device, attribute[0])
 
                     # 234 Thermal_Throttle (...)  0/0
-                    if '/' in attribute[9]:
-                        expanded = attribute[9].split('/')
+                    if "/" in attribute[9]:
+                        expanded = attribute[9].split("/")
 
                         for i, subattribute in enumerate(expanded):
-                            submetric = '%s_%d' % (metric, i)
+                            submetric = "%s_%d" % (metric, i)
 
                             if submetric not in metrics:
                                 metrics[submetric] = subattribute
@@ -103,9 +112,12 @@ class SmartCollector(diamond.collector.Collector):
         for idx, line in enumerate(lines[min_line:max_line]):
             col = line.split()
 
-            if len(col) > 1 and col[1] == 'ATTRIBUTE_NAME':
+            if len(col) > 1 and col[1] == "ATTRIBUTE_NAME":
                 return idx + min_line + 1
 
-        self.log.warn('ATTRIBUTE_NAME not found in second column of smartctl output between lines %d and %d.' % (min_line, max_line))
+        self.log.warn(
+            "ATTRIBUTE_NAME not found in second column of smartctl output between lines %d and %d."
+            % (min_line, max_line)
+        )
 
         return max_line + 1

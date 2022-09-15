@@ -15,19 +15,23 @@ import re
 
 import diamond.collector
 
-_RE = re.compile('|'.join([
-    r'sockets: used (?P<used>\d+)?',
-    r'(TCP|TCP6): inuse (?P<tcp_inuse>\d+)' +
-    r'( orphan (?P<tcp_orphan>\d+) ' +
-    r'tw (?P<tcp_tw>\d+) ' +
-    r'alloc (?P<tcp_alloc>\d+) ' +
-    r'mem (?P<tcp_mem>\d+))?',
-    r'(UDP|UDP6): inuse (?P<udp_inuse>\d+)( mem (?P<udp_mem>\d+))?'
-]))
+_RE = re.compile(
+    "|".join(
+        [
+            r"sockets: used (?P<used>\d+)?",
+            r"(TCP|TCP6): inuse (?P<tcp_inuse>\d+)"
+            + r"( orphan (?P<tcp_orphan>\d+) "
+            + r"tw (?P<tcp_tw>\d+) "
+            + r"alloc (?P<tcp_alloc>\d+) "
+            + r"mem (?P<tcp_mem>\d+))?",
+            r"(UDP|UDP6): inuse (?P<udp_inuse>\d+)( mem (?P<udp_mem>\d+))?",
+        ]
+    )
+)
 
 
 class SockstatCollector(diamond.collector.Collector):
-    PROCS = ['/proc/net/sockstat', '/proc/net/sockstat6']
+    PROCS = ["/proc/net/sockstat", "/proc/net/sockstat6"]
 
     def get_default_config_help(self):
         config_help = super(SockstatCollector, self).get_default_config_help()
@@ -40,9 +44,11 @@ class SockstatCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(SockstatCollector, self).get_default_config()
-        config.update({
-            'path': 'sockets',
-        })
+        config.update(
+            {
+                "path": "sockets",
+            }
+        )
 
         return config
 
@@ -58,7 +64,7 @@ class SockstatCollector(diamond.collector.Collector):
             f.close()
 
         for key, value in result.items():
-            self.publish(key, value, metric_type='GAUGE')
+            self.publish(key, value, metric_type="GAUGE")
 
     def collect_stat(self, data, f):
         for line in f:

@@ -20,24 +20,32 @@ class IPVSCollector(diamond.collector.Collector):
         super(IPVSCollector, self).process_config()
 
         # Verify the --exact flag works
-        self.statcommand = [self.config['bin'], '--list', '--stats', '--numeric', '--exact']
-        self.concommand = [self.config['bin'], '--list', '--numeric']
+        self.statcommand = [
+            self.config["bin"],
+            "--list",
+            "--stats",
+            "--numeric",
+            "--exact",
+        ]
+        self.concommand = [self.config["bin"], "--list", "--numeric"]
 
-        if diamond.collector.str_to_bool(self.config['use_sudo']):
-            self.statcommand.insert(0, self.config['sudo_cmd'])
-            self.concommand.insert(0, self.config['sudo_cmd'])
+        if diamond.collector.str_to_bool(self.config["use_sudo"]):
+            self.statcommand.insert(0, self.config["sudo_cmd"])
+            self.concommand.insert(0, self.config["sudo_cmd"])
 
             # The -n (non-interactive) option prevents sudo from prompting the user for a password.
-            self.statcommand.insert(1, '-n')
-            self.concommand.insert(1, '-n')
+            self.statcommand.insert(1, "-n")
+            self.concommand.insert(1, "-n")
 
     def get_default_config_help(self):
         config_help = super(IPVSCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'Path to ipvsadm binary',
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-        })
+        config_help.update(
+            {
+                "bin": "Path to ipvsadm binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+            }
+        )
 
         return config_help
 
@@ -46,40 +54,52 @@ class IPVSCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(IPVSCollector, self).get_default_config()
-        config.update({
-            'bin': '/usr/sbin/ipvsadm',
-            'use_sudo': True,
-            'sudo_cmd': '/usr/bin/sudo',
-            'path': 'ipvs'
-        })
+        config.update(
+            {
+                "bin": "/usr/sbin/ipvsadm",
+                "use_sudo": True,
+                "sudo_cmd": "/usr/bin/sudo",
+                "path": "ipvs",
+            }
+        )
 
         return config
 
     def collect(self):
-        if not os.access(self.config['bin'], os.X_OK):
-            self.log.error("%s does not exist, or is not executable", self.config['bin'])
+        if not os.access(self.config["bin"], os.X_OK):
+            self.log.error(
+                "%s does not exist, or is not executable", self.config["bin"]
+            )
 
             return False
 
-        if diamond.collector.str_to_bool(self.config['use_sudo']) and not os.access(self.config['sudo_cmd'], os.X_OK):
-            self.log.error("%s does not exist, or is not executable", self.config['sudo_cmd'])
+        if diamond.collector.str_to_bool(self.config["use_sudo"]) and not os.access(
+            self.config["sudo_cmd"], os.X_OK
+        ):
+            self.log.error(
+                "%s does not exist, or is not executable", self.config["sudo_cmd"]
+            )
 
             return False
 
-        p = subprocess.Popen(self.statcommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(
+            self.statcommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         p.wait()
 
         if p.returncode == 255:
-            self.statcommand = filter(lambda a: a != '--exact', self.statcommand)
+            self.statcommand = filter(lambda a: a != "--exact", self.statcommand)
 
-        p = subprocess.Popen(self.statcommand, stdout=subprocess.PIPE).communicate()[0][:-1]
+        p = subprocess.Popen(self.statcommand, stdout=subprocess.PIPE).communicate()[0][
+            :-1
+        ]
 
         columns = {
-            'conns': 2,
-            'inpkts': 3,
-            'outpkts': 4,
-            'inbytes': 5,
-            'outbytes': 6,
+            "conns": 2,
+            "inpkts": 3,
+            "outpkts": 4,
+            "inbytes": 5,
+            "outbytes": 6,
         }
 
         external = ""
@@ -104,22 +124,24 @@ class IPVSCollector(diamond.collector.Collector):
                 # metric_value = int(row[column])
                 value = row[column]
 
-                if value.endswith('K'):
-                    metric_value = int(value[0:len(value) - 1]) * 1024
-                elif value.endswith('M'):
-                    metric_value = (int(value[0:len(value) - 1]) * 1024 * 1024)
-                elif value.endswith('G'):
-                    metric_value = (int(value[0:len(value) - 1]) * 1024 * 1024 * 1024)
+                if value.endswith("K"):
+                    metric_value = int(value[0 : len(value) - 1]) * 1024
+                elif value.endswith("M"):
+                    metric_value = int(value[0 : len(value) - 1]) * 1024 * 1024
+                elif value.endswith("G"):
+                    metric_value = int(value[0 : len(value) - 1]) * 1024 * 1024 * 1024
                 else:
                     metric_value = float(value)
 
                 self.publish(metric_name, metric_value)
 
-        p = subprocess.Popen(self.concommand, stdout=subprocess.PIPE).communicate()[0][:-1]
+        p = subprocess.Popen(self.concommand, stdout=subprocess.PIPE).communicate()[0][
+            :-1
+        ]
 
         columns = {
-            'active': 4,
-            'inactive': 5,
+            "active": 4,
+            "inactive": 5,
         }
 
         external = ""
@@ -153,12 +175,12 @@ class IPVSCollector(diamond.collector.Collector):
                 # metric_value = int(row[column])
                 value = row[column]
 
-                if value.endswith('K'):
-                    metric_value = int(value[0:len(value) - 1]) * 1024
-                elif value.endswith('M'):
-                    metric_value = int(value[0:len(value) - 1]) * 1024 * 1024
-                elif value.endswith('G'):
-                    metric_value = (int(value[0:len(value) - 1]) * 1024 * 1024 * 1024)
+                if value.endswith("K"):
+                    metric_value = int(value[0 : len(value) - 1]) * 1024
+                elif value.endswith("M"):
+                    metric_value = int(value[0 : len(value) - 1]) * 1024 * 1024
+                elif value.endswith("G"):
+                    metric_value = int(value[0 : len(value) - 1]) * 1024 * 1024 * 1024
                 else:
                     metric_value = float(value)
 

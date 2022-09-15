@@ -17,16 +17,17 @@ import diamond.handler.Handler
 
 class LogentriesDiamondHandler(diamond.handler.Handler.Handler):
     """
-      Implements the abstract Handler class
+    Implements the abstract Handler class
     """
+
     def __init__(self, config=None):
         """
         New instance of LogentriesDiamondHandler class
         """
 
         diamond.handler.Handler.Handler.__init__(self, config)
-        self.log_token = self.config.get('log_token', None)
-        self.queue_size = int(self.config['queue_size'])
+        self.log_token = self.config.get("log_token", None)
+        self.queue_size = int(self.config["queue_size"])
         self.queue = collections.deque([])
 
         if self.log_token is None:
@@ -38,10 +39,12 @@ class LogentriesDiamondHandler(diamond.handler.Handler.Handler):
         """
         config = super(LogentriesDiamondHandler, self).get_default_config_help()
 
-        config.update({
-            'log_token': '[Your log token](https://logentries.com/doc/input-token/)',
-            'queue_size': ''
-        })
+        config.update(
+            {
+                "log_token": "[Your log token](https://logentries.com/doc/input-token/)",
+                "queue_size": "",
+            }
+        )
 
         return config
 
@@ -51,10 +54,7 @@ class LogentriesDiamondHandler(diamond.handler.Handler.Handler):
         """
         config = super(LogentriesDiamondHandler, self).get_default_config()
 
-        config.update({
-            'log_token': '',
-            'queue_size': 100
-        })
+        config.update({"log_token": "", "queue_size": 100})
 
         return config
 
@@ -76,7 +76,9 @@ class LogentriesDiamondHandler(diamond.handler.Handler.Handler):
             metric = self.queue.popleft()
             topic, value, timestamp = str(metric).split()
             msg = json.dumps({"event": {topic: value}})
-            req = urllib.request.Request("https://js.logentries.com/v1/logs/" + self.log_token, msg)
+            req = urllib.request.Request(
+                "https://js.logentries.com/v1/logs/" + self.log_token, msg
+            )
 
             try:
                 urllib.request.urlopen(req)

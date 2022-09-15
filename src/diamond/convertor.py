@@ -2,18 +2,21 @@
 
 import re
 
-_RE_FIND_FIRST_CAP = re.compile('(.)([A-Z][a-z]+)')
-_RE_SPAN_OF_CAPS = re.compile('([a-z0-9])([A-Z])')
+_RE_FIND_FIRST_CAP = re.compile("(.)([A-Z][a-z]+)")
+_RE_SPAN_OF_CAPS = re.compile("([a-z0-9])([A-Z])")
 
 
 def camelcase_to_underscore(name):
-    return _RE_SPAN_OF_CAPS.sub(r'\1_\2', _RE_FIND_FIRST_CAP.sub(r'\1_\2', name)).lower()
+    return _RE_SPAN_OF_CAPS.sub(
+        r"\1_\2", _RE_FIND_FIRST_CAP.sub(r"\1_\2", name)
+    ).lower()
 
 
 class binary:
     """
     Store the value in bits so we can convert between things easily
     """
+
     value = None
 
     def __init__(self, value=None, unit=None):
@@ -35,58 +38,58 @@ class binary:
         if not unit:
             return self.bit(value=value)
 
-        if unit in ['bit', 'b']:
+        if unit in ["bit", "b"]:
             return self.bit(value=value)
 
-        if unit in ['kilobit', 'kbit', 'Kibit']:
+        if unit in ["kilobit", "kbit", "Kibit"]:
             return self.kilobit(value=value)
 
-        if unit in ['megabit', 'Mbit', 'Mibit', 'Mbit']:
+        if unit in ["megabit", "Mbit", "Mibit", "Mbit"]:
             return self.megabit(value=value)
 
-        if unit in ['gigabit', 'Gbit', 'Gibit']:
+        if unit in ["gigabit", "Gbit", "Gibit"]:
             return self.gigabit(value=value)
 
-        if unit in ['terabit', 'Tbit', 'Tibit']:
+        if unit in ["terabit", "Tbit", "Tibit"]:
             return self.terabit(value=value)
 
-        if unit in ['petabit', 'Pbit', 'Pibit']:
+        if unit in ["petabit", "Pbit", "Pibit"]:
             return self.petabit(value=value)
 
-        if unit in ['exabit', 'Ebit', 'Eibit']:
+        if unit in ["exabit", "Ebit", "Eibit"]:
             return self.exabit(value=value)
 
-        if unit in ['zettabit', 'Zbit', 'Zibit']:
+        if unit in ["zettabit", "Zbit", "Zibit"]:
             return self.zettabit(value=value)
 
-        if unit in ['yottabit', 'Ybit', 'Yibit']:
+        if unit in ["yottabit", "Ybit", "Yibit"]:
             return self.yottabit(value=value)
 
-        if unit in ['byte', 'B']:
+        if unit in ["byte", "B"]:
             return self.byte(value=value)
 
-        if unit in ['kilobyte', 'kB', 'KiB']:
+        if unit in ["kilobyte", "kB", "KiB"]:
             return self.kilobyte(value=value)
 
-        if unit in ['megabyte', 'MB', 'MiB', 'Mbyte']:
+        if unit in ["megabyte", "MB", "MiB", "Mbyte"]:
             return self.megabyte(value=value)
 
-        if unit in ['gigabyte', 'GB', 'GiB']:
+        if unit in ["gigabyte", "GB", "GiB"]:
             return self.gigabyte(value=value)
 
-        if unit in ['terabyte', 'TB', 'TiB']:
+        if unit in ["terabyte", "TB", "TiB"]:
             return self.terabyte(value=value)
 
-        if unit in ['petabyte', 'PB', 'PiB']:
+        if unit in ["petabyte", "PB", "PiB"]:
             return self.petabyte(value=value)
 
-        if unit in ['exabyte', 'EB', 'EiB']:
+        if unit in ["exabyte", "EB", "EiB"]:
             return self.exabyte(value=value)
 
-        if unit in ['zettabyte', 'ZB', 'ZiB']:
+        if unit in ["zettabyte", "ZB", "ZiB"]:
             return self.zettabyte(value=value)
 
-        if unit in ['yottabyte', 'YB', 'YiB']:
+        if unit in ["yottabyte", "YB", "YiB"]:
             return self.yottabyte(value=value)
 
         raise NotImplementedError("unit %s" % unit)
@@ -162,6 +165,7 @@ class time:
     """
     Store the value in miliseconds so we can convert between things easily
     """
+
     value = None
 
     def __init__(self, value=None, unit=None):
@@ -182,21 +186,21 @@ class time:
     def do(self, value=None, unit=None):
         if not unit:
             v = self.millisecond(value=value)
-        elif unit.lower() in ['millisecond', 'milliseconds', 'ms']:
+        elif unit.lower() in ["millisecond", "milliseconds", "ms"]:
             v = self.millisecond(value=value)
-        elif unit.lower() in ['second', 'seconds', 's']:
+        elif unit.lower() in ["second", "seconds", "s"]:
             v = self.second(value=value)
-        elif unit.lower() in ['minute', 'minutes', 'm']:
+        elif unit.lower() in ["minute", "minutes", "m"]:
             v = self.minute(value=value)
-        elif unit.lower() in ['hour', 'hours', 'h']:
+        elif unit.lower() in ["hour", "hours", "h"]:
             v = self.hour(value=value)
-        elif unit.lower() in ['day', 'days', 'd']:
+        elif unit.lower() in ["day", "days", "d"]:
             v = self.day(value=value)
-        elif unit.lower() in ['year', 'years', 'y']:
+        elif unit.lower() in ["year", "years", "y"]:
             v = self.year(value=value)
-        elif unit.lower() in ['microsecond', 'microseconds', 'us']:
+        elif unit.lower() in ["microsecond", "microseconds", "us"]:
             v = self.microsecond(value=value)
-        elif unit.lower() in ['nanosecond', 'nanoseconds', 'ns']:
+        elif unit.lower() in ["nanosecond", "nanoseconds", "ns"]:
             v = self.nanosecond(value=value)
         else:
             raise NotImplementedError("unit %s" % unit)

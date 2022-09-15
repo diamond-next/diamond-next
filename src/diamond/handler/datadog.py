@@ -35,8 +35,8 @@ class DatadogHandler(Handler):
             return
 
         self.api = dogapi.dog_http_api
-        self.api.api_key = self.config.get('api_key', '')
-        self.queue_size = self.config.get('queue_size', 1)
+        self.api.api_key = self.config.get("api_key", "")
+        self.queue_size = self.config.get("queue_size", 1)
         self.queue = deque([])
 
     def get_default_config_help(self):
@@ -45,10 +45,12 @@ class DatadogHandler(Handler):
         """
         config = super(DatadogHandler, self).get_default_config_help()
 
-        config.update({
-            'api_key': 'Datadog API key',
-            'queue_size': 'Number of metrics to queue before send',
-        })
+        config.update(
+            {
+                "api_key": "Datadog API key",
+                "queue_size": "Number of metrics to queue before send",
+            }
+        )
 
         return config
 
@@ -58,10 +60,12 @@ class DatadogHandler(Handler):
         """
         config = super(DatadogHandler, self).get_default_config()
 
-        config.update({
-            'api_key': '',
-            'queue_size': '',
-        })
+        config.update(
+            {
+                "api_key": "",
+                "queue_size": "",
+            }
+        )
 
         return config
 
@@ -90,18 +94,15 @@ class DatadogHandler(Handler):
         while len(self.queue) > 0:
             metric = self.queue.popleft()
 
-            path = '%s.%s.%s' % (
+            path = "%s.%s.%s" % (
                 metric.getPathPrefix(),
                 metric.getCollectorPath(),
-                metric.getMetricPath()
+                metric.getMetricPath(),
             )
 
             topic, value, timestamp = str(metric).split()
             logging.debug(
-                "Sending.. topic[%s], value[%s], timestamp[%s]",
-                path,
-                value,
-                timestamp
+                "Sending.. topic[%s], value[%s], timestamp[%s]", path, value, timestamp
             )
 
             self.api.metric(path, (timestamp, value), host=metric.host)

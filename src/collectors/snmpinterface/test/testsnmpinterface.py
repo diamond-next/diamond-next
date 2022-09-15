@@ -11,7 +11,7 @@ class TestSNMPInterfaceCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('SNMPInterfaceCollector', {})
+        config = get_collector_config("SNMPInterfaceCollector", {})
         self.collector = SNMPInterfaceCollector(config, None)
 
     def test_import(self):

@@ -37,16 +37,16 @@ def parse_slab_stats(slab_stats):
         'total_malloced': 1048512,
     }
     """
-    stats_dict = {'slabs': collections.defaultdict(lambda: {})}
+    stats_dict = {"slabs": collections.defaultdict(lambda: {})}
 
     for line in slab_stats.splitlines():
-        if line == 'END':
+        if line == "END":
             break
 
         # e.g.: "STAT 1:chunks_per_page 10922"
-        cmd, key, value = line.split(' ')
+        cmd, key, value = line.split(" ")
 
-        if cmd != 'STAT':
+        if cmd != "STAT":
             continue
 
         # e.g.: "STAT active_slabs 1"
@@ -54,8 +54,8 @@ def parse_slab_stats(slab_stats):
             stats_dict[key] = int(value)
             continue
 
-        slab, key = key.split(':')
-        stats_dict['slabs'][int(slab)][key] = int(value)
+        slab, key = key.split(":")
+        stats_dict["slabs"][int(slab)][key] = int(value)
 
     return stats_dict
 
@@ -76,7 +76,7 @@ def dict_to_paths(dict_):
             submetrics = dict_to_paths(v)
 
             for subk, subv in iter(submetrics.items()):
-                metrics['.'.join([str(k), str(subk)])] = subv
+                metrics[".".join([str(k), str(subk)])] = subv
         else:
             metrics[k] = v
 
@@ -86,21 +86,23 @@ def dict_to_paths(dict_):
 class MemcachedSlabCollector(diamond.collector.Collector):
     def process_config(self):
         super(MemcachedSlabCollector, self).process_config()
-        self.host = self.config['host']
-        self.port = int(self.config['port'])
+        self.host = self.config["host"]
+        self.port = int(self.config["port"])
 
     def get_default_config(self):
         config = super(MemcachedSlabCollector, self).get_default_config()
 
         # Output stats in the format:
         # 'servers.cache-main-01.memcached_slab.slabs.1.chunk_size'
-        config.update({
-            'interval': 60,
-            'path_prefix': 'servers',
-            'path': 'memcached_slab',
-            'host': 'localhost',
-            'port': 11211,
-        })
+        config.update(
+            {
+                "interval": 60,
+                "path_prefix": "servers",
+                "path": "memcached_slab",
+                "host": "localhost",
+                "port": 11211,
+            }
+        )
 
         return config
 
@@ -116,7 +118,7 @@ class MemcachedSlabCollector(diamond.collector.Collector):
             while True:
                 data += s.recv(4096)
 
-                if data.endswith('END\r\n'):
+                if data.endswith("END\r\n"):
                     break
 
             return data

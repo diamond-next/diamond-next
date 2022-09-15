@@ -15,6 +15,7 @@ import diamond.collector
 
 try:
     import pynvml
+
     USE_PYTHON_BINDING = True
 except ImportError:
     USE_PYTHON_BINDING = False
@@ -23,10 +24,12 @@ except ImportError:
 class NvidiaGPUCollector(diamond.collector.ProcessCollector):
     def get_default_config_help(self):
         config_help = super(NvidiaGPUCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'The path to the nvidia-smi binary',
-            'stats': 'A list of Nvidia GPU stats to collect. Use `nvidia-smi --help-query-gpu` for more information'
-        })
+        config_help.update(
+            {
+                "bin": "The path to the nvidia-smi binary",
+                "stats": "A list of Nvidia GPU stats to collect. Use `nvidia-smi --help-query-gpu` for more information",
+            }
+        )
 
         return config_help
 
@@ -35,19 +38,21 @@ class NvidiaGPUCollector(diamond.collector.ProcessCollector):
         Returns the default collector settings
         """
         config = super(NvidiaGPUCollector, self).get_default_config()
-        config.update({
-            'path': 'nvidia',
-            'bin': '/usr/bin/nvidia-smi',
-            'stats': [
-                'index',
-                'memory.total',
-                'memory.used',
-                'memory.free',
-                'utilization.gpu',
-                'utilization.memory',
-                'temperature.gpu'
-            ]
-        })
+        config.update(
+            {
+                "path": "nvidia",
+                "bin": "/usr/bin/nvidia-smi",
+                "stats": [
+                    "index",
+                    "memory.total",
+                    "memory.used",
+                    "memory.free",
+                    "utilization.gpu",
+                    "utilization.memory",
+                    "temperature.gpu",
+                ],
+            }
+        )
 
         return config
 
@@ -57,10 +62,12 @@ class NvidiaGPUCollector(diamond.collector.ProcessCollector):
         :param stats_config:
         :return:
         """
-        raw_output = self.run_command([
-            '--query-gpu={query_gpu}'.format(query_gpu=','.join(stats_config)),
-            '--format=csv,nounits,noheader'
-        ])
+        raw_output = self.run_command(
+            [
+                "--query-gpu={query_gpu}".format(query_gpu=",".join(stats_config)),
+                "--format=csv,nounits,noheader",
+            ]
+        )
 
         if raw_output is None:
             return
@@ -68,12 +75,14 @@ class NvidiaGPUCollector(diamond.collector.ProcessCollector):
         results = raw_output[0].strip().split("\n")
 
         for result in results:
-            stats = result.strip().split(',')
+            stats = result.strip().split(",")
             assert len(stats) == len(stats_config)
             index = stats[0]
 
             for stat_name, metric in zip(stats_config[1:], stats[1:]):
-                metric_name = 'gpu_{index}.{stat_name}'.format(index=str(index), stat_name=stat_name)
+                metric_name = "gpu_{index}.{stat_name}".format(
+                    index=str(index), stat_name=stat_name
+                )
                 self.publish(metric_name, metric)
 
     def collect_via_pynvml(self, stats_config):
@@ -93,19 +102,23 @@ class NvidiaGPUCollector(diamond.collector.ProcessCollector):
                 utilization_rates = pynvml.nvmlDeviceGetUtilizationRates(handle)
 
                 metrics = {
-                    'memory.total': memory_info.total / 1024 / 1024,
-                    'memory.used': memory_info.total / 1024 / 1024,
-                    'memory.free': memory_info.free / 1024 / 1024,
-                    'utilization.gpu': utilization_rates.gpu,
-                    'utilization.memory': utilization_rates.memory,
-                    'temperature.gpu': pynvml.nvmlDeviceGetTemperature(handle, nvml_temperature_gpu)
+                    "memory.total": memory_info.total / 1024 / 1024,
+                    "memory.used": memory_info.total / 1024 / 1024,
+                    "memory.free": memory_info.free / 1024 / 1024,
+                    "utilization.gpu": utilization_rates.gpu,
+                    "utilization.memory": utilization_rates.memory,
+                    "temperature.gpu": pynvml.nvmlDeviceGetTemperature(
+                        handle, nvml_temperature_gpu
+                    ),
                 }
 
                 for stat_name in stats_config[1:]:
                     metric = metrics.get(stat_name)
 
                     if metric:
-                        metric_name = 'gpu_{index}.{stat_name}'.format(index=str(device_index), stat_name=stat_name)
+                        metric_name = "gpu_{index}.{stat_name}".format(
+                            index=str(device_index), stat_name=stat_name
+                        )
                         self.publish(metric_name, metric)
         finally:
             pynvml.nvmlShutdown()
@@ -114,7 +127,7 @@ class NvidiaGPUCollector(diamond.collector.ProcessCollector):
         """
         Collector GPU stats
         """
-        stats_config = self.config['stats']
+        stats_config = self.config["stats"]
 
         if USE_PYTHON_BINDING:
             collect_metrics = self.collect_via_pynvml

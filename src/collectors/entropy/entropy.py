@@ -15,16 +15,14 @@ import diamond.collector
 
 
 class EntropyStatCollector(diamond.collector.Collector):
-    PROC = '/proc/sys/kernel/random/entropy_avail'
+    PROC = "/proc/sys/kernel/random/entropy_avail"
 
     def get_default_config(self):
         """
         Returns the default collector settings
         """
         config = super(EntropyStatCollector, self).get_default_config()
-        config.update({
-            'path': 'entropy'
-        })
+        config.update({"path": "entropy"})
         return config
 
     def collect(self):

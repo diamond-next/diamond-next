@@ -33,15 +33,15 @@ import diamond.collector
 class ZookeeperCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(ZookeeperCollector, self).get_default_config_help()
-        config_help.update({
-            'publish':
-                "Which rows of 'status' you would like to publish." +
-                " Telnet host port' and type stats and hit enter to see the " +
-                " list of possibilities. Leave unset to publish all.",
-            'hosts':
-                "List of hosts, and ports to collect. Set an alias by " +
-                " prefixing the host:port with alias@",
-        })
+        config_help.update(
+            {
+                "publish": "Which rows of 'status' you would like to publish."
+                + " Telnet host port' and type stats and hit enter to see the "
+                + " list of possibilities. Leave unset to publish all.",
+                "hosts": "List of hosts, and ports to collect. Set an alias by "
+                + " prefixing the host:port with alias@",
+            }
+        )
 
         return config_help
 
@@ -50,23 +50,23 @@ class ZookeeperCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(ZookeeperCollector, self).get_default_config()
-        config.update({
-            'path': 'zookeeper',
-
-            # Which rows of 'status' you would like to publish.
-            # 'telnet host port' and type mntr and hit enter to see the list of
-            # possibilities.
-            # Leave unset to publish all
-            # 'publish': ''
-
-            # Connection settings
-            'hosts': ['localhost:2181']
-        })
+        config.update(
+            {
+                "path": "zookeeper",
+                # Which rows of 'status' you would like to publish.
+                # 'telnet host port' and type mntr and hit enter to see the list of
+                # possibilities.
+                # Leave unset to publish all
+                # 'publish': ''
+                # Connection settings
+                "hosts": ["localhost:2181"],
+            }
+        )
 
         return config
 
     def get_raw_stats(self, host, port):
-        data = ''
+        data = ""
 
         # connect
         try:
@@ -78,18 +78,18 @@ class ZookeeperCollector(diamond.collector.Collector):
                 sock.connect((host, int(port)))
 
             # request stats
-            sock.send('mntr\n')
+            sock.send("mntr\n")
 
             # something big enough to get whatever is sent back
             data = sock.recv(4096)
         except socket.error:
-            self.log.exception('Failed to get stats from %s:%s', host, port)
+            self.log.exception("Failed to get stats from %s:%s", host, port)
 
         return data
 
     def get_stats(self, host, port):
         # stuff that's always ignored, aren't 'stats'
-        ignored = ('zk_version', 'zk_server_state')
+        ignored = ("zk_version", "zk_server_state")
         pid = None
 
         stats = {}
@@ -106,16 +106,16 @@ class ZookeeperCollector(diamond.collector.Collector):
             stats[pieces[0]] = pieces[1]
 
         # get max connection limit
-        self.log.debug('pid %s', pid)
+        self.log.debug("pid %s", pid)
 
         try:
             cmdline = "/proc/%s/cmdline" % pid
-            f = open(cmdline, 'r')
+            f = open(cmdline, "r")
             m = re.search("-c\x00(\d+)", f.readline())
 
             if m is not None:
-                self.log.debug('limit connections %s', m.group(1))
-                stats['limit_maxconn'] = m.group(1)
+                self.log.debug("limit connections %s", m.group(1))
+                stats["limit_maxconn"] = m.group(1)
 
             f.close()
         except:
@@ -124,14 +124,14 @@ class ZookeeperCollector(diamond.collector.Collector):
         return stats
 
     def collect(self):
-        hosts = self.config.get('hosts')
+        hosts = self.config.get("hosts")
 
         # Convert a string config value to be an array
         if isinstance(hosts, str):
             hosts = [hosts]
 
         for host in hosts:
-            matches = re.search('((.+)\@)?([^:]+)(:(\d+))?', host)
+            matches = re.search("((.+)\@)?([^:]+)(:(\d+))?", host)
             alias = matches.group(2)
             hostname = matches.group(3)
             port = matches.group(5)
@@ -139,7 +139,7 @@ class ZookeeperCollector(diamond.collector.Collector):
             stats = self.get_stats(hostname, port)
 
             # figure out what we're configured to get, defaulting to everything
-            desired = self.config.get('publish', stats.keys())
+            desired = self.config.get("publish", stats.keys())
 
             # for everything we want
             for stat in desired:
@@ -154,4 +154,7 @@ class ZookeeperCollector(diamond.collector.Collector):
 
                     # we don't, must be somehting configured in publish so we
                     # should log an error about it
-                    self.log.error("No such key '%s' available, issue 'stats' for a full list", stat)
+                    self.log.error(
+                        "No such key '%s' available, issue 'stats' for a full list",
+                        stat,
+                    )

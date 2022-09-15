@@ -21,6 +21,7 @@ class MySQLHandler(Handler):
     """
     Implements the abstract Handler class, sending data to a mysql table
     """
+
     conn = None
 
     def __init__(self, config=None):
@@ -32,15 +33,15 @@ class MySQLHandler(Handler):
         Handler.__init__(self, config)
 
         # Initialize Options
-        self.hostname = self.config['hostname']
-        self.port = int(self.config['port'])
-        self.username = self.config['username']
-        self.password = self.config['password']
-        self.database = self.config['database']
-        self.table = self.config['table']
-        self.col_time = self.config['col_time']
-        self.col_metric = self.config['col_metric']
-        self.col_value = self.config['col_value']
+        self.hostname = self.config["hostname"]
+        self.port = int(self.config["port"])
+        self.username = self.config["username"]
+        self.password = self.config["password"]
+        self.database = self.config["database"]
+        self.table = self.config["table"]
+        self.col_time = self.config["col_time"]
+        self.col_metric = self.config["col_metric"]
+        self.col_value = self.config["col_value"]
 
         # Connect
         self._connect()
@@ -83,12 +84,14 @@ class MySQLHandler(Handler):
         """
         Insert the data
         """
-        data = data.strip().split(' ')
+        data = data.strip().split(" ")
 
         try:
             cursor = self.conn.cursor()
             cursor.execute(
-                "INSERT INTO %s (%s, %s, %s) VALUES(%%s, %%s, %%s)" % (self.table, self.col_metric, self.col_time, self.col_value), (data[0], data[2], data[1])
+                "INSERT INTO %s (%s, %s, %s) VALUES(%%s, %%s, %%s)"
+                % (self.table, self.col_metric, self.col_time, self.col_value),
+                (data[0], data[2], data[1]),
             )
             cursor.close()
             self.conn.commit()
@@ -104,7 +107,13 @@ class MySQLHandler(Handler):
         Connect to the MySQL server
         """
         self._close()
-        self.conn = mysqlclient.Connect(host=self.hostname, port=self.port, user=self.username, passwd=self.password, db=self.database)
+        self.conn = mysqlclient.Connect(
+            host=self.hostname,
+            port=self.port,
+            user=self.username,
+            passwd=self.password,
+            db=self.database,
+        )
 
     def _close(self):
         """

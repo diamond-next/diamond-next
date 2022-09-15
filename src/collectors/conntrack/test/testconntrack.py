@@ -12,41 +12,50 @@ from test import get_collector_config
 
 class TestConnTrackCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('ConnTrackCollector', {
-            'interval': 10,
-            'bin': 'true',
-            'dir': self.getFixtureDirPath(),
-        })
+        config = get_collector_config(
+            "ConnTrackCollector",
+            {
+                "interval": 10,
+                "bin": "true",
+                "dir": self.getFixtureDirPath(),
+            },
+        )
 
         self.collector = ConnTrackCollector(config, None)
 
     def test_import(self):
         self.assertTrue(ConnTrackCollector)
 
-    @patch.object(Collector, 'publish')
+    @patch.object(Collector, "publish")
     def test_should_work_with_synthetic_data(self, publish_mock):
         self.collector.collect()
 
         metrics = {
-            'ip_conntrack_count': 33.0,
-            'ip_conntrack_max': 36.0,
+            "ip_conntrack_count": 33.0,
+            "ip_conntrack_max": 36.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(
+            collector=self.collector.__class__.__name__,
+            metrics=metrics,
+            defaultpath=self.collector.config["path"],
+        )
         self.assertPublishedMany(publish_mock, metrics)
 
-    @patch('os.access', Mock(return_value=True))
-    @patch.object(Collector, 'publish')
+    @patch("os.access", Mock(return_value=True))
+    @patch.object(Collector, "publish")
     def test_should_fail_gracefully(self, publish_mock):
         patch_communicate = patch(
-            'subprocess.Popen.communicate',
+            "subprocess.Popen.communicate",
             Mock(
                 return_value=(
-                    'sysctl: cannot stat /proc/sys/net/net' +
-                    'filter/nf_conntrack_count: ' +
-                    'No such file or directory', '')))
+                    "sysctl: cannot stat /proc/sys/net/net"
+                    + "filter/nf_conntrack_count: "
+                    + "No such file or directory",
+                    "",
+                )
+            ),
+        )
 
         patch_communicate.start()
         self.collector.collect()
@@ -54,8 +63,8 @@ class TestConnTrackCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-    @patch('os.access', Mock(return_value=False))
-    @patch.object(Collector, 'publish')
+    @patch("os.access", Mock(return_value=False))
+    @patch.object(Collector, "publish")
     def test_should_fail_gracefully_2(self, publish_mock):
         self.collector.collect()
         self.assertPublishedMany(publish_mock, {})

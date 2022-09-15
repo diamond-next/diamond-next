@@ -11,7 +11,7 @@ class TestOssecCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('OssecCollector', {})
+        config = get_collector_config("OssecCollector", {})
         self.collector = OssecCollector(config, None)
 
     def test_import(self):

@@ -33,30 +33,34 @@ except ImportError:
 class PgQCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PgQCollector, self).get_default_config_help()
-        config_help.update({
-            "instances": "The databases to be monitored. Each should have a "
-                         "`dsn` attribute, which must be a valid libpq "
-                         "connection string."
-        })
+        config_help.update(
+            {
+                "instances": "The databases to be monitored. Each should have a "
+                "`dsn` attribute, which must be a valid libpq "
+                "connection string."
+            }
+        )
 
         return config_help
 
     def get_default_config(self):
         config = super(PgQCollector, self).get_default_config()
-        config.update({
-            'instances': {},
-        })
+        config.update(
+            {
+                "instances": {},
+            }
+        )
 
         return config
 
     def collect(self):
         if psycopg2 is None:
-            self.log.error('Unable to import module psycopg2')
+            self.log.error("Unable to import module psycopg2")
 
             return None
 
-        for instance, configuration in iter(self.config['instances'].items()):
-            connection = psycopg2.connect(configuration['dsn'])
+        for instance, configuration in iter(self.config["instances"].items()):
+            connection = psycopg2.connect(configuration["dsn"])
             connection.set_isolation_level(
                 psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT,
             )
@@ -67,15 +71,15 @@ class PgQCollector(diamond.collector.Collector):
         with connection.cursor() as cursor:
             for queue, metrics in self.get_queue_info(instance, cursor):
                 for name, metric in metrics.items():
-                    self.publish('.'.join((instance, queue, name)), metric)
+                    self.publish(".".join((instance, queue, name)), metric)
 
         with connection.cursor() as cursor:
             consumers = self.get_consumer_info(instance, cursor)
 
             for queue, consumer, metrics in consumers:
                 for name, metric in metrics.items():
-                    key_parts = (instance, queue, 'consumers', consumer, name)
-                    self.publish('.'.join(key_parts), metric)
+                    key_parts = (instance, queue, "consumers", consumer, name)
+                    self.publish(".".join(key_parts), metric)
 
     QUEUE_INFO_STATEMENT = """
         SELECT
@@ -91,8 +95,8 @@ class PgQCollector(diamond.collector.Collector):
 
         for queue_name, ticker_lag, ev_per_sec in cursor:
             yield queue_name, {
-                'ticker_lag': ticker_lag,
-                'ev_per_sec': ev_per_sec,
+                "ticker_lag": ticker_lag,
+                "ev_per_sec": ev_per_sec,
             }
 
     CONSUMER_INFO_STATEMENT = """
@@ -111,7 +115,7 @@ class PgQCollector(diamond.collector.Collector):
 
         for queue_name, consumer_name, lag, pending_events, last_seen in cursor:
             yield queue_name, consumer_name, {
-                'lag': lag,
-                'pending_events': pending_events,
-                'last_seen': last_seen,
+                "lag": lag,
+                "pending_events": pending_events,
+                "last_seen": last_seen,
             }

@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestFilesCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('FilesCollector', {})
+        config = get_collector_config("FilesCollector", {})
         self.collector = FilesCollector(config, None)
 
     def test_import(self):

@@ -41,13 +41,15 @@ class PassengerCollector(diamond.collector.Collector):
         Return help text
         """
         config_help = super(PassengerCollector, self).get_default_config_help()
-        config_help.update({
-            "bin": "The path to the binary",
-            "use_sudo": "Use sudo?",
-            "sudo_cmd": "Path to sudo",
-            "passenger_status_bin": "The path to the binary passenger-status",
-            "passenger_memory_stats_bin": "The path to the binary passenger-memory-stats",
-        })
+        config_help.update(
+            {
+                "bin": "The path to the binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+                "passenger_status_bin": "The path to the binary passenger-status",
+                "passenger_memory_stats_bin": "The path to the binary passenger-memory-stats",
+            }
+        )
 
         return config_help
 
@@ -56,14 +58,16 @@ class PassengerCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(PassengerCollector, self).get_default_config()
-        config.update({
-            "path": "passenger_stats",
-            "bin": "/usr/lib/ruby-flo/bin/passenger-memory-stats",
-            "use_sudo": False,
-            "sudo_cmd": "/usr/bin/sudo",
-            "passenger_status_bin": "/usr/bin/passenger-status",
-            "passenger_memory_stats_bin": "/usr/bin/passenger-memory-stats",
-        })
+        config.update(
+            {
+                "path": "passenger_stats",
+                "bin": "/usr/lib/ruby-flo/bin/passenger-memory-stats",
+                "use_sudo": False,
+                "sudo_cmd": "/usr/bin/sudo",
+                "passenger_status_bin": "/usr/bin/passenger-status",
+                "passenger_memory_stats_bin": "/usr/bin/passenger-memory-stats",
+            }
+        )
 
         return config
 
@@ -221,7 +225,9 @@ class PassengerCollector(diamond.collector.Collector):
         Collector Passenger stats
         """
         if not os.access(self.config["bin"], os.X_OK):
-            self.log.error("Path %s does not exist or is not executable", self.config["bin"])
+            self.log.error(
+                "Path %s does not exist or is not executable", self.config["bin"]
+            )
             return {}
 
         dict_stats = self.get_passenger_memory_stats()

@@ -41,14 +41,15 @@ try:
 except ImportError:
     raven = None
 
-__author__ = 'Bruno Clermont'
-__email__ = 'bruno.clermont@gmail.com'
+__author__ = "Bruno Clermont"
+__email__ = "bruno.clermont@gmail.com"
 
 
 class InvalidRule(ValueError):
     """
     invalid rule
     """
+
     pass
 
 
@@ -56,6 +57,7 @@ class BaseResult(object):
     """
     Base class for a Rule minimum/maximum check result
     """
+
     adjective = None
 
     def __init__(self, value, threshold):
@@ -69,7 +71,7 @@ class BaseResult(object):
         self.threshold = threshold
 
         if not raven:
-            self.log.error('raven.handlers.logging import failed. Handler disabled')
+            self.log.error("raven.handlers.logging import failed. Handler disabled")
             self.enabled = False
             return
 
@@ -77,13 +79,13 @@ class BaseResult(object):
     def verbose_message(self):
         """return more complete message"""
         if self.threshold is None:
-            return 'No threshold'
+            return "No threshold"
 
-        return '%.1f is %s than %.1f' % (self.value, self.adjective, self.threshold)
+        return "%.1f is %s than %.1f" % (self.value, self.adjective, self.threshold)
 
     @property
     def _is_error(self):
-        raise NotImplementedError('_is_error')
+        raise NotImplementedError("_is_error")
 
     @property
     def is_error(self):
@@ -105,16 +107,17 @@ class BaseResult(object):
         name = self.__class__.__name__.lower()
 
         if self.threshold is None:
-            return '%s: %.1f no threshold' % (name, self.value)
+            return "%s: %.1f no threshold" % (name, self.value)
 
-        return '%.1f (%s: %.1f)' % (self.value, name, self.threshold)
+        return "%.1f (%s: %.1f)" % (self.value, name, self.threshold)
 
 
 class Minimum(BaseResult):
     """
     Minimum result
     """
-    adjective = 'lower'
+
+    adjective = "lower"
 
     @property
     def _is_error(self):
@@ -126,7 +129,8 @@ class Maximum(BaseResult):
     """
     Maximum result
     """
-    adjective = 'higher'
+
+    adjective = "higher"
 
     @property
     def _is_error(self):
@@ -138,6 +142,7 @@ class Rule(object):
     """
     Alert rule
     """
+
     def __init__(self, name, path, min=None, max=None):
         """
         @type name: string
@@ -169,14 +174,18 @@ class Rule(object):
             self.max = None
 
         if self.min is None and self.max is None:
-            raise InvalidRule("%s: %s: both min and max are unset or invalid" % (name, path))
+            raise InvalidRule(
+                "%s: %s: both min and max are unset or invalid" % (name, path)
+            )
 
         if self.min is not None and self.max is not None:
             if self.min > self.max:
-                raise InvalidRule("min %.1f is larger than max %.1f" % (self.min, self.max))
+                raise InvalidRule(
+                    "min %.1f is larger than max %.1f" % (self.min, self.max)
+                )
 
         # compile path regular expression
-        self.regexp = re.compile(r'(?P<prefix>.*)\.(?P<path>%s)$' % path)
+        self.regexp = re.compile(r"(?P<prefix>.*)\.(?P<path>%s)$" % path)
 
     def process(self, metric, handler):
         """
@@ -195,35 +204,44 @@ class Rule(object):
 
             if minimum.is_error or maximum.is_error:
                 self.counter_errors += 1
-                message = "%s Warning on %s: %.1f" % (self.name, handler.hostname, metric.value)
-                culprit = "%s %s" % (handler.hostname, match.group('path'))
+                message = "%s Warning on %s: %.1f" % (
+                    self.name,
+                    handler.hostname,
+                    metric.value,
+                )
+                culprit = "%s %s" % (handler.hostname, match.group("path"))
                 handler.raven_logger.error(
                     message,
                     extra={
-                        'culprit': culprit,
-                        'data': {
-                            'metric prefix': match.group('prefix'),
-                            'metric path': match.group('path'),
-                            'minimum check': minimum.verbose_message,
-                            'maximum check': maximum.verbose_message,
-                            'metric original path': metric.path,
-                            'metric value': metric.value,
-                            'metric precision': metric.precision,
-                            'metric timestamp': metric.timestamp,
-                            'minimum threshold': self.min,
-                            'maximum threshold': self.max,
-                            'path regular expression': self.regexp.pattern,
-                            'total errors': self.counter_errors,
-                            'total pass': self.counter_pass,
-                            'hostname': handler.hostname
-                        }
-                    }
+                        "culprit": culprit,
+                        "data": {
+                            "metric prefix": match.group("prefix"),
+                            "metric path": match.group("path"),
+                            "minimum check": minimum.verbose_message,
+                            "maximum check": maximum.verbose_message,
+                            "metric original path": metric.path,
+                            "metric value": metric.value,
+                            "metric precision": metric.precision,
+                            "metric timestamp": metric.timestamp,
+                            "minimum threshold": self.min,
+                            "maximum threshold": self.max,
+                            "path regular expression": self.regexp.pattern,
+                            "total errors": self.counter_errors,
+                            "total pass": self.counter_pass,
+                            "hostname": handler.hostname,
+                        },
+                    },
                 )
             else:
                 self.counter_pass += 1
 
     def __repr__(self):
-        return '%s: min:%s max:%s %s' % (self.name, self.min, self.max, self.regexp.pattern)
+        return "%s: min:%s max:%s %s" % (
+            self.name,
+            self.min,
+            self.max,
+            self.regexp.pattern,
+        )
 
 
 class SentryHandler(Handler):
@@ -232,7 +250,7 @@ class SentryHandler(Handler):
     """
 
     # valid key name in rules sub-section
-    VALID_RULES_KEYS = ('name', 'path', 'min', 'max')
+    VALID_RULES_KEYS = ("name", "path", "min", "max")
 
     def __init__(self, config=None):
         """
@@ -244,7 +262,9 @@ class SentryHandler(Handler):
             return
 
         # init sentry/raven
-        self.sentry_log_handler = raven.handlers.logging.SentryHandler(self.config['dsn'])
+        self.sentry_log_handler = raven.handlers.logging.SentryHandler(
+            self.config["dsn"]
+        )
         self.raven_logger = logging.getLogger(self.__class__.__name__)
         self.raven_logger.addHandler(self.sentry_log_handler)
         self.configure_sentry_errors()
@@ -260,9 +280,11 @@ class SentryHandler(Handler):
         """
         config = super(SentryHandler, self).get_default_config_help()
 
-        config.update({
-            'dsn': '',
-        })
+        config.update(
+            {
+                "dsn": "",
+            }
+        )
 
         return config
 
@@ -272,9 +294,11 @@ class SentryHandler(Handler):
         """
         config = super(SentryHandler, self).get_default_config()
 
-        config.update({
-            'dsn': '',
-        })
+        config.update(
+            {
+                "dsn": "",
+            }
+        )
 
         return config
 
@@ -309,7 +333,7 @@ class SentryHandler(Handler):
         # name and path are mandatory
         keys = section.keys()
 
-        for key in ('name', 'path'):
+        for key in ("name", "path"):
             if key not in keys:
                 self.log.warning("section %s miss key '%s' ignore", key, section.name)
                 return
@@ -320,17 +344,14 @@ class SentryHandler(Handler):
                 self.log.warning("invalid key %s in section %s", key, section.name)
 
         # need at least a min or a max
-        if 'min' not in keys and 'max' not in keys:
+        if "min" not in keys and "max" not in keys:
             self.log.warning("either 'min' or 'max' is defined in %s", section.name)
             return
 
         # add rule to the list
-        kwargs = {
-            'name': section['name'],
-            'path': section['path']
-        }
+        kwargs = {"name": section["name"], "path": section["path"]}
 
-        for argument in ('min', 'max'):
+        for argument in ("min", "max"):
             try:
                 kwargs[argument] = section[argument]
             except KeyError:
@@ -347,7 +368,7 @@ class SentryHandler(Handler):
         Configure sentry.errors to use the same loggers as the root handler
         @rtype: None
         """
-        sentry_errors_logger = logging.getLogger('sentry.errors')
+        sentry_errors_logger = logging.getLogger("sentry.errors")
         root_logger = logging.getLogger()
 
         for handler in root_logger.handlers:
@@ -364,4 +385,7 @@ class SentryHandler(Handler):
             rule.process(metric, self)
 
     def __repr__(self):
-        return "SentryHandler '%s' %d rules" % (self.sentry_log_handler.client.servers, len(self.rules))
+        return "SentryHandler '%s' %d rules" % (
+            self.sentry_log_handler.client.servers,
+            len(self.rules),
+        )

@@ -27,15 +27,15 @@ except ImportError:
 
 class VMSDomsCollector(diamond.collector.Collector):
     PLUGIN_STATS = {
-        'nominal': ('pages', 4096),
-        'current': ('memory.current', 4096),
-        'clean': ('memory.clean', 4096),
-        'dirty': ('memory.dirty', 4096),
-        'limit': ('memory.limit', 4096),
-        'target': ('memory.target', 4096),
-        'evicted': ('eviction.dropped', 4096),
-        'pagedout': ('eviction.pagedout', 4096),
-        'pagedin': ('eviction.pagedin', 4096),
+        "nominal": ("pages", 4096),
+        "current": ("memory.current", 4096),
+        "clean": ("memory.clean", 4096),
+        "dirty": ("memory.dirty", 4096),
+        "limit": ("memory.limit", 4096),
+        "target": ("memory.target", 4096),
+        "evicted": ("eviction.dropped", 4096),
+        "pagedout": ("eviction.pagedout", 4096),
+        "pagedin": ("eviction.pagedin", 4096),
     }
 
     def get_default_config_help(self):
@@ -49,14 +49,12 @@ class VMSDomsCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(VMSDomsCollector, self).get_default_config()
-        config.update({
-            'path': 'vms'
-        })
+        config.update({"path": "vms"})
         return config
 
     def collect(self):
         if vms is None:
-            self.log.error('Unable to import vms')
+            self.log.error("Unable to import vms")
             return {}
 
         vms.virt.init()
@@ -86,7 +84,7 @@ class VMSDomsCollector(diamond.collector.Collector):
 
             try:
                 # Skip ghost domains.
-                if ctrl.get('gd.isghost') == '1':
+                if ctrl.get("gd.isghost") == "1":
                     continue
             except vms.control.ControlException:
                 continue
@@ -95,7 +93,7 @@ class VMSDomsCollector(diamond.collector.Collector):
             count += 1
 
         # Add the number of domains.
-        self.publish('domains', count)
+        self.publish("domains", count)
 
         # For each stat,
         for stat in self.PLUGIN_STATS:

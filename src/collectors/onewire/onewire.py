@@ -38,12 +38,14 @@ class OneWireCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(OneWireCollector, self).get_default_config()
-        config.update({
-            'path': 'owfs',
-            'owfs': '/mnt/1wire',
-            # 'scan': {'temperature': 't'},
-            # 'id:24.BB000000': {'file_with_value': 'alias'},
-        })
+        config.update(
+            {
+                "path": "owfs",
+                "owfs": "/mnt/1wire",
+                # 'scan': {'temperature': 't'},
+                # 'id:24.BB000000': {'file_with_value': 'alias'},
+            }
+        )
 
         return config
 
@@ -54,13 +56,13 @@ class OneWireCollector(diamond.collector.Collector):
 
         metrics = {}
 
-        if 'scan' in self.config:
-            for ld in os.listdir(self.config['owfs']):
-                if '.' in ld:
-                    self.read_values(ld, self.config['scan'], metrics)
+        if "scan" in self.config:
+            for ld in os.listdir(self.config["owfs"]):
+                if "." in ld:
+                    self.read_values(ld, self.config["scan"], metrics)
 
         for oid, files in iter(self.config.items()):
-            if oid[:3] == 'id:':
+            if oid[:3] == "id:":
                 self.read_values(oid[3:], files, metrics)
 
         for fn, fv in iter(metrics.items()):
@@ -72,8 +74,8 @@ class OneWireCollector(diamond.collector.Collector):
         metrics with format [oid.alias] = value
         """
 
-        oid_path = os.path.join(self.config['owfs'], oid)
-        oid = oid.replace('.', '_')
+        oid_path = os.path.join(self.config["owfs"], oid)
+        oid = oid.replace(".", "_")
 
         for fn, alias in iter(files.items()):
             fv = os.path.join(oid_path, fn)

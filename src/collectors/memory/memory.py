@@ -21,39 +21,42 @@ import diamond.convertor
 
 try:
     import psutil
+
     psutil  # workaround for pyflakes issue #13
 except ImportError:
     psutil = None
 
 _KEY_MAPPING = [
-    'MemTotal',
-    'MemFree',
-    'MemAvailable',  # needs kernel 3.14
-    'Buffers',
-    'Cached',
-    'Active',
-    'Dirty',
-    'Inactive',
-    'Shmem',
-    'SwapTotal',
-    'SwapFree',
-    'SwapCached',
-    'VmallocTotal',
-    'VmallocUsed',
-    'VmallocChunk',
-    'Committed_AS',
+    "MemTotal",
+    "MemFree",
+    "MemAvailable",  # needs kernel 3.14
+    "Buffers",
+    "Cached",
+    "Active",
+    "Dirty",
+    "Inactive",
+    "Shmem",
+    "SwapTotal",
+    "SwapFree",
+    "SwapCached",
+    "VmallocTotal",
+    "VmallocUsed",
+    "VmallocChunk",
+    "Committed_AS",
 ]
 
 
 class MemoryCollector(diamond.collector.Collector):
 
-    PROC = '/proc/meminfo'
+    PROC = "/proc/meminfo"
 
     def get_default_config_help(self):
         config_help = super(MemoryCollector, self).get_default_config_help()
-        config_help.update({
-            'detailed': 'Set to True to Collect all the nodes',
-        })
+        config_help.update(
+            {
+                "detailed": "Set to True to Collect all the nodes",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -61,21 +64,23 @@ class MemoryCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(MemoryCollector, self).get_default_config()
-        config.update({
-            'path': 'memory',
-            'method': 'Threaded',
-            'force_psutil': 'False'
-            # Collect all the nodes or just a few standard ones?
-            # Uncomment to enable
-            # 'detailed': 'True'
-        })
+        config.update(
+            {
+                "path": "memory",
+                "method": "Threaded",
+                "force_psutil": "False"
+                # Collect all the nodes or just a few standard ones?
+                # Uncomment to enable
+                # 'detailed': 'True'
+            }
+        )
         return config
 
     def collect(self):
         """
         Collect memory stats
         """
-        if ((os.access(self.PROC, os.R_OK) and self.config.get('force_psutil') != 'True')):
+        if os.access(self.PROC, os.R_OK) and self.config.get("force_psutil") != "True":
             file = open(self.PROC)
             data = file.read()
             file.close()
@@ -86,20 +91,22 @@ class MemoryCollector(diamond.collector.Collector):
             for line in data.splitlines():
                 try:
                     name, value, units = line.split()
-                    name = name.rstrip(':')
+                    name = name.rstrip(":")
                     value = int(value)
 
-                    if ((name not in _KEY_MAPPING and 'detailed' not in self.config)):
+                    if name not in _KEY_MAPPING and "detailed" not in self.config:
                         continue
 
-                    if name in 'MemTotal':
+                    if name in "MemTotal":
                         memory_total = value
-                    elif name in 'MemAvailable':
+                    elif name in "MemAvailable":
                         memory_available = value
 
-                    for unit in self.config['byte_unit']:
-                        value = diamond.convertor.binary.convert(value=value, old_unit=units, new_unit=unit)
-                        self.publish(name, value, metric_type='GAUGE')
+                    for unit in self.config["byte_unit"]:
+                        value = diamond.convertor.binary.convert(
+                            value=value, old_unit=units, new_unit=unit
+                        )
+                        self.publish(name, value, metric_type="GAUGE")
 
                         # TODO: We only support one unit node here. Fix it!
                         break
@@ -109,41 +116,63 @@ class MemoryCollector(diamond.collector.Collector):
 
             if memory_total is not None and memory_available is not None:
                 memory_used = memory_total - memory_available
-                memory_used_percent = decimal.Decimal(str(100.0 * memory_used / memory_total))
-                self.publish('MemUsedPercentage', round(memory_used_percent, 2), metric_type='GAUGE')
+                memory_used_percent = decimal.Decimal(
+                    str(100.0 * memory_used / memory_total)
+                )
+                self.publish(
+                    "MemUsedPercentage",
+                    round(memory_used_percent, 2),
+                    metric_type="GAUGE",
+                )
 
             return True
         else:
             if not psutil:
-                self.log.error('Unable to import psutil')
-                self.log.error('No memory metrics retrieved')
+                self.log.error("Unable to import psutil")
+                self.log.error("No memory metrics retrieved")
 
                 return None
 
             phymem_usage = psutil.virtual_memory()
             virtmem_usage = psutil.swap_memory()
-            units = 'B'
+            units = "B"
 
-            for unit in self.config['byte_unit']:
-                memory_total = value = diamond.convertor.binary.convert(value=phymem_usage.total, old_unit=units, new_unit=unit)
-                self.publish('MemTotal', value, metric_type='GAUGE')
+            for unit in self.config["byte_unit"]:
+                memory_total = value = diamond.convertor.binary.convert(
+                    value=phymem_usage.total, old_unit=units, new_unit=unit
+                )
+                self.publish("MemTotal", value, metric_type="GAUGE")
 
-                memory_available = value = diamond.convertor.binary.convert(value=phymem_usage.available, old_unit=units, new_unit=unit)
-                self.publish('MemAvailable', value, metric_type='GAUGE')
+                memory_available = value = diamond.convertor.binary.convert(
+                    value=phymem_usage.available, old_unit=units, new_unit=unit
+                )
+                self.publish("MemAvailable", value, metric_type="GAUGE")
 
                 memory_used = memory_total - memory_available
 
-                memory_used_percent = decimal.Decimal(str(100.0 * memory_used / memory_total))
-                self.publish('MemUsedPercentage', round(memory_used_percent, 2), metric_type='GAUGE')
+                memory_used_percent = decimal.Decimal(
+                    str(100.0 * memory_used / memory_total)
+                )
+                self.publish(
+                    "MemUsedPercentage",
+                    round(memory_used_percent, 2),
+                    metric_type="GAUGE",
+                )
 
-                value = diamond.convertor.binary.convert(value=phymem_usage.free, old_unit=units, new_unit=unit)
-                self.publish('MemFree', value, metric_type='GAUGE')
+                value = diamond.convertor.binary.convert(
+                    value=phymem_usage.free, old_unit=units, new_unit=unit
+                )
+                self.publish("MemFree", value, metric_type="GAUGE")
 
-                value = diamond.convertor.binary.convert(value=virtmem_usage.total, old_unit=units, new_unit=unit)
-                self.publish('SwapTotal', value, metric_type='GAUGE')
+                value = diamond.convertor.binary.convert(
+                    value=virtmem_usage.total, old_unit=units, new_unit=unit
+                )
+                self.publish("SwapTotal", value, metric_type="GAUGE")
 
-                value = diamond.convertor.binary.convert(value=virtmem_usage.free, old_unit=units, new_unit=unit)
-                self.publish('SwapFree', value, metric_type='GAUGE')
+                value = diamond.convertor.binary.convert(
+                    value=virtmem_usage.free, old_unit=units, new_unit=unit
+                )
+                self.publish("SwapFree", value, metric_type="GAUGE")
 
                 # TODO: We only support one unit node here. Fix it!
                 break

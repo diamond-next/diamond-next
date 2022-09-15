@@ -20,7 +20,7 @@ from diamond.handler.Handler import Handler
 # tools that look in that location and would like
 # to switch to Diamond need to make zero changes.
 
-BASEDIR = '/var/lib/collectd/rrd'
+BASEDIR = "/var/lib/collectd/rrd"
 
 METRIC_STEP = 10
 
@@ -72,28 +72,32 @@ class RRDHandler(Handler):
     def __init__(self, *args, **kwargs):
         super(RRDHandler, self).__init__(*args, **kwargs)
         self._exists_cache = dict()
-        self._basedir = self.config['basedir']
-        self._batch = self.config['batch']
-        self._step = self.config['step']
+        self._basedir = self.config["basedir"]
+        self._batch = self.config["batch"]
+        self._step = self.config["step"]
         self._queues = {}
         self._last_update = {}
 
     def get_default_config_help(self):
         config = super(RRDHandler, self).get_default_config_help()
-        config.update({
-            'basedir': 'The base directory for all RRD files.',
-            'batch': 'Wait for this many updates before saving to the RRD file',
-            'step': 'The minimum interval represented in generated RRD files.',
-        })
+        config.update(
+            {
+                "basedir": "The base directory for all RRD files.",
+                "batch": "Wait for this many updates before saving to the RRD file",
+                "step": "The minimum interval represented in generated RRD files.",
+            }
+        )
         return config
 
     def get_default_config(self):
         config = super(RRDHandler, self).get_default_config()
-        config.update({
-            'basedir': BASEDIR,
-            'batch': BATCH_SIZE,
-            'step': METRIC_STEP,
-        })
+        config.update(
+            {
+                "basedir": BASEDIR,
+                "batch": BATCH_SIZE,
+                "step": METRIC_STEP,
+            }
+        )
         return config
 
     def _ensure_exists(self, filename, metric_name, metric_type):
@@ -128,13 +132,15 @@ class RRDHandler(Handler):
         except OSError:
             pass
 
-        ds_spec = "DS:%s:%s:%d:U:U" % (
-            metric_name, metric_type, self._step * 2)
+        ds_spec = "DS:%s:%s:%d:U:U" % (metric_name, metric_type, self._step * 2)
         rrd_create_cmd = [
-            "rrdtool", "create", filename,
+            "rrdtool",
+            "create",
+            filename,
             "--no-overwrite",
-            "--step", str(self._step),
-            ds_spec
+            "--step",
+            str(self._step),
+            ds_spec,
         ]
         rrd_create_cmd.extend(RRA_SPECS)
         subprocess.check_call(rrd_create_cmd, close_fds=True)
@@ -216,8 +222,9 @@ class RRDHandler(Handler):
             # The timestamps must be sorted, and we each of the
             # <time> values must be unique (like a snowflake).
             data_points = map(
-                lambda timestamp_values: "%d:%s" % (timestamp_values[0], ":".join(map(str, timestamp_values[1]))),
-                sorted(updates.items())
+                lambda timestamp_values: "%d:%s"
+                % (timestamp_values[0], ":".join(map(str, timestamp_values[1]))),
+                sorted(updates.items()),
             )
 
             # Optimisticly update.

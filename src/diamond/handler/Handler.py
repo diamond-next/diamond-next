@@ -12,6 +12,7 @@ class Handler(object):
     """
     Handlers process metrics that are collected by Collectors.
     """
+
     def __init__(self, config=None, log=None):
         """
         Create a new instance of the Handler class
@@ -22,7 +23,7 @@ class Handler(object):
 
         # Initialize Log
         if log is None:
-            self.log = logging.getLogger('diamond')
+            self.log = logging.getLogger("diamond")
         else:
             self.log = log
 
@@ -36,7 +37,7 @@ class Handler(object):
         self.config.merge(config)
 
         # error logging throttling
-        self.server_error_interval = float(self.config['server_error_interval'])
+        self.server_error_interval = float(self.config["server_error_interval"])
         self._errors = {}
 
         # Initialize Lock
@@ -47,8 +48,8 @@ class Handler(object):
         Returns the help text for the configuration options for this handler
         """
         return {
-            'get_default_config_help': 'get_default_config_help',
-            'server_error_interval': 'How frequently to send repeated server errors',
+            "get_default_config_help": "get_default_config_help",
+            "server_error_interval": "How frequently to send repeated server errors",
         }
 
     def get_default_config(self):
@@ -56,8 +57,8 @@ class Handler(object):
         Return the default config for the handler
         """
         return {
-            'get_default_config': 'get_default_config',
-            'server_error_interval': 120,
+            "get_default_config": "get_default_config",
+            "server_error_interval": 120,
         }
 
     def _process(self, metric):

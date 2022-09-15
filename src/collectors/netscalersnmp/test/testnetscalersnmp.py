@@ -11,10 +11,9 @@ class TestNetscalerSNMPCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('NetscalerSNMPCollector', {
-            'allowed_names': allowed_names,
-            'interval': 1
-        })
+        config = get_collector_config(
+            "NetscalerSNMPCollector", {"allowed_names": allowed_names, "interval": 1}
+        )
         self.collector = NetscalerSNMPCollector(config, None)
 
     def test_import(self):

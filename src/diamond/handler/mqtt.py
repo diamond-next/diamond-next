@@ -76,8 +76,8 @@ try:
 except ImportError:
     mosquitto = None
 
-__author__ = 'Jan-Piet Mens'
-__email__ = 'jpmens@gmail.com'
+__author__ = "Jan-Piet Mens"
+__email__ = "jpmens@gmail.com"
 
 
 class MQTTHandler(Handler):
@@ -94,15 +94,15 @@ class MQTTHandler(Handler):
         self.client_id = "%s_%s" % (self.hostname, os.getpid())
 
         # Initialize Options
-        self.host = self.config.get('host', 'localhost')
+        self.host = self.config.get("host", "localhost")
         self.port = 0
-        self.qos = int(self.config.get('qos', 0))
-        self.prefix = self.config.get('prefix', "")
-        self.tls = self.config.get('tls', False)
+        self.qos = int(self.config.get("qos", 0))
+        self.prefix = self.config.get("prefix", "")
+        self.tls = self.config.get("tls", False)
         self.timestamp = 0
 
         try:
-            self.timestamp = self.config['timestamp']
+            self.timestamp = self.config["timestamp"]
             if not self.timestamp:
                 self.timestamp = 1
             else:
@@ -111,7 +111,7 @@ class MQTTHandler(Handler):
             self.timestamp = 1
 
         if not mosquitto:
-            self.log.error('mosquitto import failed. Handler disabled')
+            self.log.error("mosquitto import failed. Handler disabled")
             self.enabled = False
 
             return
@@ -120,15 +120,15 @@ class MQTTHandler(Handler):
         self.mqttc = mosquitto.Mosquitto(self.client_id, clean_session=True)
 
         if not self.tls:
-            self.port = int(self.config.get('port', 1883))
+            self.port = int(self.config.get("port", 1883))
         else:
             # Set up TLS if requested
 
-            self.port = int(self.config.get('port', 8883))
+            self.port = int(self.config.get("port", 8883))
 
-            self.cafile = self.config.get('cafile', None)
-            self.certfile = self.config.get('certfile', None)
-            self.keyfile = self.config.get('keyfile', None)
+            self.cafile = self.config.get("cafile", None)
+            self.certfile = self.config.get("certfile", None)
+            self.keyfile = self.config.get("keyfile", None)
 
             if None in [self.cafile, self.certfile, self.keyfile]:
                 self.log.error("MQTTHandler: TLS configuration missing.")
@@ -141,12 +141,16 @@ class MQTTHandler(Handler):
                     keyfile=self.keyfile,
                     cert_reqs=ssl.CERT_REQUIRED,
                     tls_version=3,
-                    ciphers=None
+                    ciphers=None,
                 )
             except:
-                self.log.error("MQTTHandler: Cannot set up TLS configuration. Files missing?")
+                self.log.error(
+                    "MQTTHandler: Cannot set up TLS configuration. Files missing?"
+                )
 
-        self.mqttc.will_set("clients/diamond/%s" % self.hostname, payload="Adios!", qos=0, retain=False)
+        self.mqttc.will_set(
+            "clients/diamond/%s" % self.hostname, payload="Adios!", qos=0, retain=False
+        )
         self.mqttc.connect(self.host, self.port, 60)
 
         self.mqttc.on_disconnect = self._disconnect
@@ -186,8 +190,8 @@ class MQTTHandler(Handler):
         if len(self.prefix):
             topic = "%s/%s" % (self.prefix, topic)
 
-        topic = topic.replace('.', '/')
-        topic = topic.replace('#', '&')  # Topic must not contain wildcards
+        topic = topic.replace(".", "/")
+        topic = topic.replace("#", "&")  # Topic must not contain wildcards
 
         if self.timestamp == 0:
             self.mqttc.publish(topic, "%s" % value, self.qos)

@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestNetAppCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('NetAppCollector', {})
+        config = get_collector_config("NetAppCollector", {})
         self.collector = NetAppCollector(config, None)
 
     def test_import(self):

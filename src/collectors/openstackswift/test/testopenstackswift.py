@@ -11,10 +11,9 @@ class TestOpenstackSwiftCollector(CollectorTestCase):
         if not allowed_names:
             allowed_names = []
 
-        config = get_collector_config('OpenstackSwiftCollector', {
-            'allowed_names': allowed_names,
-            'interval': 1
-        })
+        config = get_collector_config(
+            "OpenstackSwiftCollector", {"allowed_names": allowed_names, "interval": 1}
+        )
         self.collector = OpenstackSwiftCollector(config, None)
 
     def test_import(self):

@@ -10,9 +10,7 @@ from test import get_collector_config
 
 class TestS3BucketCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('S3BucketCollector', {
-            'interval': 10
-        })
+        config = get_collector_config("S3BucketCollector", {"interval": 10})
 
         self.collector = S3BucketCollector(config, None)
 

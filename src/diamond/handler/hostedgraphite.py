@@ -28,7 +28,7 @@ class HostedGraphiteHandler(Handler):
         # Initialize Handler
         Handler.__init__(self, config)
 
-        self.key = self.config['apikey'].lower().strip()
+        self.key = self.config["apikey"].lower().strip()
 
         self.graphite = GraphiteHandler(self.config)
 
@@ -38,16 +38,18 @@ class HostedGraphiteHandler(Handler):
         """
         config = super(HostedGraphiteHandler, self).get_default_config_help()
 
-        config.update({
-            'apikey': 'Api key to use',
-            'host': 'Hostname',
-            'port': 'Port',
-            'proto': 'udp or tcp',
-            'timeout': '',
-            'batch': 'How many to store before sending to the graphite server',
-            'max_backlog_multiplier': 'how many batches to store before trimming',  # NOQA
-            'trim_backlog_multiplier': 'Trim down how many batches',
-        })
+        config.update(
+            {
+                "apikey": "Api key to use",
+                "host": "Hostname",
+                "port": "Port",
+                "proto": "udp or tcp",
+                "timeout": "",
+                "batch": "How many to store before sending to the graphite server",
+                "max_backlog_multiplier": "how many batches to store before trimming",  # NOQA
+                "trim_backlog_multiplier": "Trim down how many batches",
+            }
+        )
 
         return config
 
@@ -57,16 +59,18 @@ class HostedGraphiteHandler(Handler):
         """
         config = super(HostedGraphiteHandler, self).get_default_config()
 
-        config.update({
-            'apikey': '',
-            'host': 'carbon.hostedgraphite.com',
-            'port': 2003,
-            'proto': 'tcp',
-            'timeout': 15,
-            'batch': 1,
-            'max_backlog_multiplier': 5,
-            'trim_backlog_multiplier': 4,
-        })
+        config.update(
+            {
+                "apikey": "",
+                "host": "carbon.hostedgraphite.com",
+                "port": 2003,
+                "proto": "tcp",
+                "timeout": 15,
+                "batch": 1,
+                "max_backlog_multiplier": 5,
+                "trim_backlog_multiplier": 4,
+            }
+        )
 
         return config
 
@@ -74,14 +78,14 @@ class HostedGraphiteHandler(Handler):
         """
         Process a metric by sending it to graphite
         """
-        metric = self.key + '.' + str(metric)
+        metric = self.key + "." + str(metric)
         self.graphite.process(metric)
 
     def _process(self, metric):
         """
         Process a metric by sending it to graphite
         """
-        metric = self.key + '.' + str(metric)
+        metric = self.key + "." + str(metric)
         self.graphite._process(metric)
 
     def _flush(self):

@@ -34,13 +34,13 @@ class IcingaStatsCollector(diamond.collector.Collector):
         metrics = self.get_icinga_stats(stats["programstatus"])
         if "hoststatus" in stats.keys():
             metrics = dict(
-                metrics.items() + self.get_host_stats(
-                    stats["hoststatus"]).items())
+                metrics.items() + self.get_host_stats(stats["hoststatus"]).items()
+            )
 
         if "servicestatus" in stats.keys():
             metrics = dict(
-                metrics.items() + self.get_svc_stats(
-                    stats["servicestatus"]).items())
+                metrics.items() + self.get_svc_stats(stats["servicestatus"]).items()
+            )
 
         for metric in metrics.keys():
             self.log.debug("Publishing '%s %s'.", metric, metrics[metric])
@@ -50,11 +50,8 @@ class IcingaStatsCollector(diamond.collector.Collector):
         """
         Return help text
         """
-        config_help = super(IcingaStatsCollector,
-                            self).get_default_config_help()
-        config_help.update({
-            "status_path": "Path to Icinga status.dat file"
-        })
+        config_help = super(IcingaStatsCollector, self).get_default_config_help()
+        config_help.update({"status_path": "Path to Icinga status.dat file"})
         return config_help
 
     def get_default_config(self):
@@ -62,26 +59,26 @@ class IcingaStatsCollector(diamond.collector.Collector):
         Returns default settings for collector
         """
         config = super(IcingaStatsCollector, self).get_default_config()
-        config.update({
-            "path": "icinga_stats",
-            "status_path": "/var/lib/icinga/status.dat",
-        })
+        config.update(
+            {
+                "path": "icinga_stats",
+                "status_path": "/var/lib/icinga/status.dat",
+            }
+        )
         return config
 
     def get_icinga_stats(self, app_stats):
-        """ Extract metrics from 'programstatus' """
+        """Extract metrics from 'programstatus'"""
         stats = {}
         stats = dict(stats.items() + self._get_active_stats(app_stats).items())
         stats = dict(stats.items() + self._get_cached_stats(app_stats).items())
-        stats = dict(
-            stats.items() + self._get_command_execution(app_stats).items())
-        stats = dict(
-            stats.items() + self._get_externalcmd_stats(app_stats).items())
+        stats = dict(stats.items() + self._get_command_execution(app_stats).items())
+        stats = dict(stats.items() + self._get_externalcmd_stats(app_stats).items())
         stats["uptime"] = self._get_uptime(app_stats)
         return stats
 
     def parse_stats_file(self, file_name):
-        """ Read and parse given file_name, return config as a dictionary """
+        """Read and parse given file_name, return config as a dictionary"""
         stats = {}
         try:
             with open(file_name, "r") as fhandle:
@@ -124,7 +121,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return stats
 
     def get_host_stats(self, hosts):
-        """ Get statistics for Hosts, resp. Host entities """
+        """Get statistics for Hosts, resp. Host entities"""
         stats = {
             "hosts.total": 0,
             "hosts.ok": 0,
@@ -144,8 +141,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
             sane = self._sanitize_entity(host)
             stats["hosts.total"] += 1
             stats["hosts.flapping"] += self._trans_binary(sane["flapping"])
-            stats[
-                "hosts.in_downtime"] += self._trans_dtime(sane["in_downtime"])
+            stats["hosts.in_downtime"] += self._trans_dtime(sane["in_downtime"])
             stats["hosts.checked"] += self._trans_binary(sane["checked"])
             stats["hosts.scheduled"] += self._trans_binary(sane["scheduled"])
             stats["hosts.active_checks"] += sane["active_checks"]
@@ -156,7 +152,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return stats
 
     def get_svc_stats(self, svcs):
-        """ Get statistics for Services, resp. Service entities """
+        """Get statistics for Services, resp. Service entities"""
         stats = {
             "services.total": 0,
             "services.ok": 0,
@@ -177,11 +173,9 @@ class IcingaStatsCollector(diamond.collector.Collector):
             sane = self._sanitize_entity(svc)
             stats["services.total"] += 1
             stats["services.flapping"] += self._trans_binary(sane["flapping"])
-            stats["services.in_downtime"] += self._trans_dtime(
-                sane["in_downtime"])
+            stats["services.in_downtime"] += self._trans_dtime(sane["in_downtime"])
             stats["services.checked"] += self._trans_binary(sane["checked"])
-            stats[
-                "services.scheduled"] += self._trans_binary(sane["scheduled"])
+            stats["services.scheduled"] += self._trans_binary(sane["scheduled"])
             stats["services.active_checks"] += sane["active_checks"]
             stats["services.passive_checks"] += sane["passive_checks"]
             state_key = self._trans_svc_state(sane["state"])
@@ -190,7 +184,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return stats
 
     def _convert_tripplet(self, tripplet):
-        """ Turn '10,178,528' into tuple of integers """
+        """Turn '10,178,528' into tuple of integers"""
         splitted = tripplet.split(",")
         if len(splitted) != 3:
             self.log.debug("Got %i chunks, expected 3.", len(splitted))
@@ -324,7 +318,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return stats
 
     def _get_uptime(self, app_stats):
-        """ Return Icinga's uptime """
+        """Return Icinga's uptime"""
         if "program_start" not in app_stats.keys():
             return 0
 
@@ -338,7 +332,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return uptime
 
     def _parse_config_buffer(self, fbuffer):
-        """ Parse buffered chunk of config into dict """
+        """Parse buffered chunk of config into dict"""
         if len(fbuffer) < 1 or not fbuffer[0].endswith("{"):
             # Invalid input
             return {}
@@ -398,7 +392,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return sane
 
     def _trans_binary(self, value):
-        """ Given value is expected to be a binary - 0/1 """
+        """Given value is expected to be a binary - 0/1"""
         try:
             conv = int(value)
         except ValueError:
@@ -410,7 +404,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return conv
 
     def _trans_dtime(self, value):
-        """ Translate scheduled downtime """
+        """Translate scheduled downtime"""
         try:
             conv = int(value)
         except ValueError:
@@ -422,7 +416,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         return conv
 
     def _trans_host_state(self, state):
-        """ Translate/validate Host state """
+        """Translate/validate Host state"""
         if state == 0:
             return "ok"
         elif state == 1:
@@ -431,7 +425,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
             return "unreachable"
 
     def _trans_svc_state(self, state):
-        """ Translate/validate Service state """
+        """Translate/validate Service state"""
         if state == 0:
             return "ok"
         elif state == 1:
@@ -442,7 +436,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
             return "unknown"
 
     def _trim(self, somestr):
-        """ Trim left-right given string """
+        """Trim left-right given string"""
         tmp = RE_LSPACES.sub("", somestr)
         tmp = RE_TSPACES.sub("", tmp)
         return str(tmp)

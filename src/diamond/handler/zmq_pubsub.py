@@ -14,19 +14,20 @@ except ImportError:
 
 class zmqHandler(Handler):
     """
-      Implements the abstract Handler class
-      Sending data to a Zer0MQ pub channel
+    Implements the abstract Handler class
+    Sending data to a Zer0MQ pub channel
     """
+
     def __init__(self, config=None):
         """
-          Create a new instance of zmqHandler class
+        Create a new instance of zmqHandler class
         """
 
         # Initialize Handler
         Handler.__init__(self, config)
 
         if not zmq:
-            self.log.error('zmq import failed. Handler disabled')
+            self.log.error("zmq import failed. Handler disabled")
             self.enabled = False
             return
 
@@ -36,7 +37,7 @@ class zmqHandler(Handler):
         self.socket = None
 
         # Initialize Options
-        self.port = int(self.config['port'])
+        self.port = int(self.config["port"])
 
         # Create ZMQ pub socket and bind
         self._bind()
@@ -47,9 +48,11 @@ class zmqHandler(Handler):
         """
         config = super(zmqHandler, self).get_default_config_help()
 
-        config.update({
-            'port': '',
-        })
+        config.update(
+            {
+                "port": "",
+            }
+        )
 
         return config
 
@@ -59,15 +62,17 @@ class zmqHandler(Handler):
         """
         config = super(zmqHandler, self).get_default_config()
 
-        config.update({
-            'port': 1234,
-        })
+        config.update(
+            {
+                "port": 1234,
+            }
+        )
 
         return config
 
     def _bind(self):
         """
-           Create PUB socket and bind
+        Create PUB socket and bind
         """
         if not zmq:
             return
@@ -78,13 +83,13 @@ class zmqHandler(Handler):
 
     def __del__(self):
         """
-          Destroy instance of the zmqHandler class
+        Destroy instance of the zmqHandler class
         """
         pass
 
     def process(self, metric):
         """
-          Process a metric and send it to zmq pub socket
+        Process a metric and send it to zmq pub socket
         """
         if not zmq:
             return

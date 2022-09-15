@@ -20,7 +20,7 @@ def collector_process(collector, metric_queue, log):
     proc = multiprocessing.current_process()
 
     if setproctitle:
-        setproctitle('%s - %s' % (getproctitle(), proc.name))
+        setproctitle("%s - %s" % (getproctitle(), proc.name))
 
     signal.signal(signal.SIGALRM, signal_to_exception)
     signal.signal(signal.SIGHUP, signal_to_exception)
@@ -30,14 +30,14 @@ def collector_process(collector, metric_queue, log):
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     signal.signal(signal.SIGTERM, signal.SIG_DFL)
 
-    interval = float(collector.config['interval'])
+    interval = float(collector.config["interval"])
 
-    log.debug('Starting')
-    log.debug('Interval: %s seconds', interval)
+    log.debug("Starting")
+    log.debug("Interval: %s seconds", interval)
 
     # Validate the interval
     if interval <= 0:
-        log.critical('interval of %s is not valid!', interval)
+        log.critical("interval of %s is not valid!", interval)
         sys.exit(1)
 
     # Start the next execution at the next window plus some stagger delay to
@@ -48,15 +48,15 @@ def collector_process(collector, metric_queue, log):
     # Allocate time till the end of the window for the collector to run. With a
     # minimum of 1 second
     max_time = int(max(interval - stagger_offset, 1))
-    log.debug('Max collection time: %s seconds', max_time)
+    log.debug("Max collection time: %s seconds", max_time)
 
     # Setup stderr/stdout as /dev/null so random print statements in thrid
     # party libs do not fail and prevent collectors from running.
     # https://github.com/BrightcoveOS/Diamond/issues/722
-    sys.stdout = open(os.devnull, 'w')
-    sys.stderr = open(os.devnull, 'w')
+    sys.stdout = open(os.devnull, "w")
+    sys.stderr = open(os.devnull, "w")
 
-    while(True):
+    while True:
         try:
             time_to_sleep = (next_window + stagger_offset) - time.time()
 
@@ -78,13 +78,13 @@ def collector_process(collector, metric_queue, log):
             signal.alarm(0)
 
         except SIGALRMException:
-            log.error('Took too long to run! Killed!')
+            log.error("Took too long to run! Killed!")
 
             # Adjust the stagger_offset to allow for more time to run the collector
             stagger_offset = stagger_offset * 0.9
 
             max_time = int(max(interval - stagger_offset, 1))
-            log.debug('Max collection time: %s seconds', max_time)
+            log.debug("Max collection time: %s seconds", max_time)
 
         except SIGHUPException:
             # Reload the config if requested
@@ -92,12 +92,12 @@ def collector_process(collector, metric_queue, log):
             # us and end up with half a loaded config
             signal.alarm(0)
 
-            log.info('Reloading config reload due to HUP')
+            log.info("Reloading config reload due to HUP")
             collector.load_config()
-            log.info('Config reloaded')
+            log.info("Config reloaded")
 
         except Exception:
-            log.exception('Collector failed!')
+            log.exception("Collector failed!")
             break
 
 
@@ -105,11 +105,11 @@ def handler_process(handlers, metric_queue, log):
     proc = multiprocessing.current_process()
 
     if setproctitle:
-        setproctitle('%s - %s' % (getproctitle(), proc.name))
+        setproctitle("%s - %s" % (getproctitle(), proc.name))
 
-    log.debug('Starting process %s', proc.name)
+    log.debug("Starting process %s", proc.name)
 
-    while(True):
+    while True:
         metric = metric_queue.get(block=True, timeout=None)
 
         for handler in handlers:

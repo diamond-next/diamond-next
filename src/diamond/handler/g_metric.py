@@ -20,6 +20,7 @@ class GmetricHandler(Handler):
     Implements the abstract Handler class, sending data the same way that
     gmetric does.
     """
+
     def __init__(self, config=None):
         """
         Create a new instance of the GmetricHandler class
@@ -37,12 +38,12 @@ class GmetricHandler(Handler):
         self.socket = None
 
         # Initialize Options
-        self.host = self.config['host']
-        self.port = int(self.config['port'])
-        self.protocol = self.config['protocol']
+        self.host = self.config["host"]
+        self.port = int(self.config["port"])
+        self.protocol = self.config["protocol"]
 
         if not self.protocol:
-            self.protocol = 'udp'
+            self.protocol = "udp"
 
         # Initialize
         self.gmetric = gmetric.Gmetric(self.host, self.port, self.protocol)
@@ -53,11 +54,13 @@ class GmetricHandler(Handler):
         """
         config = super(GmetricHandler, self).get_default_config_help()
 
-        config.update({
-            'host': 'Hostname',
-            'port': 'Port',
-            'protocol': 'udp or tcp',
-        })
+        config.update(
+            {
+                "host": "Hostname",
+                "port": "Port",
+                "protocol": "udp or tcp",
+            }
+        )
 
         return config
 
@@ -67,11 +70,13 @@ class GmetricHandler(Handler):
         """
         config = super(GmetricHandler, self).get_default_config()
 
-        config.update({
-            'host': 'localhost',
-            'port': 8651,
-            'protocol': 'udp',
-        })
+        config.update(
+            {
+                "host": "localhost",
+                "port": 8651,
+                "protocol": "udp",
+            }
+        )
 
         return config
 
@@ -101,7 +106,9 @@ class GmetricHandler(Handler):
         metric_type = "double"
         units = ""
         group = ""
-        self.gmetric.send(metric_name, metric.value, metric_type, units, slope, tmax, dmax, group)
+        self.gmetric.send(
+            metric_name, metric.value, metric_type, units, slope, tmax, dmax, group
+        )
 
     def _close(self):
         """

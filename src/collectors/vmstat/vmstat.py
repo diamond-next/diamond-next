@@ -16,15 +16,15 @@ import diamond.collector
 
 
 class VMStatCollector(diamond.collector.Collector):
-    PROC = '/proc/vmstat'
+    PROC = "/proc/vmstat"
 
     MAX_VALUES = {
-        'pgfault': diamond.collector.MAX_COUNTER,
-        'pgmajfault': diamond.collector.MAX_COUNTER,
-        'pgpgin': diamond.collector.MAX_COUNTER,
-        'pgpgout': diamond.collector.MAX_COUNTER,
-        'pswpin': diamond.collector.MAX_COUNTER,
-        'pswpout': diamond.collector.MAX_COUNTER,
+        "pgfault": diamond.collector.MAX_COUNTER,
+        "pgmajfault": diamond.collector.MAX_COUNTER,
+        "pgpgin": diamond.collector.MAX_COUNTER,
+        "pgpgout": diamond.collector.MAX_COUNTER,
+        "pswpin": diamond.collector.MAX_COUNTER,
+        "pswpout": diamond.collector.MAX_COUNTER,
     }
 
     def get_default_config_help(self):
@@ -38,9 +38,7 @@ class VMStatCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(VMStatCollector, self).get_default_config()
-        config.update({
-            'path': 'vmstat'
-        })
+        config.update({"path": "vmstat"})
         return config
 
     def collect(self):
@@ -49,7 +47,7 @@ class VMStatCollector(diamond.collector.Collector):
 
         # open file
         file = open(self.PROC)
-        exp = '^(pgfault|pgmajfault|pgpgin|pgpgout|pswpin|pswpout)\s(\d+)'
+        exp = "^(pgfault|pgmajfault|pgpgin|pgpgout|pswpin|pswpout)\s(\d+)"
         reg = re.compile(exp)
 
         # Build regex

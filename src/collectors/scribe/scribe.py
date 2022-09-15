@@ -18,30 +18,34 @@ import diamond.collector
 class ScribeCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(ScribeCollector, self).get_default_config_help()
-        config_help.update({
-            'scribe_ctrl_bin': 'Path to scribe_ctrl binary',
-            'scribe_port': 'Scribe port',
-        })
+        config_help.update(
+            {
+                "scribe_ctrl_bin": "Path to scribe_ctrl binary",
+                "scribe_port": "Scribe port",
+            }
+        )
         return config_help
 
     def get_default_config(self):
         config = super(ScribeCollector, self).get_default_config()
-        config.update({
-            'path': 'scribe',
-            'scribe_ctrl_bin': self.find_binary('/usr/sbin/scribe_ctrl'),
-            'scribe_port': None,
-        })
+        config.update(
+            {
+                "path": "scribe",
+                "scribe_ctrl_bin": self.find_binary("/usr/sbin/scribe_ctrl"),
+                "scribe_port": None,
+            }
+        )
         return config
 
     def key_to_metric(self, key):
         """Replace all non-letter characters with underscores"""
-        return ''.join(l if l in string.ascii_letters else '_' for l in key)
+        return "".join(l if l in string.ascii_letters else "_" for l in key)
 
     def get_scribe_ctrl_output(self):
-        cmd = [self.config['scribe_ctrl_bin'], 'counters']
+        cmd = [self.config["scribe_ctrl_bin"], "counters"]
 
-        if self.config['scribe_port'] is not None:
-            cmd.append(self.config['scribe_port'])
+        if self.config["scribe_port"] is not None:
+            cmd.append(self.config["scribe_port"])
 
         self.log.debug("Running command %r", cmd)
 
@@ -65,7 +69,7 @@ class ScribeCollector(diamond.collector.Collector):
         data = {}
 
         for line in output.splitlines():
-            key, val = line.rsplit(':', 1)
+            key, val = line.rsplit(":", 1)
             metric = self.key_to_metric(key)
             data[metric] = int(val)
 

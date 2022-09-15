@@ -23,16 +23,16 @@ def run_only_if_libvirt_is_available(func):
 
 class TestXENCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('XENCollector', {})
+        config = get_collector_config("XENCollector", {})
         self.collector = XENCollector(config, None)
 
     def test_import(self):
         self.assertTrue(XENCollector)
 
     @run_only_if_libvirt_is_available
-    @patch('os.statvfs')
-    @patch('libvirt.openReadOnly')
-    @patch.object(Collector, 'publish')
+    @patch("os.statvfs")
+    @patch("libvirt.openReadOnly")
+    @patch.object(Collector, "publish")
     def test_centos6(self, publish_mock, libvirt_mock, os_mock):
         class info:
             def __init__(self, id):
@@ -43,10 +43,10 @@ class TestXENCollector(CollectorTestCase):
                     return [1, 49420888, 49420888, 8, 911232000000000]
 
                 if self.id == 1:
-                    return [1, 2097152,  2097152,  2, 310676150000000]
+                    return [1, 2097152, 2097152, 2, 310676150000000]
 
                 if self.id == 2:
-                    return [1, 2097152,  2097152,  2, 100375300000000]
+                    return [1, 2097152, 2097152, 2, 100375300000000]
 
                 if self.id == 3:
                     return [1, 10485760, 10485760, 2, 335312040000000]
@@ -55,7 +55,7 @@ class TestXENCollector(CollectorTestCase):
                     return [1, 10485760, 10485760, 2, 351313480000000]
 
         libvirt_m = Mock()
-        libvirt_m.getInfo.return_value = ['x86_64', 48262, 8, 1200, 2, 1, 4, 1]
+        libvirt_m.getInfo.return_value = ["x86_64", 48262, 8, 1200, 2, 1, 4, 1]
         libvirt_m.listDomainsID.return_value = [0, 2, 1, 4, 3]
 
         def lookup_by_id_mock(id):
@@ -76,16 +76,20 @@ class TestXENCollector(CollectorTestCase):
         self.collector.collect()
 
         metrics = {
-            'TotalCores': 8.000000,
-            'InstalledMem': 48262.000000,
-            'MemAllocated': 24576.000000,
-            'MemFree': 23686.000000,
-            'DiskFree': 297968580.000000,
-            'FreeCores': 0.000000,
-            'AllocatedCores': 8.000000,
+            "TotalCores": 8.000000,
+            "InstalledMem": 48262.000000,
+            "MemAllocated": 24576.000000,
+            "MemFree": 23686.000000,
+            "DiskFree": 297968580.000000,
+            "FreeCores": 0.000000,
+            "AllocatedCores": 8.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
+        self.setDocExample(
+            collector=self.collector.__class__.__name__,
+            metrics=metrics,
+            defaultpath=self.collector.config["path"],
+        )
         self.assertPublishedMany(publish_mock, metrics)
 
 

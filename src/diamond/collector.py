@@ -22,138 +22,142 @@ from diamond.utils.config import load_config
 # appropriately. Otherwise, rolling over counters will cause incorrect or
 # negative values.
 
-if platform.architecture()[0] == '64bit':
-    MAX_COUNTER = (2 ** 64) - 1
+if platform.architecture()[0] == "64bit":
+    MAX_COUNTER = (2**64) - 1
 else:
-    MAX_COUNTER = (2 ** 32) - 1
+    MAX_COUNTER = (2**32) - 1
 
 
 def get_hostname(config, method=None):
     """
     Returns a hostname as configured by the user
     """
-    method = method or config.get('hostname_method', 'smart')
+    method = method or config.get("hostname_method", "smart")
 
     # case insensitive method
     method = method.lower()
 
-    if 'hostname' in config and method != 'shell':
-        return config['hostname']
+    if "hostname" in config and method != "shell":
+        return config["hostname"]
 
     if method in get_hostname.cached_results:
         return get_hostname.cached_results[method]
 
-    if method == 'shell':
-        if 'hostname' not in config:
-            raise DiamondException("hostname must be set to a shell command for hostname_method=shell")
+    if method == "shell":
+        if "hostname" not in config:
+            raise DiamondException(
+                "hostname must be set to a shell command for hostname_method=shell"
+            )
         else:
-            proc = subprocess.Popen(config['hostname'], shell=True, stdout=subprocess.PIPE)
+            proc = subprocess.Popen(
+                config["hostname"], shell=True, stdout=subprocess.PIPE
+            )
             hostname = proc.communicate()[0].strip()
 
             if proc.returncode != 0:
-                raise subprocess.CalledProcessError(proc.returncode, config['hostname'])
+                raise subprocess.CalledProcessError(proc.returncode, config["hostname"])
 
             get_hostname.cached_results[method] = hostname
 
             return hostname
 
-    if method == 'smart':
-        hostname = get_hostname(config, 'fqdn_short')
+    if method == "smart":
+        hostname = get_hostname(config, "fqdn_short")
 
-        if hostname != 'localhost':
+        if hostname != "localhost":
             get_hostname.cached_results[method] = hostname
 
             return hostname
 
-        hostname = get_hostname(config, 'hostname_short')
+        hostname = get_hostname(config, "hostname_short")
         get_hostname.cached_results[method] = hostname
 
         return hostname
 
-    if method == 'fqdn_short':
-        hostname = socket.getfqdn().split('.')[0]
+    if method == "fqdn_short":
+        hostname = socket.getfqdn().split(".")[0]
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'fqdn':
-        hostname = socket.getfqdn().replace('.', '_')
+    if method == "fqdn":
+        hostname = socket.getfqdn().replace(".", "_")
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'fqdn_rev':
-        hostname = socket.getfqdn().split('.')
+    if method == "fqdn_rev":
+        hostname = socket.getfqdn().split(".")
         hostname.reverse()
-        hostname = '.'.join(hostname)
+        hostname = ".".join(hostname)
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'uname_short':
-        hostname = os.uname()[1].split('.')[0]
+    if method == "uname_short":
+        hostname = os.uname()[1].split(".")[0]
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'uname_rev':
-        hostname = os.uname()[1].split('.')
+    if method == "uname_rev":
+        hostname = os.uname()[1].split(".")
         hostname.reverse()
-        hostname = '.'.join(hostname)
+        hostname = ".".join(hostname)
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'hostname':
+    if method == "hostname":
         hostname = socket.gethostname()
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'hostname_short':
-        hostname = socket.gethostname().split('.')[0]
+    if method == "hostname_short":
+        hostname = socket.gethostname().split(".")[0]
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'hostname_rev':
-        hostname = socket.gethostname().split('.')
+    if method == "hostname_rev":
+        hostname = socket.gethostname().split(".")
         hostname.reverse()
-        hostname = '.'.join(hostname)
+        hostname = ".".join(hostname)
         get_hostname.cached_results[method] = hostname
 
-        if hostname == '':
-            raise DiamondException('Hostname is empty?!')
+        if hostname == "":
+            raise DiamondException("Hostname is empty?!")
 
         return hostname
 
-    if method == 'none':
+    if method == "none":
         get_hostname.cached_results[method] = None
 
         return None
 
-    raise NotImplementedError(config['hostname_method'])
+    raise NotImplementedError(config["hostname_method"])
 
 
 get_hostname.cached_results = {}
@@ -167,9 +171,9 @@ def str_to_bool(value):
     if isinstance(value, str):
         value = value.strip().lower()
 
-        if value in ['true', 't', 'yes', 'y']:
+        if value in ["true", "t", "yes", "y"]:
             return True
-        elif value in ['false', 'f', 'no', 'n', '']:
+        elif value in ["false", "f", "no", "n", ""]:
             return False
         else:
             raise NotImplementedError("Unknown bool %s" % value)
@@ -181,13 +185,14 @@ class Collector(object):
     """
     The Collector class is a base class for all metric collectors.
     """
+
     def __init__(self, config=None, handlers=[], name=None, configfile=None):
         """
         Create a new instance of the Collector class
         """
 
         # Initialize Logger
-        self.log = logging.getLogger('diamond')
+        self.log = logging.getLogger("diamond")
 
         # Initialize Members
         if name is None:
@@ -217,20 +222,22 @@ class Collector(object):
         if self.configfile is not None:
             config = load_config(self.configfile)
 
-            if 'collectors' in config:
-                if 'collectorsDefault' in config['collectors']:
-                    self.config.merge(config['collectors']['collectorsDefault'])
+            if "collectors" in config:
+                if "collectorsDefault" in config["collectors"]:
+                    self.config.merge(config["collectors"]["collectorsDefault"])
 
-                if self.name in config['collectors']:
-                    self.config.merge(config['collectors'][self.name])
+                if self.name in config["collectors"]:
+                    self.config.merge(config["collectors"][self.name])
 
         if override_config is not None:
-            if 'collectors' in override_config:
-                if 'collectorsDefault' in override_config['collectors']:
-                    self.config.merge(override_config['collectors']['collectorsDefault'])
+            if "collectors" in override_config:
+                if "collectorsDefault" in override_config["collectors"]:
+                    self.config.merge(
+                        override_config["collectors"]["collectorsDefault"]
+                    )
 
-                if self.name in override_config['collectors']:
-                    self.config.merge(override_config['collectors'][self.name])
+                if self.name in override_config["collectors"]:
+                    self.config.merge(override_config["collectors"][self.name])
 
         self.process_config()
 
@@ -239,36 +246,46 @@ class Collector(object):
         Intended to put any code that should be run after any config reload
         event
         """
-        if 'byte_unit' in self.config:
-            if isinstance(self.config['byte_unit'], str):
-                self.config['byte_unit'] = self.config['byte_unit'].split()
+        if "byte_unit" in self.config:
+            if isinstance(self.config["byte_unit"], str):
+                self.config["byte_unit"] = self.config["byte_unit"].split()
 
-        if 'enabled' in self.config:
-            self.config['enabled'] = str_to_bool(self.config['enabled'])
+        if "enabled" in self.config:
+            self.config["enabled"] = str_to_bool(self.config["enabled"])
 
-        if 'measure_collector_time' in self.config:
-            self.config['measure_collector_time'] = str_to_bool(
-                self.config['measure_collector_time'])
+        if "measure_collector_time" in self.config:
+            self.config["measure_collector_time"] = str_to_bool(
+                self.config["measure_collector_time"]
+            )
 
         # Raise an error if both whitelist and blacklist are specified
-        if self.config.get('metrics_whitelist', None) and self.config.get('metrics_blacklist', None):
-            raise DiamondException('Both metrics_whitelist and metrics_blacklist specified in file %s' % self.configfile)
+        if self.config.get("metrics_whitelist", None) and self.config.get(
+            "metrics_blacklist", None
+        ):
+            raise DiamondException(
+                "Both metrics_whitelist and metrics_blacklist specified in file %s"
+                % self.configfile
+            )
 
-        if self.config.get('metrics_whitelist', None):
-            self.config['metrics_whitelist'] = re.compile(self.config['metrics_whitelist'])
-        elif self.config.get('metrics_blacklist', None):
-            self.config['metrics_blacklist'] = re.compile(self.config['metrics_blacklist'])
+        if self.config.get("metrics_whitelist", None):
+            self.config["metrics_whitelist"] = re.compile(
+                self.config["metrics_whitelist"]
+            )
+        elif self.config.get("metrics_blacklist", None):
+            self.config["metrics_blacklist"] = re.compile(
+                self.config["metrics_blacklist"]
+            )
 
     def get_default_config_help(self):
         """
         Returns the help text for the configuration options for this collector
         """
         return {
-            'enabled': 'Enable collecting these metrics',
-            'byte_unit': 'Default numeric output(s)',
-            'measure_collector_time': 'Collect the collector run time in ms',
-            'metrics_whitelist': 'Regex to match metrics to transmit. Mutually exclusive with metrics_blacklist',
-            'metrics_blacklist': 'Regex to match metrics to block. Mutually exclusive with metrics_whitelist',
+            "enabled": "Enable collecting these metrics",
+            "byte_unit": "Default numeric output(s)",
+            "measure_collector_time": "Collect the collector run time in ms",
+            "metrics_whitelist": "Regex to match metrics to transmit. Mutually exclusive with metrics_blacklist",
+            "metrics_blacklist": "Regex to match metrics to block. Mutually exclusive with metrics_whitelist",
         }
 
     def get_default_config(self):
@@ -277,11 +294,9 @@ class Collector(object):
         """
         return {
             # Defaults options for all Collectors
-
             # Uncomment and set to hardcode a hostname for the collector path
             # Keep in mind, periods are seperators in graphite
             # 'hostname': 'my_custom_hostname',
-
             # If you perfer to just use a different way of calculating the
             # hostname
             # Uncomment and set this to one of these values:
@@ -291,36 +306,26 @@ class Collector(object):
             # uname_short = Similar to uname -n, but only the first part
             # uname_rev   = uname -r in reverse (com.example.www)
             # 'hostname_method': 'fqdn_short',
-
             # All collectors are disabled by default
-            'enabled': False,
-
+            "enabled": False,
             # Path Prefix
-            'path_prefix': 'servers',
-
+            "path_prefix": "servers",
             # Path Prefix for Virtual Machine metrics
-            'instance_prefix': 'instances',
-
+            "instance_prefix": "instances",
             # Path Suffix
-            'path_suffix': '',
-
+            "path_suffix": "",
             # Default Poll Interval (seconds)
-            'interval': 300,
-
+            "interval": 300,
             # Default Event TTL (interval multiplier)
-            'ttl_multiplier': 2,
-
+            "ttl_multiplier": 2,
             # Default numeric output
-            'byte_unit': 'byte',
-
+            "byte_unit": "byte",
             # Collect the collector run time in ms
-            'measure_collector_time': False,
-
+            "measure_collector_time": False,
             # Whitelist of metrics to let through
-            'metrics_whitelist': None,
-
+            "metrics_whitelist": None,
             # Blacklist of metrics to let through
-            'metrics_blacklist': None,
+            "metrics_blacklist": None,
         }
 
     def get_metric_path(self, name, instance=None):
@@ -330,29 +335,29 @@ class Collector(object):
             virtual machine and should have a different
             root prefix.
         """
-        if 'path' in self.config:
-            path = self.config['path']
+        if "path" in self.config:
+            path = self.config["path"]
         else:
             path = self.__class__.__name__
 
         if instance is not None:
-            if 'instance_prefix' in self.config:
-                prefix = self.config['instance_prefix']
+            if "instance_prefix" in self.config:
+                prefix = self.config["instance_prefix"]
             else:
-                prefix = 'instances'
+                prefix = "instances"
 
-            if path == '.':
-                return '.'.join([prefix, instance, name])
+            if path == ".":
+                return ".".join([prefix, instance, name])
             else:
-                return '.'.join([prefix, instance, path, name])
+                return ".".join([prefix, instance, path, name])
 
-        if 'path_prefix' in self.config:
-            prefix = self.config['path_prefix']
+        if "path_prefix" in self.config:
+            prefix = self.config["path_prefix"]
         else:
-            prefix = 'systems'
+            prefix = "systems"
 
-        if 'path_suffix' in self.config:
-            suffix = self.config['path_suffix']
+        if "path_suffix" in self.config:
+            suffix = self.config["path_suffix"]
         else:
             suffix = None
 
@@ -366,18 +371,18 @@ class Collector(object):
 
         # if there is a suffix, add after the hostname
         if suffix:
-            prefix = '.'.join((prefix, suffix))
+            prefix = ".".join((prefix, suffix))
 
-        is_path_invalid = path == '.' or not path
+        is_path_invalid = path == "." or not path
 
         if is_path_invalid and prefix:
-            return '.'.join([prefix, name])
+            return ".".join([prefix, name])
         elif prefix:
-            return '.'.join([prefix, path, name])
+            return ".".join([prefix, path, name])
         elif is_path_invalid:
             return name
         else:
-            return '.'.join([path, name])
+            return ".".join([path, name])
 
     def get_hostname(self):
         return get_hostname(self.config)
@@ -388,29 +393,48 @@ class Collector(object):
         """
         raise NotImplementedError()
 
-    def publish(self, name, value, raw_value=None, precision=0, metric_type='GAUGE', instance=None):
+    def publish(
+        self,
+        name,
+        value,
+        raw_value=None,
+        precision=0,
+        metric_type="GAUGE",
+        instance=None,
+    ):
         """
         Publish a metric with the given name
         """
         # Check whitelist/blacklist
-        if self.config['metrics_whitelist']:
-            if not self.config['metrics_whitelist'].match(name):
+        if self.config["metrics_whitelist"]:
+            if not self.config["metrics_whitelist"].match(name):
                 return
-        elif self.config['metrics_blacklist']:
-            if self.config['metrics_blacklist'].match(name):
+        elif self.config["metrics_blacklist"]:
+            if self.config["metrics_blacklist"].match(name):
                 return
 
         # Get metric Path
         path = self.get_metric_path(name, instance=instance)
 
         # Get metric TTL
-        ttl = float(self.config['interval']) * float(self.config['ttl_multiplier'])
+        ttl = float(self.config["interval"]) * float(self.config["ttl_multiplier"])
 
         # Create Metric
         try:
-            metric = Metric(path, value, raw_value=raw_value, timestamp=None, precision=precision, host=self.get_hostname(), metric_type=metric_type, ttl=ttl)
+            metric = Metric(
+                path,
+                value,
+                raw_value=raw_value,
+                timestamp=None,
+                precision=precision,
+                host=self.get_hostname(),
+                metric_type=metric_type,
+                ttl=ttl,
+            )
         except DiamondException:
-            self.log.error('Error when creating new Metric: path=%r, value=%r', path, value)
+            self.log.error(
+                "Error when creating new Metric: path=%r, value=%r", path, value
+            )
             raise
 
         # Publish Metric
@@ -426,14 +450,50 @@ class Collector(object):
             handler._process(metric)
 
     def publish_gauge(self, name, value, precision=0, instance=None):
-        return self.publish(name, value, precision=precision, metric_type='GAUGE', instance=instance)
+        return self.publish(
+            name, value, precision=precision, metric_type="GAUGE", instance=instance
+        )
 
-    def publish_counter(self, name, value, precision=0, max_value=0, time_delta=True, interval=None, allow_negative=False, instance=None):
+    def publish_counter(
+        self,
+        name,
+        value,
+        precision=0,
+        max_value=0,
+        time_delta=True,
+        interval=None,
+        allow_negative=False,
+        instance=None,
+    ):
         raw_value = value
-        value = self.derivative(name, value, max_value=max_value, time_delta=time_delta, interval=interval, allow_negative=allow_negative, instance=instance)
-        return self.publish(name, value, raw_value=raw_value, precision=precision, metric_type='COUNTER', instance=instance)
+        value = self.derivative(
+            name,
+            value,
+            max_value=max_value,
+            time_delta=time_delta,
+            interval=interval,
+            allow_negative=allow_negative,
+            instance=instance,
+        )
+        return self.publish(
+            name,
+            value,
+            raw_value=raw_value,
+            precision=precision,
+            metric_type="COUNTER",
+            instance=instance,
+        )
 
-    def derivative(self, name, new, max_value=0, time_delta=True, interval=None, allow_negative=False, instance=None):
+    def derivative(
+        self,
+        name,
+        new,
+        max_value=0,
+        time_delta=True,
+        interval=None,
+        allow_negative=False,
+        instance=None,
+    ):
         """
         Calculate the derivative of the metric.
         """
@@ -452,7 +512,7 @@ class Collector(object):
 
             # If we pass in a interval, use it rather then the configured one
             if interval is None:
-                interval = float(self.config['interval'])
+                interval = float(self.config["interval"])
 
             # Get Change in Y (time)
             if time_delta:
@@ -486,11 +546,11 @@ class Collector(object):
             end_time = time.time()
             collector_time = int((end_time - start_time) * 1000)
 
-            self.log.debug('Collection took %s ms', collector_time)
+            self.log.debug("Collection took %s ms", collector_time)
 
-            if 'measure_collector_time' in self.config:
-                if self.config['measure_collector_time']:
-                    metric_name = 'collector_time_ms'
+            if "measure_collector_time" in self.config:
+                if self.config["measure_collector_time"]:
+                    metric_name = "collector_time_ms"
                     metric_value = collector_time
                     self.publish(metric_name, metric_value)
         finally:
@@ -509,16 +569,14 @@ class Collector(object):
         binary_name = os.path.basename(binary)
 
         # Gather $PATH
-        search_paths = os.environ['PATH'].split(':')
+        search_paths = os.environ["PATH"].split(":")
 
         # Extra paths to scan...
         default_paths = [
-            '/usr/bin',
-            '/bin'
-            '/usr/local/bin',
-            '/usr/sbin',
-            '/sbin'
-            '/usr/local/sbin',
+            "/usr/bin",
+            "/bin" "/usr/local/bin",
+            "/usr/sbin",
+            "/sbin" "/usr/local/sbin",
         ]
 
         for path in default_paths:
@@ -542,10 +600,12 @@ class ProcessCollector(Collector):
 
     def get_default_config_help(self):
         config_help = super(ProcessCollector, self).get_default_config_help()
-        config_help.update({
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-        })
+        config_help.update(
+            {
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+            }
+        )
 
         return config_help
 
@@ -554,26 +614,28 @@ class ProcessCollector(Collector):
         Returns the default collector settings
         """
         config = super(ProcessCollector, self).get_default_config()
-        config.update({
-            'use_sudo': False,
-            'sudo_cmd': self.find_binary('/usr/bin/sudo'),
-        })
+        config.update(
+            {
+                "use_sudo": False,
+                "sudo_cmd": self.find_binary("/usr/bin/sudo"),
+            }
+        )
 
         return config
 
     def run_command(self, args):
-        if 'bin' not in self.config:
-            raise Exception('config does not have any binary configured')
+        if "bin" not in self.config:
+            raise Exception("config does not have any binary configured")
 
-        if not os.access(self.config['bin'], os.X_OK):
-            raise Exception('%s is not executable' % self.config['bin'])
+        if not os.access(self.config["bin"], os.X_OK):
+            raise Exception("%s is not executable" % self.config["bin"])
 
         try:
             command = args
-            command.insert(0, self.config['bin'])
+            command.insert(0, self.config["bin"])
 
-            if str_to_bool(self.config['use_sudo']):
-                command.insert(0, self.config['sudo_cmd'])
+            if str_to_bool(self.config["use_sudo"]):
+                command.insert(0, self.config["sudo_cmd"])
 
             return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()
         except OSError:

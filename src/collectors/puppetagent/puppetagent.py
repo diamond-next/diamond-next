@@ -20,9 +20,11 @@ except ImportError:
 class PuppetAgentCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(PuppetAgentCollector, self).get_default_config_help()
-        config_help.update({
-            'yaml_path': "Path to last_run_summary.yaml",
-        })
+        config_help.update(
+            {
+                "yaml_path": "Path to last_run_summary.yaml",
+            }
+        )
 
         return config_help
 
@@ -31,15 +33,17 @@ class PuppetAgentCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(PuppetAgentCollector, self).get_default_config()
-        config.update({
-            'yaml_path': '/var/lib/puppet/state/last_run_summary.yaml',
-            'path': 'puppetagent',
-        })
+        config.update(
+            {
+                "yaml_path": "/var/lib/puppet/state/last_run_summary.yaml",
+                "path": "puppetagent",
+            }
+        )
 
         return config
 
     def _get_summary(self):
-        summary_fp = open(self.config['yaml_path'], 'r')
+        summary_fp = open(self.config["yaml_path"], "r")
 
         try:
             summary = yaml.safe_load(summary_fp)
@@ -50,7 +54,7 @@ class PuppetAgentCollector(diamond.collector.Collector):
 
     def collect(self):
         if yaml is None:
-            self.log.error('Unable to import yaml')
+            self.log.error("Unable to import yaml")
             return
 
         summary = self._get_summary()
@@ -60,5 +64,5 @@ class PuppetAgentCollector(diamond.collector.Collector):
                 if value is None or isinstance(value, str):
                     continue
 
-                metric = '.'.join([sect, stat])
+                metric = ".".join([sect, stat])
                 self.publish(metric, value)

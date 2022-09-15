@@ -25,10 +25,12 @@ class ConnTrackCollector(diamond.collector.Collector):
         Return help text for collector configuration
         """
         config_help = super(ConnTrackCollector, self).get_default_config_help()
-        config_help.update({
-            "dir":      "Directories with files of interest, comma seperated",
-            "files":    "List of files to collect statistics from",
-        })
+        config_help.update(
+            {
+                "dir": "Directories with files of interest, comma seperated",
+                "files": "List of files to collect statistics from",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -36,12 +38,14 @@ class ConnTrackCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(ConnTrackCollector, self).get_default_config()
-        config.update({
-            "path":  "conntrack",
-            "dir":   "/proc/sys/net/ipv4/netfilter,/proc/sys/net/netfilter",
-            "files": "ip_conntrack_count,ip_conntrack_max,"
-                     "nf_conntrack_count,nf_conntrack_max",
-        })
+        config.update(
+            {
+                "path": "conntrack",
+                "dir": "/proc/sys/net/ipv4/netfilter,/proc/sys/net/netfilter",
+                "files": "ip_conntrack_count,ip_conntrack_max,"
+                "nf_conntrack_count,nf_conntrack_max",
+            }
+        )
         return config
 
     def collect(self):
@@ -52,24 +56,24 @@ class ConnTrackCollector(diamond.collector.Collector):
         dirs = []
         files = []
 
-        if isinstance(self.config['dir'], str):
-            dirs = [d.strip() for d in self.config['dir'].split(',')]
-        elif isinstance(self.config['dir'], list):
-            dirs = self.config['dir']
+        if isinstance(self.config["dir"], str):
+            dirs = [d.strip() for d in self.config["dir"].split(",")]
+        elif isinstance(self.config["dir"], list):
+            dirs = self.config["dir"]
 
-        if isinstance(self.config['files'], str):
-            files = [f.strip() for f in self.config['files'].split(',')]
-        elif isinstance(self.config['files'], list):
-            files = self.config['files']
+        if isinstance(self.config["files"], str):
+            files = [f.strip() for f in self.config["files"].split(",")]
+        elif isinstance(self.config["files"], list):
+            files = self.config["files"]
 
         for sdir in dirs:
             for sfile in files:
-                if sfile.endswith('conntrack_count'):
-                    metric_name = 'ip_conntrack_count'
-                elif sfile.endswith('conntrack_max'):
-                    metric_name = 'ip_conntrack_max'
+                if sfile.endswith("conntrack_count"):
+                    metric_name = "ip_conntrack_count"
+                elif sfile.endswith("conntrack_max"):
+                    metric_name = "ip_conntrack_max"
                 else:
-                    self.log.error('Unknown file for collection: %s', sfile)
+                    self.log.error("Unknown file for collection: %s", sfile)
                     continue
 
                 fpath = os.path.join(sdir, sfile)
@@ -84,7 +88,9 @@ class ConnTrackCollector(diamond.collector.Collector):
                 except Exception as exception:
                     self.log.error("Failed to collect from '%s': %s", fpath, exception)
         if not collected:
-            self.log.error('No metric was collected, looks like nf_conntrack/ip_conntrack kernel module was not loaded')
+            self.log.error(
+                "No metric was collected, looks like nf_conntrack/ip_conntrack kernel module was not loaded"
+            )
         else:
             for key in collected.keys():
                 self.publish(key, collected[key])

@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestSqsCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('SqsCollector', {})
+        config = get_collector_config("SqsCollector", {})
         self.collector = SqsCollector(config, None)
 
     def test_import(self):

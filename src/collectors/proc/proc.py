@@ -20,14 +20,14 @@ import diamond.collector
 # appropriately. Otherwise, rolling over
 # counters will cause incorrect or
 # negative values.
-if platform.architecture()[0] == '64bit':
-    counter = (2 ** 64) - 1
+if platform.architecture()[0] == "64bit":
+    counter = (2**64) - 1
 else:
-    counter = (2 ** 32) - 1
+    counter = (2**32) - 1
 
 
 class ProcessStatCollector(diamond.collector.Collector):
-    PROC = '/proc/stat'
+    PROC = "/proc/stat"
 
     def get_default_config_help(self):
         config_help = super(ProcessStatCollector, self).get_default_config_help()
@@ -40,9 +40,7 @@ class ProcessStatCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(ProcessStatCollector, self).get_default_config()
-        config.update({
-            'path': 'proc'
-        })
+        config.update({"path": "proc"})
         return config
 
     def collect(self):
@@ -53,19 +51,21 @@ class ProcessStatCollector(diamond.collector.Collector):
             return False
 
         # Open PROC file
-        file = open(self.PROC, 'r')
+        file = open(self.PROC, "r")
 
         # Get data
         for line in file:
 
-            if line.startswith('ctxt') or line.startswith('processes'):
+            if line.startswith("ctxt") or line.startswith("processes"):
                 data = line.split()
                 metric_name = data[0]
                 metric_value = int(data[1])
-                metric_value = int(self.derivative(metric_name, int(metric_value), counter))
+                metric_value = int(
+                    self.derivative(metric_name, int(metric_value), counter)
+                )
                 self.publish(metric_name, metric_value)
 
-            if line.startswith('procs_') or line.startswith('btime'):
+            if line.startswith("procs_") or line.startswith("btime"):
                 data = line.split()
                 metric_name = data[0]
                 metric_value = int(data[1])

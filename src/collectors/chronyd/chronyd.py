@@ -15,16 +15,16 @@ import subprocess
 import diamond.collector
 import diamond.convertor
 
-LINE_PATTERN = re.compile('^(?P<source>\S+).*\s+(?P<offset>[+-]\d+)(?P<unit>\w+)\s+')
-IP_PATTERN = re.compile('^\d+\.\d+\.\d+\.\d+$')
+LINE_PATTERN = re.compile("^(?P<source>\S+).*\s+(?P<offset>[+-]\d+)(?P<unit>\w+)\s+")
+IP_PATTERN = re.compile("^\d+\.\d+\.\d+\.\d+$")
 
 
 def cleanup_source(source):
     if IP_PATTERN.search(source):
-        return source.replace('.', '_')
+        return source.replace(".", "_")
 
-    if '.' in source:
-        hostname, _ = source.split('.', 1)
+    if "." in source:
+        hostname, _ = source.split(".", 1)
         return hostname
 
     return source
@@ -33,11 +33,13 @@ def cleanup_source(source):
 class ChronydCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(ChronydCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'The path to the chronyc binary',
-            'use_sudo': 'Use sudo?',
-            'sudo_cmd': 'Path to sudo',
-        })
+        config_help.update(
+            {
+                "bin": "The path to the chronyc binary",
+                "use_sudo": "Use sudo?",
+                "sudo_cmd": "Path to sudo",
+            }
+        )
 
         return config_help
 
@@ -46,21 +48,23 @@ class ChronydCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(ChronydCollector, self).get_default_config()
-        config.update({
-            'path': 'chrony',
-            'bin': '/usr/bin/chronyc',
-            'use_sudo': False,
-            'sudo_cmd': '/usr/bin/sudo',
-        })
+        config.update(
+            {
+                "path": "chrony",
+                "bin": "/usr/bin/chronyc",
+                "use_sudo": False,
+                "sudo_cmd": "/usr/bin/sudo",
+            }
+        )
 
         return config
 
     def get_output(self):
         try:
-            command = [self.config['bin'], 'sourcestats']
+            command = [self.config["bin"], "sourcestats"]
 
-            if diamond.collector.str_to_bool(self.config['use_sudo']):
-                command.insert(0, self.config['sudo_cmd'])
+            if diamond.collector.str_to_bool(self.config["use_sudo"]):
+                command.insert(0, self.config["sudo_cmd"])
 
             return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
         except OSError:
@@ -75,14 +79,14 @@ class ChronydCollector(diamond.collector.Collector):
             if m is None:
                 continue
 
-            source = cleanup_source(m.group('source'))
-            offset = float(m.group('offset'))
-            unit = m.group('unit')
+            source = cleanup_source(m.group("source"))
+            offset = float(m.group("offset"))
+            unit = m.group("unit")
 
             try:
-                value = diamond.convertor.time.convert(offset, unit, 'ms')
+                value = diamond.convertor.time.convert(offset, unit, "ms")
             except NotImplementedError as e:
-                self.log.error('Unable to convert %s%s: %s', offset, unit, e)
+                self.log.error("Unable to convert %s%s: %s", offset, unit, e)
                 continue
 
-            self.publish('%s.offset_ms' % source, value)
+            self.publish("%s.offset_ms" % source, value)

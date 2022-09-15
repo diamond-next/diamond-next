@@ -9,5 +9,5 @@ class TimedRotatingFileHandler(TRFH):
         try:
             super(TimedRotatingFileHandler, self).flush()
         except IOError:
-            sys.stderr.write('TimedRotatingFileHandler received a IOError!')
+            sys.stderr.write("TimedRotatingFileHandler received a IOError!")
             sys.stderr.flush()

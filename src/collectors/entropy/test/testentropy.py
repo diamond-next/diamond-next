@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestEntropyStatCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('EntropyStatCollector', {})
+        config = get_collector_config("EntropyStatCollector", {})
 
         self.collector = EntropyStatCollector(config, None)
 

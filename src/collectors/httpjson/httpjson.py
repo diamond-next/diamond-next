@@ -19,27 +19,30 @@ import diamond.collector
 class HTTPJSONCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(HTTPJSONCollector, self).get_default_config_help()
-        config_help.update({
-            'url': 'Full URL',
-            'headers': 'Header variable if needed. '
-            'Will be added to every request',
-        })
+        config_help.update(
+            {
+                "url": "Full URL",
+                "headers": "Header variable if needed. "
+                "Will be added to every request",
+            }
+        )
         return config_help
 
     def get_default_config(self):
         default_config = super(HTTPJSONCollector, self).get_default_config()
-        default_config.update({
-            'path': 'httpjson',
-            'url': 'http://localhost/stat',
-            'headers': {'User-Agent': 'Diamond HTTP collector'},
-        })
+        default_config.update(
+            {
+                "path": "httpjson",
+                "url": "http://localhost/stat",
+                "headers": {"User-Agent": "Diamond HTTP collector"},
+            }
+        )
         return default_config
 
     def _json_to_flat_metrics(self, prefix, data):
         for key, value in data.items():
             if isinstance(value, dict):
-                for k, v in self._json_to_flat_metrics(
-                        "%s.%s" % (prefix, key), value):
+                for k, v in self._json_to_flat_metrics("%s.%s" % (prefix, key), value):
                     yield k, v
             else:
                 try:
@@ -50,10 +53,10 @@ class HTTPJSONCollector(diamond.collector.Collector):
                     yield "%s.%s" % (prefix, key), value
 
     def collect(self):
-        url = self.config['url']
+        url = self.config["url"]
 
-        req = urllib.request.Request(url, headers=self.config['headers'])
-        req.add_header('Content-type', 'application/json')
+        req = urllib.request.Request(url, headers=self.config["headers"])
+        req.add_header("Content-type", "application/json")
 
         try:
             resp = urllib.request.urlopen(req)

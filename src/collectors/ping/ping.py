@@ -40,9 +40,11 @@ import diamond.collector
 class PingCollector(diamond.collector.ProcessCollector):
     def get_default_config_help(self):
         config_help = super(PingCollector, self).get_default_config_help()
-        config_help.update({
-            'bin': 'The path to the ping binary',
-        })
+        config_help.update(
+            {
+                "bin": "The path to the ping binary",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -50,28 +52,30 @@ class PingCollector(diamond.collector.ProcessCollector):
         Returns the default collector settings
         """
         config = super(PingCollector, self).get_default_config()
-        config.update({
-            'path': 'ping',
-            'bin': '/bin/ping',
-        })
+        config.update(
+            {
+                "path": "ping",
+                "bin": "/bin/ping",
+            }
+        )
         return config
 
     def collect(self):
         for key in self.config.keys():
             if key[:7] == "target_":
                 host = self.config[key]
-                metric_name = host.replace('.', '_')
+                metric_name = host.replace(".", "_")
 
-                ping = self.run_command(['-nq', '-c 1', host])
+                ping = self.run_command(["-nq", "-c 1", host])
                 ping = ping[0].strip().split("\n")[-1]
 
                 # Linux
-                if ping.startswith('rtt'):
-                    ping = ping.split()[3].split('/')[0]
+                if ping.startswith("rtt"):
+                    ping = ping.split()[3].split("/")[0]
                     metric_value = float(ping)
                 # OS X
-                elif ping.startswith('round-trip '):
-                    ping = ping.split()[3].split('/')[0]
+                elif ping.startswith("round-trip "):
+                    ping = ping.split()[3].split("/")[0]
                     metric_value = float(ping)
                 # Unknown
                 else:

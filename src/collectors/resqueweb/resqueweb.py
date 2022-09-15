@@ -25,18 +25,23 @@ class ResqueWebCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(ResqueWebCollector, self).get_default_config()
-        config.update({
-            'host': 'localhost',
-            'port': 5678,
-            'path': 'resqueweb',
-        })
+        config.update(
+            {
+                "host": "localhost",
+                "port": 5678,
+                "path": "resqueweb",
+            }
+        )
         return config
 
     def collect(self):
         try:
-            response = urllib.request.urlopen("http://%s:%s/stats.txt" % (self.config['host'], int(self.config['port'])))
+            response = urllib.request.urlopen(
+                "http://%s:%s/stats.txt"
+                % (self.config["host"], int(self.config["port"]))
+            )
         except Exception as e:
-            self.log.error('Could not connect to resque-web: %s', e)
+            self.log.error("Could not connect to resque-web: %s", e)
             return {}
 
         for data in response.read().split("\n"):
@@ -58,4 +63,4 @@ class ResqueWebCollector(diamond.collector.Collector):
                     self.publish("queue.%s.current" % queue, count)
 
             except Exception as e:
-                self.log.error('Could not parse the queue: %s', e)
+                self.log.error("Could not parse the queue: %s", e)

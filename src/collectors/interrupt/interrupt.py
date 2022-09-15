@@ -20,19 +20,18 @@ import diamond.collector
 # appropriately. Otherwise, rolling over
 # counters will cause incorrect or
 # negative values.
-if platform.architecture()[0] == '64bit':
-    counter = (2 ** 64) - 1
+if platform.architecture()[0] == "64bit":
+    counter = (2**64) - 1
 else:
-    counter = (2 ** 32) - 1
+    counter = (2**32) - 1
 
 
 class InterruptCollector(diamond.collector.Collector):
-    PROC = '/proc/interrupts'
+    PROC = "/proc/interrupts"
 
     def get_default_config_help(self):
         config_help = super(InterruptCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
         return config_help
 
     def get_default_config(self):
@@ -40,9 +39,7 @@ class InterruptCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(InterruptCollector, self).get_default_config()
-        config.update({
-            'path': 'interrupts'
-        })
+        config.update({"path": "interrupts"})
         return config
 
     def collect(self):
@@ -53,7 +50,7 @@ class InterruptCollector(diamond.collector.Collector):
             return False
 
         # Open PROC file
-        file = open(self.PROC, 'r')
+        file = open(self.PROC, "r")
 
         # Get data
         cpu_count = None
@@ -63,37 +60,45 @@ class InterruptCollector(diamond.collector.Collector):
                 cpu_count = len(line.split())
             else:
                 data = line.strip().split(None, cpu_count + 2)
-                data[0] = data[0].replace(':', '')
+                data[0] = data[0].replace(":", "")
 
                 if len(data) == 2:
                     metric_name = data[0]
                     metric_value = data[1]
-                    self.publish(metric_name, self.derivative(metric_name, int(metric_value), counter))
+                    self.publish(
+                        metric_name,
+                        self.derivative(metric_name, int(metric_value), counter),
+                    )
                 else:
                     if len(data[0]) == cpu_count + 1:
-                        metric_name = data[0] + '.'
+                        metric_name = data[0] + "."
                     elif len(data[0]) == 3:
                         metric_name = (
-                            ((data[-2] + ' ' +
-                              data[-1]).replace(' ', '_')) + '.')
+                            (data[-2] + " " + data[-1]).replace(" ", "_")
+                        ) + "."
                     else:
                         metric_name = (
-                            ((data[-2]).replace(' ', '_')) +
-                            '.' +
-                            ((data[-1]).replace(', ', '-').replace(' ', '_')) +
-                            '.' + data[0] + '.')
+                            ((data[-2]).replace(" ", "_"))
+                            + "."
+                            + ((data[-1]).replace(", ", "-").replace(" ", "_"))
+                            + "."
+                            + data[0]
+                            + "."
+                        )
                     total = 0
                     for index, value in enumerate(data):
                         if index == 0 or index >= cpu_count + 1:
                             continue
 
-                        metric_name_node = metric_name + 'CPU' + str(index - 1)
-                        value = int(self.derivative(metric_name_node, int(value), counter))
+                        metric_name_node = metric_name + "CPU" + str(index - 1)
+                        value = int(
+                            self.derivative(metric_name_node, int(value), counter)
+                        )
                         total += value
                         self.publish(metric_name_node, value)
 
                     # Roll up value
-                    metric_name_node = metric_name + 'total'
+                    metric_name_node = metric_name + "total"
                     self.publish(metric_name_node, total)
 
         # Close file

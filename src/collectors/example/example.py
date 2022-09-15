@@ -88,11 +88,9 @@ import diamond.collector
 
 
 class ExampleCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(ExampleCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
         return config_help
 
     def get_default_config(self):
@@ -100,9 +98,7 @@ class ExampleCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(ExampleCollector, self).get_default_config()
-        config.update({
-            'path':     'example'
-        })
+        config.update({"path": "example"})
         return config
 
     def collect(self):

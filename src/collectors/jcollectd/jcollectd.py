@@ -44,11 +44,13 @@ class JCollectdCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(JCollectdCollector, self).get_default_config()
-        config.update({
-            'path': 'jvm',
-            'listener_host': '127.0.0.1',
-            'listener_port': 25826,
-        })
+        config.update(
+            {
+                "path": "jvm",
+                "listener_host": "127.0.0.1",
+                "listener_port": 25826,
+            }
+        )
         return config
 
     def collect(self):
@@ -65,26 +67,28 @@ class JCollectdCollector(diamond.collector.Collector):
             self.publish_metric(metric)
 
     def start_listener(self):
-        self.listener_thread = ListenerThread(self.config['listener_host'], self.config['listener_port'], self.log)
+        self.listener_thread = ListenerThread(
+            self.config["listener_host"], self.config["listener_port"], self.log
+        )
         self.listener_thread.start()
 
     def stop_listener(self):
         global ALIVE
         ALIVE = False
         self.listener_thread.join()
-        self.log.error('Listener thread is shut down.')
+        self.log.error("Listener thread is shut down.")
 
     def make_metric(self, dp):
 
-        path = ".".join((dp.host, self.config['path'], dp.name))
+        path = ".".join((dp.host, self.config["path"], dp.name))
 
-        if 'path_prefix' in self.config:
-            prefix = self.config['path_prefix']
+        if "path_prefix" in self.config:
+            prefix = self.config["path_prefix"]
             if prefix:
                 path = ".".join((prefix, path))
 
-        if 'path_suffix' in self.config:
-            suffix = self.config['path_suffix']
+        if "path_suffix" in self.config:
+            suffix = self.config["path_suffix"]
             if suffix:
                 path = ".".join((path, suffix))
 
@@ -104,7 +108,7 @@ class JCollectdCollector(diamond.collector.Collector):
 class ListenerThread(threading.Thread):
     def __init__(self, host, port, log, poll_interval=0.4):
         super(ListenerThread, self).__init__()
-        self.name = 'JCollectdListener'  # thread name
+        self.name = "JCollectdListener"  # thread name
 
         self.host = host
         self.port = port
@@ -114,7 +118,9 @@ class ListenerThread(threading.Thread):
         self.queue = queue.Queue()
 
     def run(self):
-        self.log.info('ListenerThread started on {}:{}(udp)'.format(self.host, self.port))
+        self.log.info(
+            "ListenerThread started on {}:{}(udp)".format(self.host, self.port)
+        )
 
         rdr = collectd_network.Reader(self.host, self.port)
 
@@ -124,11 +130,11 @@ class ListenerThread(threading.Thread):
                     items = rdr.interpret(poll_interval=self.poll_interval)
                     self.send_to_collector(items)
                 except ValueError as e:
-                    self.log.warn('Dropping bad packet: {}'.format(e))
+                    self.log.warn("Dropping bad packet: {}".format(e))
         except Exception as e:
-            self.log.error('caught exception: type={}, exc={}'.format(type(e), e))
+            self.log.error("caught exception: type={}, exc={}".format(type(e), e))
 
-        self.log.info('ListenerThread - stop')
+        self.log.info("ListenerThread - stop")
 
     def send_to_collector(self, items):
         if items is None:
@@ -139,20 +145,20 @@ class ListenerThread(threading.Thread):
                 metric = self.transform(item)
                 self.queue.put(metric)
             except queue.Full:
-                self.log.error('Queue to collector is FULL')
+                self.log.error("Queue to collector is FULL")
             except Exception as e:
-                self.log.error('B00M! type={}, exception={}'.format(type(e), e))
+                self.log.error("B00M! type={}, exception={}".format(type(e), e))
 
     def transform(self, item):
         parts = []
         path = item.plugininstance
 
         # extract jvm name from 'logstash-MemoryPool Eden Space'
-        if '-' in path:
-            (jvm, tail) = path.split('-', 1)
+        if "-" in path:
+            (jvm, tail) = path.split("-", 1)
             path = tail
         else:
-            jvm = 'unnamed'
+            jvm = "unnamed"
 
         # add JVM name
         parts.append(jvm)
@@ -161,8 +167,8 @@ class ListenerThread(threading.Thread):
         parts.append(item.plugin)
 
         # get typed mbean: 'MemoryPool Eden Space'
-        if ' ' in path:
-            (mb_type, mb_name) = path.split(' ', 1)
+        if " " in path:
+            (mb_type, mb_name) = path.split(" ", 1)
             parts.append(mb_type)
             parts.append(mb_name)
         else:
@@ -172,7 +178,7 @@ class ListenerThread(threading.Thread):
         parts.append(item.typeinstance)
 
         # construct full path, from safe parts
-        name = '.'.join([sanitize_word(part) for part in parts])
+        name = ".".join([sanitize_word(part) for part in parts])
 
         if item[0][0] == 0:
             is_counter = True
@@ -187,9 +193,9 @@ def sanitize_word(s):
     """Remove non-alphanumerical characters from metric word.
     And trim excessive underscores.
     """
-    s = re.sub('[^\w-]+', '_', s)
-    s = re.sub('__+', '_', s)
-    return s.strip('_')
+    s = re.sub("[^\w-]+", "_", s)
+    s = re.sub("__+", "_", s)
+    return s.strip("_")
 
 
 class Datapoint(object):

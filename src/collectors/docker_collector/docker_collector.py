@@ -27,7 +27,6 @@ class DockerCollector(diamond.collector.Collector):
         "memory_stats.stats.total_swap": "swap_byte",
         "memory_stats.stats.total_pgpgin": "pagein_count",
         "memory_stats.stats.total_pgpgout": "pageout_count",
-
         # cpu stats
         "cpu_stats.cpu_usage.total_usage": "cpu.total",
         "cpu_stats.cpu_usage.usage_in_kernelmode": "cpu.kernelmode",
@@ -40,9 +39,7 @@ class DockerCollector(diamond.collector.Collector):
 
     def get_default_config(self):
         config = super(DockerCollector, self).get_default_config()
-        config.update({
-            'path': 'docker'
-        })
+        config.update({"path": "docker"})
         return config
 
     def get_value(self, path, dictionary):
@@ -58,38 +55,40 @@ class DockerCollector(diamond.collector.Collector):
 
     def collect(self):
         if docker is None:
-            self.log.error('Unable to import docker')
+            self.log.error("Unable to import docker")
 
         # Collect info
         results = {}
-        client = docker.Client(version='auto')
+        client = docker.Client(version="auto")
 
         # Top level stats
         running_containers = client.containers()
-        results['containers_running_count'] = (
-            len(running_containers), 'GAUGE')
+        results["containers_running_count"] = (len(running_containers), "GAUGE")
 
         all_containers = client.containers(all=True)
-        results['containers_stopped_count'] = (
-            len(all_containers) - len(running_containers), 'GAUGE')
+        results["containers_stopped_count"] = (
+            len(all_containers) - len(running_containers),
+            "GAUGE",
+        )
 
         images_count = len(set(client.images(quiet=True)))
-        results['images_count'] = (images_count, 'GAUGE')
+        results["images_count"] = (images_count, "GAUGE")
 
-        dangling_images_count = len(set(client.images(
-            quiet=True, all=True, filters={'dangling': True})))
-        results['images_dangling_count'] = (dangling_images_count, 'GAUGE')
+        dangling_images_count = len(
+            set(client.images(quiet=True, all=True, filters={"dangling": True}))
+        )
+        results["images_dangling_count"] = (dangling_images_count, "GAUGE")
 
         # Collect memory and cpu stats
         for container in running_containers:
-            name = "containers." + "".join(container['Names'][0][1:])
+            name = "containers." + "".join(container["Names"][0][1:])
             s = client.stats(container["Id"])
             stat = json.loads(s.next())
             for path in self.METRICS:
                 val = self.get_value(path, stat)
                 if val is not None:
                     metric_key = ".".join([name, self.METRICS.get(path)])
-                    results[metric_key] = (val, 'GAUGE')
+                    results[metric_key] = (val, "GAUGE")
             s.close()
 
         for name in sorted(results.keys()):

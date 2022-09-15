@@ -33,7 +33,7 @@ import time
 import diamond.metric
 
 # Fix Path for locating the SNMPCollector
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../", "snmp")))
 
 from snmp import SNMPCollector as parent_SNMPCollector
 
@@ -42,6 +42,7 @@ class IODriveSNMPCollector(parent_SNMPCollector):
     """
     SNMPCollector for a single Fusion IO Drive
     """
+
     IODRIVE_STATS = {
         "InternalTemp": "1.3.6.1.4.1.30018.1.2.1.1.1.24.5",
         "MilliVolts": "1.3.6.1.4.1.30018.1.2.1.1.1.32.5",
@@ -60,11 +61,13 @@ class IODriveSNMPCollector(parent_SNMPCollector):
 
     def get_default_config_help(self):
         config_help = super(IODriveSNMPCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Host address',
-            'port': 'SNMP port to collect snmp data',
-            'community': 'SNMP community',
-        })
+        config_help.update(
+            {
+                "host": "Host address",
+                "port": "SNMP port to collect snmp data",
+                "community": "SNMP community",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -72,20 +75,22 @@ class IODriveSNMPCollector(parent_SNMPCollector):
         Returns the default collector settings
         """
         config = super(IODriveSNMPCollector, self).get_default_config()
-        config.update({
-            'path':     'iodrive',
-            'timeout':  15,
-        })
+        config.update(
+            {
+                "path": "iodrive",
+                "timeout": 15,
+            }
+        )
         return config
 
     def get_string_index_oid(self, s):
         """Turns a string into an oid format is length of name followed by
         name chars in ascii"""
-        return (len(self.get_bytes(s)), ) + self.get_bytes(s)
+        return (len(self.get_bytes(s)),) + self.get_bytes(s)
 
     def get_bytes(self, s):
         """Turns a string into a list of byte values"""
-        return struct.unpack('%sB' % len(s), s)
+        return struct.unpack("%sB" % len(s), s)
 
     def collect_snmp(self, device, host, port, community):
         """
@@ -100,11 +105,11 @@ class IODriveSNMPCollector(parent_SNMPCollector):
 
         for k, v in self.IODRIVE_STATS.items():
             # Get Metric Name and Value
-            metric_name = '.'.join([k])
+            metric_name = ".".join([k])
             metric_value = int(self.get(v, host, port, community)[v])
 
             # Get Metric Path
-            metric_path = '.'.join(['servers', host, device, metric_name])
+            metric_path = ".".join(["servers", host, device, metric_name])
 
             # Create Metric
             metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
@@ -114,11 +119,11 @@ class IODriveSNMPCollector(parent_SNMPCollector):
 
         for k, v in self.IODRIVE_BYTE_STATS.items():
             # Get Metric Name and Value
-            metric_name = '.'.join([k])
+            metric_name = ".".join([k])
             metric_value = int(self.get(v, host, port, community)[v])
 
             # Get Metric Path
-            metric_path = '.'.join(['servers', host, device, metric_name])
+            metric_path = ".".join(["servers", host, device, metric_name])
 
             # Create Metric
             metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)

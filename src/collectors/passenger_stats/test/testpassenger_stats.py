@@ -10,7 +10,7 @@ from test import get_collector_config
 
 class TestPassengerCollector(CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('PassengerCollector', {})
+        config = get_collector_config("PassengerCollector", {})
         self.collector = PassengerCollector(config, None)
 
     def test_import(self):

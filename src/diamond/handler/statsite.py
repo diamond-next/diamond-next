@@ -61,6 +61,7 @@ class StatsiteHandler(Handler):
     """
     Implements the abstract Handler class, sending data to statsite
     """
+
     RETRY = 3
 
     def __init__(self, config=None):
@@ -75,10 +76,10 @@ class StatsiteHandler(Handler):
         self.socket = None
 
         # Initialize Options
-        self.host = self.config['host']
-        self.tcpport = int(self.config['tcpport'])
-        self.udpport = int(self.config['udpport'])
-        self.timeout = int(self.config['timeout'])
+        self.host = self.config["host"]
+        self.tcpport = int(self.config["tcpport"])
+        self.udpport = int(self.config["udpport"])
+        self.timeout = int(self.config["timeout"])
 
         # Connect
         self._connect()
@@ -89,12 +90,14 @@ class StatsiteHandler(Handler):
         """
         config = super(StatsiteHandler, self).get_default_config_help()
 
-        config.update({
-            'host': '',
-            'tcpport': '',
-            'udpport': '',
-            'timeout': '',
-        })
+        config.update(
+            {
+                "host": "",
+                "tcpport": "",
+                "udpport": "",
+                "timeout": "",
+            }
+        )
 
         return config
 
@@ -104,12 +107,14 @@ class StatsiteHandler(Handler):
         """
         config = super(StatsiteHandler, self).get_default_config()
 
-        config.update({
-            'host': '',
-            'tcpport': 1234,
-            'udpport': 1234,
-            'timeout': 5,
-        })
+        config.update(
+            {
+                "host": "",
+                "tcpport": 1234,
+                "udpport": 1234,
+                "timeout": 5,
+            }
+        )
 
         return config
 
@@ -198,10 +203,17 @@ class StatsiteHandler(Handler):
             self.socket.connect((self.host, self.port))
 
             # Log
-            self.log.debug("Established connection to statsite server %s:%d", self.host, self.port)
+            self.log.debug(
+                "Established connection to statsite server %s:%d", self.host, self.port
+            )
         except Exception as ex:
             # Log Error
-            self.log.error("StatsiteHandler: Failed to connect to %s:%i. %s", self.host, self.port, ex)
+            self.log.error(
+                "StatsiteHandler: Failed to connect to %s:%i. %s",
+                self.host,
+                self.port,
+                ex,
+            )
 
             # Close Socket
             self._close()

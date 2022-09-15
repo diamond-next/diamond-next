@@ -22,28 +22,31 @@ class PostgresqlCollector(diamond.collector.Collector):
     """
     PostgreSQL collector class
     """
+
     def get_default_config_help(self):
         """
         Return help text for collector
         """
         config_help = super(PostgresqlCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Hostname',
-            'dbname': 'DB to connect to in order to get list of DBs in PgSQL',
-            'user': 'Username',
-            'password': 'Password',
-            'port': 'Port number',
-            'password_provider': "Whether to auth with supplied password or"
-            " .pgpass file  <password|pgpass>",
-            'sslmode': 'Whether to use SSL - <disable|allow|require|...>',
-            'underscore': 'Convert _ to .',
-            'extended': 'Enable collection of extended database stats.',
-            'metrics': 'List of enabled metrics to collect',
-            'pg_version': "The version of postgres that you'll be monitoring"
-            " eg. in format 9.2",
-            'has_admin': 'Admin privileges are required to execute some'
-            ' queries.',
-        })
+        config_help.update(
+            {
+                "host": "Hostname",
+                "dbname": "DB to connect to in order to get list of DBs in PgSQL",
+                "user": "Username",
+                "password": "Password",
+                "port": "Port number",
+                "password_provider": "Whether to auth with supplied password or"
+                " .pgpass file  <password|pgpass>",
+                "sslmode": "Whether to use SSL - <disable|allow|require|...>",
+                "underscore": "Convert _ to .",
+                "extended": "Enable collection of extended database stats.",
+                "metrics": "List of enabled metrics to collect",
+                "pg_version": "The version of postgres that you'll be monitoring"
+                " eg. in format 9.2",
+                "has_admin": "Admin privileges are required to execute some"
+                " queries.",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -51,21 +54,23 @@ class PostgresqlCollector(diamond.collector.Collector):
         Return default config.
         """
         config = super(PostgresqlCollector, self).get_default_config()
-        config.update({
-            'path': 'postgres',
-            'host': 'localhost',
-            'dbname': 'postgres',
-            'user': 'postgres',
-            'password': 'postgres',
-            'port': 5432,
-            'password_provider': 'password',
-            'sslmode': 'disable',
-            'underscore': False,
-            'extended': False,
-            'metrics': [],
-            'pg_version': 9.2,
-            'has_admin': True,
-        })
+        config.update(
+            {
+                "path": "postgres",
+                "host": "localhost",
+                "dbname": "postgres",
+                "user": "postgres",
+                "password": "postgres",
+                "port": 5432,
+                "password_provider": "password",
+                "sslmode": "disable",
+                "underscore": False,
+                "extended": False,
+                "metrics": [],
+                "pg_version": 9.2,
+                "has_admin": True,
+            }
+        )
         return config
 
     def collect(self):
@@ -73,7 +78,7 @@ class PostgresqlCollector(diamond.collector.Collector):
         Do pre-flight checks, get list of db names, collect metrics, publish
         """
         if psycopg2 is None:
-            self.log.error('Unable to import module psycopg2')
+            self.log.error("Unable to import module psycopg2")
             return {}
 
         # Get list of databases
@@ -84,31 +89,34 @@ class PostgresqlCollector(diamond.collector.Collector):
 
             return {}
 
-        if self.config['metrics']:
-            metrics = self.config['metrics']
-        elif diamond.collector.str_to_bool(self.config['extended']):
-            metrics = registry['extended']
+        if self.config["metrics"]:
+            metrics = self.config["metrics"]
+        elif diamond.collector.str_to_bool(self.config["extended"]):
+            metrics = registry["extended"]
 
-            if diamond.collector.str_to_bool(self.config['has_admin']) and 'WalSegmentStats' not in metrics:
-                metrics.append('WalSegmentStats')
+            if (
+                diamond.collector.str_to_bool(self.config["has_admin"])
+                and "WalSegmentStats" not in metrics
+            ):
+                metrics.append("WalSegmentStats")
 
         else:
-            metrics = registry['basic']
+            metrics = registry["basic"]
 
         # Iterate every QueryStats class
         for metric_name in set(metrics):
             if metric_name not in metrics_registry:
                 self.log.error(
-                    'metric_name %s not found in metric registry' % metric_name)
+                    "metric_name %s not found in metric registry" % metric_name
+                )
                 continue
 
             for dbase in dbs:
                 conn = self._connect(database=dbase)
                 try:
                     klass = metrics_registry[metric_name]
-                    stat = klass(dbase, conn,
-                                 underscore=self.config['underscore'])
-                    stat.fetch(self.config['pg_version'])
+                    stat = klass(dbase, conn, underscore=self.config["underscore"])
+                    stat.fetch(self.config["pg_version"])
                     for metric, value in stat:
                         if value is not None:
                             self.publish(metric, value)
@@ -133,16 +141,16 @@ class PostgresqlCollector(diamond.collector.Collector):
             WHERE datallowconn AND NOT datistemplate
             AND NOT datname='postgres' AND NOT datname='rdsadmin' ORDER BY 1
         """
-        conn = self._connect(self.config['dbname'])
+        conn = self._connect(self.config["dbname"])
         cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cursor.execute(query)
-        datnames = [d['datname'] for d in cursor.fetchall()]
+        datnames = [d["datname"] for d in cursor.fetchall()]
         conn.close()
 
         # Exclude `postgres` database list, unless it is the
         # only database available (required for querying pg_stat_database)
         if not datnames:
-            datnames = ['postgres']
+            datnames = ["postgres"]
 
         return datnames
 
@@ -151,21 +159,21 @@ class PostgresqlCollector(diamond.collector.Collector):
         Connect to given database
         """
         conn_args = {
-            'host': self.config['host'],
-            'user': self.config['user'],
-            'password': self.config['password'],
-            'port': self.config['port'],
-            'sslmode': self.config['sslmode'],
+            "host": self.config["host"],
+            "user": self.config["user"],
+            "password": self.config["password"],
+            "port": self.config["port"],
+            "sslmode": self.config["sslmode"],
         }
 
         if database:
-            conn_args['database'] = database
+            conn_args["database"] = database
         else:
-            conn_args['database'] = 'postgres'
+            conn_args["database"] = "postgres"
 
         # libpq will use ~/.pgpass only if no password supplied
-        if self.config['password_provider'] == 'pgpass':
-            del conn_args['password']
+        if self.config["password_provider"] == "pgpass":
+            del conn_args["password"]
 
         try:
             conn = psycopg2.connect(**conn_args)
@@ -198,11 +206,11 @@ class QueryStats(object):
         return datname
 
     def fetch(self, pg_version):
-        if float(pg_version) >= 10.0 and hasattr(self, 'post_100_query'):
+        if float(pg_version) >= 10.0 and hasattr(self, "post_100_query"):
             q = self.post_100_query
-        elif float(pg_version) >= 9.6 and hasattr(self, 'post_96_query'):
+        elif float(pg_version) >= 9.6 and hasattr(self, "post_96_query"):
             q = self.post_96_query
-        elif float(pg_version) >= 9.2 and hasattr(self, 'post_92_query'):
+        elif float(pg_version) >= 9.2 and hasattr(self, "post_92_query"):
             q = self.post_92_query
         else:
             q = self.query
@@ -214,28 +222,40 @@ class QueryStats(object):
             for row in rows:
                 # If row is length 2, assume col1, col2 forms key: value
                 if len(row) == 2:
-                    self.data.append({
-                        'datname': self._translate_datname(self.dbname),
-                        'metric': row[0],
-                        'value': row[1],
-                    })
+                    self.data.append(
+                        {
+                            "datname": self._translate_datname(self.dbname),
+                            "metric": row[0],
+                            "value": row[1],
+                        }
+                    )
 
                 # If row > length 2, assume each column name maps to
                 # key => value
                 else:
                     for key, value in iter(row.items()):
-                        if key in ('datname', 'schemaname', 'relname', 'indexrelname', 'funcname'):
+                        if key in (
+                            "datname",
+                            "schemaname",
+                            "relname",
+                            "indexrelname",
+                            "funcname",
+                        ):
                             continue
 
-                        self.data.append({
-                            'datname': self._translate_datname(row.get('datname', self.dbname)),
-                            'schemaname': row.get('schemaname', None),
-                            'relname': row.get('relname', None),
-                            'indexrelname': row.get('indexrelname', None),
-                            'funcname': row.get('funcname', None),
-                            'metric': key,
-                            'value': value,
-                        })
+                        self.data.append(
+                            {
+                                "datname": self._translate_datname(
+                                    row.get("datname", self.dbname)
+                                ),
+                                "schemaname": row.get("schemaname", None),
+                                "relname": row.get("relname", None),
+                                "indexrelname": row.get("indexrelname", None),
+                                "funcname": row.get("funcname", None),
+                                "metric": key,
+                                "value": value,
+                            }
+                        )
 
         # Clean up
         finally:
@@ -243,13 +263,14 @@ class QueryStats(object):
 
     def __iter__(self):
         for data_point in self.data:
-            yield self.path % data_point, data_point['value']
+            yield self.path % data_point, data_point["value"]
 
 
 class DatabaseStats(QueryStats):
     """
     Database-level summary stats
     """
+
     path = "database.%(datname)s.%(metric)s"
     multi_db = False
     post_92_query = """
@@ -271,7 +292,9 @@ class DatabaseStats(QueryStats):
         WHERE pg_stat_database.datname
         NOT IN ('template0','template1','postgres', 'rdsadmin')
     """
-    query = post_92_query.replace('pg_stat_database.temp_files as temp_files,', '').replace('pg_stat_database.temp_bytes as temp_bytes,', '')
+    query = post_92_query.replace(
+        "pg_stat_database.temp_files as temp_files,", ""
+    ).replace("pg_stat_database.temp_bytes as temp_bytes,", "")
 
 
 class UserFunctionStats(QueryStats):
@@ -308,8 +331,9 @@ class UserTableStats(QueryStats):
 
 
 class UserIndexStats(QueryStats):
-    path = "%(datname)s.indexes.%(schemaname)s.%(relname)s." \
-           "%(indexrelname)s.%(metric)s"
+    path = (
+        "%(datname)s.indexes.%(schemaname)s.%(relname)s." "%(indexrelname)s.%(metric)s"
+    )
     multi_db = True
     query = """
         SELECT relname,
@@ -337,8 +361,9 @@ class UserTableIOStats(QueryStats):
 
 
 class UserIndexIOStats(QueryStats):
-    path = "%(datname)s.indexes.%(schemaname)s.%(relname)s." \
-           "%(indexrelname)s.%(metric)s"
+    path = (
+        "%(datname)s.indexes.%(schemaname)s.%(relname)s." "%(indexrelname)s.%(metric)s"
+    )
     multi_db = True
     query = """
         SELECT relname,
@@ -528,8 +553,8 @@ class IdleInTransactions(QueryStats):
         WHERE %s
         GROUP BY 1
     """
-    query = base_query % ("current_query = '<IDLE> in transaction'", )
-    post_92_query = base_query % ("state LIKE 'idle in transaction%'", )
+    query = base_query % ("current_query = '<IDLE> in transaction'",)
+    post_92_query = base_query % ("state LIKE 'idle in transaction%'",)
 
 
 class LongestRunningQueries(QueryStats):
@@ -546,8 +571,8 @@ class LongestRunningQueries(QueryStats):
         FROM pg_stat_activity
         WHERE 1=1
     """
-    query = base_query % ("current_query NOT LIKE '<IDLE%'", )
-    post_92_query = base_query % ("state NOT LIKE 'idle%'", )
+    query = base_query % ("current_query NOT LIKE '<IDLE%'",)
+    post_92_query = base_query % ("state NOT LIKE 'idle%'",)
 
 
 class UserConnectionCount(QueryStats):
@@ -561,7 +586,7 @@ class UserConnectionCount(QueryStats):
         GROUP BY usename
         ORDER BY 1
     """
-    post_92_query = query.replace('procpid', 'pid')
+    post_92_query = query.replace("procpid", "pid")
 
 
 class DatabaseConnectionCount(QueryStats):
@@ -619,52 +644,52 @@ class DatabaseXidAge(QueryStats):
 
 
 metrics_registry = {
-    'DatabaseStats': DatabaseStats,
-    'DatabaseConnectionCount': DatabaseConnectionCount,
-    'UserFunctionStats': UserFunctionStats,
-    'UserTableStats': UserTableStats,
-    'UserIndexStats': UserIndexStats,
-    'UserTableIOStats': UserTableIOStats,
-    'UserIndexIOStats': UserIndexIOStats,
-    'ConnectionStateStats': ConnectionStateStats,
-    'LockStats': LockStats,
-    'RelationSizeStats': RelationSizeStats,
-    'BackgroundWriterStats': BackgroundWriterStats,
-    'WalSegmentStats': WalSegmentStats,
-    'TransactionCount': TransactionCount,
-    'IdleInTransactions': IdleInTransactions,
-    'LongestRunningQueries': LongestRunningQueries,
-    'UserConnectionCount': UserConnectionCount,
-    'TableScanStats': TableScanStats,
-    'TupleAccessStats': TupleAccessStats,
-    'DatabaseReplicationStats': DatabaseReplicationStats,
-    'DatabaseXidAge': DatabaseXidAge,
+    "DatabaseStats": DatabaseStats,
+    "DatabaseConnectionCount": DatabaseConnectionCount,
+    "UserFunctionStats": UserFunctionStats,
+    "UserTableStats": UserTableStats,
+    "UserIndexStats": UserIndexStats,
+    "UserTableIOStats": UserTableIOStats,
+    "UserIndexIOStats": UserIndexIOStats,
+    "ConnectionStateStats": ConnectionStateStats,
+    "LockStats": LockStats,
+    "RelationSizeStats": RelationSizeStats,
+    "BackgroundWriterStats": BackgroundWriterStats,
+    "WalSegmentStats": WalSegmentStats,
+    "TransactionCount": TransactionCount,
+    "IdleInTransactions": IdleInTransactions,
+    "LongestRunningQueries": LongestRunningQueries,
+    "UserConnectionCount": UserConnectionCount,
+    "TableScanStats": TableScanStats,
+    "TupleAccessStats": TupleAccessStats,
+    "DatabaseReplicationStats": DatabaseReplicationStats,
+    "DatabaseXidAge": DatabaseXidAge,
 }
 
 registry = {
-    'basic': [
-        'DatabaseStats',
-        'DatabaseConnectionCount',
+    "basic": [
+        "DatabaseStats",
+        "DatabaseConnectionCount",
     ],
-    'extended': [
-        'DatabaseStats',
-        'DatabaseConnectionCount',
-        'DatabaseReplicationStats',
-        'DatabaseXidAge',
-        'UserFunctionStats',
-        'UserTableStats',
-        'UserIndexStats',
-        'UserTableIOStats',
-        'UserIndexIOStats',
-        'ConnectionStateStats',
-        'LockStats',
-        'RelationSizeStats',
-        'BackgroundWriterStats',
-        'TransactionCount',
-        'IdleInTransactions',
-        'LongestRunningQueries',
-        'UserConnectionCount',
-        'TableScanStats',
-        'TupleAccessStats',
+    "extended": [
+        "DatabaseStats",
+        "DatabaseConnectionCount",
+        "DatabaseReplicationStats",
+        "DatabaseXidAge",
+        "UserFunctionStats",
+        "UserTableStats",
+        "UserIndexStats",
+        "UserTableIOStats",
+        "UserIndexIOStats",
+        "ConnectionStateStats",
+        "LockStats",
+        "RelationSizeStats",
+        "BackgroundWriterStats",
+        "TransactionCount",
+        "IdleInTransactions",
+        "LongestRunningQueries",
+        "UserConnectionCount",
+        "TableScanStats",
+        "TupleAccessStats",
     ],
 }

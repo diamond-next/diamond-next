@@ -41,19 +41,21 @@ class SNMPCollector(diamond.collector.Collector):
 
     def get_default_config_help(self):
         config_help = super(SNMPCollector, self).get_default_config_help()
-        config_help.update({
-            'timeout': 'Seconds before timing out the snmp connection',
-            'retries': 'Number of times to retry before bailing',
-        })
+        config_help.update(
+            {
+                "timeout": "Seconds before timing out the snmp connection",
+                "retries": "Number of times to retry before bailing",
+            }
+        )
         return config_help
 
     def get_default_config(self):
         # Initialize default config
         default_config = super(SNMPCollector, self).get_default_config()
-        default_config['path_suffix'] = ''
-        default_config['path_prefix'] = 'systems'
-        default_config['timeout'] = 5
-        default_config['retries'] = 3
+        default_config["path_suffix"] = ""
+        default_config["path_prefix"] = "systems"
+        default_config["timeout"] = 5
+        default_config["retries"] = 3
         # Return default config
         return default_config
 
@@ -65,10 +67,10 @@ class SNMPCollector(diamond.collector.Collector):
         return ".".join([str(x) for x in oid])
 
     def collect(self):
-        for device in self.config['devices']:
-            host = self.config['devices'][device]['host']
-            port = self.config['devices'][device]['port']
-            community = self.config['devices'][device]['community']
+        for device in self.config["devices"]:
+            host = self.config["devices"][device]["host"]
+            port = self.config["devices"][device]["port"]
+            community = self.config["devices"][device]["community"]
             self.collect_snmp(device, host, port, community)
 
     def get(self, oid, host, port, community):
@@ -86,13 +88,11 @@ class SNMPCollector(diamond.collector.Collector):
         host = socket.gethostbyname(host)
 
         # Assemble SNMP Auth Data
-        snmp_auth_data = cmdgen.CommunityData('agent-{}'.format(community), community)
+        snmp_auth_data = cmdgen.CommunityData("agent-{}".format(community), community)
 
         # Assemble SNMP Transport Data
         snmp_transport_data = cmdgen.UdpTransportTarget(
-            (host, port),
-            int(self.config['timeout']),
-            int(self.config['retries'])
+            (host, port), int(self.config["timeout"]), int(self.config["retries"])
         )
 
         # Assemble SNMP Next Command
@@ -121,10 +121,12 @@ class SNMPCollector(diamond.collector.Collector):
         host = socket.gethostbyname(host)
 
         # Assemble SNMP Auth Data
-        snmp_auth_data = cmdgen.CommunityData('agent-{}'.format(community), community)
+        snmp_auth_data = cmdgen.CommunityData("agent-{}".format(community), community)
 
         # Assemble SNMP Transport Data
-        snmp_transport_data = cmdgen.UdpTransportTarget((host, port), int(self.config['timeout']), int(self.config['retries']))
+        snmp_transport_data = cmdgen.UdpTransportTarget(
+            (host, port), int(self.config["timeout"]), int(self.config["retries"])
+        )
 
         # Assemble SNMP Next Command
         result_table = self.snmpCmdGen.nextCmd(snmp_auth_data, snmp_transport_data, oid)

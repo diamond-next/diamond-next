@@ -22,15 +22,17 @@ except ImportError:
 
 
 class BeanstalkdCollector(diamond.collector.Collector):
-    SKIP_LIST = ['version', 'id', 'hostname']
-    COUNTERS_REGEX = re.compile(r'^(cmd-.*|job-timeouts|total-jobs|total-connections)$')
+    SKIP_LIST = ["version", "id", "hostname"]
+    COUNTERS_REGEX = re.compile(r"^(cmd-.*|job-timeouts|total-jobs|total-connections)$")
 
     def get_default_config_help(self):
         config_help = super(BeanstalkdCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Hostname',
-            'port': 'Port',
-        })
+        config_help.update(
+            {
+                "host": "Hostname",
+                "port": "Port",
+            }
+        )
 
         return config_help
 
@@ -39,11 +41,13 @@ class BeanstalkdCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(BeanstalkdCollector, self).get_default_config()
-        config.update({
-            'path': 'beanstalkd',
-            'host': 'localhost',
-            'port': 11300,
-        })
+        config.update(
+            {
+                "path": "beanstalkd",
+                "host": "localhost",
+                "port": 11300,
+            }
+        )
 
         return config
 
@@ -51,42 +55,48 @@ class BeanstalkdCollector(diamond.collector.Collector):
         stats = {}
 
         try:
-            connection = beanstalkc.Connection(self.config['host'], int(self.config['port']))
+            connection = beanstalkc.Connection(
+                self.config["host"], int(self.config["port"])
+            )
         except beanstalkc.BeanstalkcException as e:
             self.log.error("Couldn't connect to beanstalkd: %s", e)
 
             return {}
 
-        stats['instance'] = connection.stats()
-        stats['tubes'] = []
+        stats["instance"] = connection.stats()
+        stats["tubes"] = []
 
         for tube in connection.tubes():
             tube_stats = connection.stats_tube(tube)
-            stats['tubes'].append(tube_stats)
+            stats["tubes"].append(tube_stats)
 
         return stats
 
     def collect(self):
         if beanstalkc is None:
-            self.log.error('Unable to import beanstalkc')
+            self.log.error("Unable to import beanstalkc")
 
             return {}
 
         info = self._get_stats()
 
-        for stat, value in info['instance'].items():
+        for stat, value in info["instance"].items():
             if stat not in self.SKIP_LIST:
                 self.publish(stat, value, metric_type=self.get_metric_type(stat))
 
-        for tube_stats in info['tubes']:
-            tube = tube_stats['name']
+        for tube_stats in info["tubes"]:
+            tube = tube_stats["name"]
 
             for stat, value in tube_stats.items():
-                if stat != 'name':
-                    self.publish('tubes.%s.%s' % (tube, stat), value, metric_type=self.get_metric_type(stat))
+                if stat != "name":
+                    self.publish(
+                        "tubes.%s.%s" % (tube, stat),
+                        value,
+                        metric_type=self.get_metric_type(stat),
+                    )
 
     def get_metric_type(self, stat):
         if self.COUNTERS_REGEX.match(stat):
-            return 'COUNTER'
+            return "COUNTER"
 
-        return 'GAUGE'
+        return "GAUGE"

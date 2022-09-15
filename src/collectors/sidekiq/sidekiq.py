@@ -21,15 +21,17 @@ except ImportError:
 class SidekiqCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(SidekiqCollector, self).get_default_config_help()
-        config_help.update({
-            'host': 'Redis hostname',
-            'ports': 'Redis ports',
-            'password': 'Redis Auth password',
-            'databases': 'how many database instances to collect',
-            'sentinel_ports': 'Redis sentinel ports',
-            'sentinel_name': 'Redis sentinel name',
-            'cluster_prefix': 'Redis cluster name prefix'
-        })
+        config_help.update(
+            {
+                "host": "Redis hostname",
+                "ports": "Redis ports",
+                "password": "Redis Auth password",
+                "databases": "how many database instances to collect",
+                "sentinel_ports": "Redis sentinel ports",
+                "sentinel_name": "Redis sentinel name",
+                "cluster_prefix": "Redis cluster name prefix",
+            }
+        )
         return config_help
 
     def get_default_config(self):
@@ -37,16 +39,18 @@ class SidekiqCollector(diamond.collector.Collector):
         Returns the default collector settings
         """
         config = super(SidekiqCollector, self).get_default_config()
-        config.update({
-            'path': 'sidekiq',
-            'host': 'localhost',
-            'ports': '6379',
-            'password': None,
-            'databases': 16,
-            'sentinel_ports': None,
-            'sentinel_name': None,
-            'cluster_prefix': None
-        })
+        config.update(
+            {
+                "path": "sidekiq",
+                "host": "localhost",
+                "ports": "6379",
+                "password": None,
+                "databases": 16,
+                "sentinel_ports": None,
+                "sentinel_name": None,
+                "cluster_prefix": None,
+            }
+        )
         return config
 
     def get_master(self, host, port, sentinel_port, sentinel_name):
@@ -58,7 +62,9 @@ class SidekiqCollector(diamond.collector.Collector):
         :return: master ip and port
         """
         if sentinel_port and sentinel_name:
-            master = Sentinel([(host, sentinel_port)], socket_timeout=1).discover_master(sentinel_name)
+            master = Sentinel(
+                [(host, sentinel_port)], socket_timeout=1
+            ).discover_master(sentinel_name)
             return master
 
         return host, port
@@ -67,12 +73,12 @@ class SidekiqCollector(diamond.collector.Collector):
         """
         :return: Redis client
         """
-        host = self.config['host']
-        ports = self.config['ports']
-        sentinel_ports = self.config['sentinel_ports']
-        sentinel_name = self.config['sentinel_name']
-        password = self.config['password']
-        databases = self.config['databases']
+        host = self.config["host"]
+        ports = self.config["ports"]
+        sentinel_ports = self.config["sentinel_ports"]
+        sentinel_name = self.config["sentinel_name"]
+        password = self.config["password"]
+        databases = self.config["databases"]
 
         if not isinstance(ports, list):
             ports = [ports]
@@ -87,12 +93,9 @@ class SidekiqCollector(diamond.collector.Collector):
 
         for port, sentinel_port in zip(ports, sentinel_ports):
             for db in range(0, int(databases)):
-                master = self.get_master(
-                    host, port, sentinel_port, sentinel_name
-                )
+                master = self.get_master(host, port, sentinel_port, sentinel_name)
                 pool = redis.ConnectionPool(
-                    host=master[0], port=int(master[1]),
-                    password=password, db=db
+                    host=master[0], port=int(master[1]), password=password, db=db
                 )
                 yield redis.Redis(connection_pool=pool), port, db
 
@@ -102,7 +105,7 @@ class SidekiqCollector(diamond.collector.Collector):
         :return:
         """
         if redis is None:
-            self.log.error('Unable to import module redis')
+            self.log.error("Unable to import module redis")
             return {}
 
         try:
@@ -123,8 +126,8 @@ class SidekiqCollector(diamond.collector.Collector):
         :param port: Redis port
         :return: Redis schedule length
         """
-        schedule_length = redis_client.zcard('schedule')
-        self.__publish(port, db, 'schedule', schedule_length)
+        schedule_length = redis_client.zcard("schedule")
+        self.__publish(port, db, "schedule", schedule_length)
 
     def publish_retry_length(self, redis_client, port, db):
         """
@@ -133,8 +136,8 @@ class SidekiqCollector(diamond.collector.Collector):
         :param port: Redis port
         :return: Redis schedule length
         """
-        retry_length = redis_client.zcard('retry')
-        self.__publish(port, db, 'retry', retry_length)
+        retry_length = redis_client.zcard("retry")
+        self.__publish(port, db, "retry", retry_length)
 
     def publish_queue_length(self, redis_client, port, db):
         """
@@ -143,8 +146,8 @@ class SidekiqCollector(diamond.collector.Collector):
         :param port: Redis port
         :return: Redis queue length
         """
-        for queue in redis_client.smembers('queues'):
-            queue_length = redis_client.llen('queue:%s' % queue)
+        for queue in redis_client.smembers("queues"):
+            queue_length = redis_client.llen("queue:%s" % queue)
             self.__publish(port, db, queue, queue_length)
 
     def __publish(self, port, db, queue, queue_length):
@@ -155,8 +158,8 @@ class SidekiqCollector(diamond.collector.Collector):
         :param queue_length: Queue length to report
         :return:
         """
-        metric_name_segaments = ['queue']
-        cluster = self.config['cluster_prefix']
+        metric_name_segaments = ["queue"]
+        cluster = self.config["cluster_prefix"]
 
         if cluster:
             metric_name_segaments.append(cluster)
@@ -164,4 +167,4 @@ class SidekiqCollector(diamond.collector.Collector):
         metric_name_segaments.append(port)
         metric_name_segaments.append(str(db))
         metric_name_segaments.append(queue)
-        self.publish_gauge(name='.'.join(metric_name_segaments), value=queue_length)
+        self.publish_gauge(name=".".join(metric_name_segaments), value=queue_length)

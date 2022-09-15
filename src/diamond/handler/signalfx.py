@@ -39,10 +39,10 @@ class SignalfxHandler(diamond.handler.Handler.Handler):
         diamond.handler.Handler.Handler.__init__(self, config)
         self.metrics = []
         self.filter_metrics = self.config["filter_metrics_regex"]
-        self.batch_size = int(self.config['batch'])
-        self.url = self.config['url']
-        self.auth_token = self.config['auth_token']
-        self.batch_max_interval = int(self.config['batch_max_interval'])
+        self.batch_size = int(self.config["batch"])
+        self.url = self.config["url"]
+        self.auth_token = self.config["auth_token"]
+        self.batch_max_interval = int(self.config["batch_max_interval"])
         self.reset_batch_timeout()
         self._compiled_filters = []
 
@@ -79,12 +79,14 @@ class SignalfxHandler(diamond.handler.Handler.Handler):
         """
         config = super(SignalfxHandler, self).get_default_config_help()
 
-        config.update({
-            'url': 'Where to send metrics',
-            'batch': 'How many to store before sending',
-            'filter_metrics_regex': 'Comma separated collector:regex filters',
-            'auth_token': 'Org API token to use when sending metrics',
-        })
+        config.update(
+            {
+                "url": "Where to send metrics",
+                "batch": "How many to store before sending",
+                "filter_metrics_regex": "Comma separated collector:regex filters",
+                "auth_token": "Org API token to use when sending metrics",
+            }
+        )
 
         return config
 
@@ -94,14 +96,16 @@ class SignalfxHandler(diamond.handler.Handler.Handler):
         """
         config = super(SignalfxHandler, self).get_default_config()
 
-        config.update({
-            'url': 'https://ingest.signalfx.com/v2/datapoint',
-            'batch': 300,
-            'filter_metrics_regex': '',
-            # Don't wait more than 30 sec between pushes
-            'batch_max_interval': 30,
-            'auth_token': '',
-        })
+        config.update(
+            {
+                "url": "https://ingest.signalfx.com/v2/datapoint",
+                "batch": 300,
+                "filter_metrics_regex": "",
+                # Don't wait more than 30 sec between pushes
+                "batch_max_interval": 30,
+                "auth_token": "",
+            }
+        )
 
         return config
 
@@ -116,7 +120,10 @@ class SignalfxHandler(diamond.handler.Handler.Handler):
             self._send()
 
     def should_flush(self):
-        return len(self.metrics) >= self.batch_size or time.time() >= self.batch_max_timestamp
+        return (
+            len(self.metrics) >= self.batch_size
+            or time.time() >= self.batch_max_timestamp
+        )
 
     def into_signalfx_point(self, metric):
         """
@@ -163,7 +170,15 @@ class SignalfxHandler(diamond.handler.Handler.Handler):
         self.metrics = []
         post_body = json.dumps(post_dictionary)
         logging.debug("Body is %s", post_body)
-        req = urllib.request.Request(self.url, post_body, {"Content-type": "application/json", "X-SF-TOKEN": self.auth_token, "User-Agent": self.user_agent()})
+        req = urllib.request.Request(
+            self.url,
+            post_body,
+            {
+                "Content-type": "application/json",
+                "X-SF-TOKEN": self.auth_token,
+                "User-Agent": self.user_agent(),
+            },
+        )
         self.reset_batch_timeout()
 
         try:
