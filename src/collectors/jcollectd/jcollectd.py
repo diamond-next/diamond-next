@@ -22,22 +22,19 @@ See https://github.com/emicklei/jcollectd for an up-to-date jcollect fork.
 
 """
 
-
-import threading
+import queue
 import re
-import Queue
+import threading
 
 import diamond.collector
 import diamond.metric
 
 import collectd_network
 
-
 ALIVE = True
 
 
 class JCollectdCollector(diamond.collector.Collector):
-
     def __init__(self, *args, **kwargs):
         super(JCollectdCollector, self).__init__(*args, **kwargs)
         self.listener_thread = None
@@ -48,7 +45,7 @@ class JCollectdCollector(diamond.collector.Collector):
         """
         config = super(JCollectdCollector, self).get_default_config()
         config.update({
-            'path':     'jvm',
+            'path': 'jvm',
             'listener_host': '127.0.0.1',
             'listener_port': 25826,
         })
@@ -63,14 +60,12 @@ class JCollectdCollector(diamond.collector.Collector):
             try:
                 dp = q.get(False)
                 metric = self.make_metric(dp)
-            except Queue.Empty:
+            except queue.Empty:
                 break
             self.publish_metric(metric)
 
     def start_listener(self):
-        self.listener_thread = ListenerThread(self.config['listener_host'],
-                                              self.config['listener_port'],
-                                              self.log)
+        self.listener_thread = ListenerThread(self.config['listener_host'], self.config['listener_port'], self.log)
         self.listener_thread.start()
 
     def stop_listener(self):
@@ -97,8 +92,7 @@ class JCollectdCollector(diamond.collector.Collector):
             metric_type = "COUNTER"
         else:
             metric_type = "GAUGE"
-        metric = diamond.metric.Metric(path, dp.value, dp.time,
-                                       metric_type=metric_type)
+        metric = diamond.metric.Metric(path, dp.value, dp.time, metric_type=metric_type)
 
         return metric
 
@@ -108,7 +102,6 @@ class JCollectdCollector(diamond.collector.Collector):
 
 
 class ListenerThread(threading.Thread):
-
     def __init__(self, host, port, log, poll_interval=0.4):
         super(ListenerThread, self).__init__()
         self.name = 'JCollectdListener'  # thread name
@@ -118,11 +111,10 @@ class ListenerThread(threading.Thread):
         self.log = log
         self.poll_interval = poll_interval
 
-        self.queue = Queue.Queue()
+        self.queue = queue.Queue()
 
     def run(self):
-        self.log.info('ListenerThread started on {}:{}(udp)'.format(
-            self.host, self.port))
+        self.log.info('ListenerThread started on {}:{}(udp)'.format(self.host, self.port))
 
         rdr = collectd_network.Reader(self.host, self.port)
 
@@ -134,8 +126,7 @@ class ListenerThread(threading.Thread):
                 except ValueError as e:
                     self.log.warn('Dropping bad packet: {}'.format(e))
         except Exception as e:
-            self.log.error('caught exception: type={}, exc={}'.format(
-                type(e), e))
+            self.log.error('caught exception: type={}, exc={}'.format(type(e), e))
 
         self.log.info('ListenerThread - stop')
 
@@ -147,17 +138,15 @@ class ListenerThread(threading.Thread):
             try:
                 metric = self.transform(item)
                 self.queue.put(metric)
-            except Queue.Full:
+            except queue.Full:
                 self.log.error('Queue to collector is FULL')
             except Exception as e:
-                self.log.error('B00M! type={}, exception={}'.format(
-                    type(e), e))
+                self.log.error('B00M! type={}, exception={}'.format(type(e), e))
 
     def transform(self, item):
-
         parts = []
-
         path = item.plugininstance
+
         # extract jvm name from 'logstash-MemoryPool Eden Space'
         if '-' in path:
             (jvm, tail) = path.split('-', 1)
@@ -204,7 +193,6 @@ def sanitize_word(s):
 
 
 class Datapoint(object):
-
     def __init__(self, host, time, name, value, is_counter):
         self.host = host
         self.time = time

@@ -5,15 +5,15 @@
 Send metrics to a http endpoint via POST
 """
 
-from Handler import Handler
-import urllib2
+import urllib.request
+
+import diamond.handler.Handler
 
 
-class HttpPostHandler(Handler):
-
+class HttpPostHandler(diamond.handler.Handler.Handler):
     # Inititalize Handler with url and batch size
     def __init__(self, config=None):
-        Handler.__init__(self, config)
+        diamond.handler.Handler.Handler.__init__(self, config)
         self.metrics = []
         self.batch_size = int(self.config['batch'])
         self.url = self.config.get('url')
@@ -47,6 +47,7 @@ class HttpPostHandler(Handler):
     # Join batched metrics and push to url mentioned in config
     def process(self, metric):
         self.metrics.append(str(metric))
+
         if len(self.metrics) >= self.batch_size:
             self.post()
 
@@ -56,6 +57,6 @@ class HttpPostHandler(Handler):
         self.post()
 
     def post(self):
-        req = urllib2.Request(self.url, "\n".join(self.metrics))
-        urllib2.urlopen(req)
+        req = urllib.request.Request(self.url, b"\n".join(self.metrics))
+        urllib.request.urlopen(req)
         self.metrics = []

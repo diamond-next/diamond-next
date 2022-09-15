@@ -1,11 +1,14 @@
 # coding=utf-8
+
 """
 IcingaStats collector - collect statistics exported by Icinga/Nagios
 via status.dat file.
 """
-import diamond.collector
+
 import re
 import time
+
+import diamond.collector
 
 RE_LSPACES = re.compile("^[\s\t]*")
 RE_TSPACES = re.compile("[\s\t]*$")
@@ -148,7 +151,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
             stats["hosts.active_checks"] += sane["active_checks"]
             stats["hosts.passive_checks"] += sane["passive_checks"]
             state_key = self._trans_host_state(sane["state"])
-            stats["hosts.%s" % (state_key)] += 1
+            stats["hosts.%s" % state_key] += 1
 
         return stats
 
@@ -182,7 +185,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
             stats["services.active_checks"] += sane["active_checks"]
             stats["services.passive_checks"] += sane["passive_checks"]
             state_key = self._trans_svc_state(sane["state"])
-            stats["services.%s" % (state_key)] += 1
+            stats["services.%s" % state_key] += 1
 
         return stats
 
@@ -191,7 +194,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
         splitted = tripplet.split(",")
         if len(splitted) != 3:
             self.log.debug("Got %i chunks, expected 3.", len(splitted))
-            return (0, 0, 0)
+            return 0, 0, 0
 
         try:
             x01 = int(splitted[0])
@@ -203,7 +206,7 @@ class IcingaStatsCollector(diamond.collector.Collector):
             x05 = 0
             x15 = 0
 
-        return (x01, x05, x15)
+        return x01, x05, x15
 
     def _get_active_stats(self, app_stats):
         """
@@ -227,9 +230,9 @@ class IcingaStatsCollector(diamond.collector.Collector):
             splitted = app_key.split("_")
             metric = "%ss.%s_%s" % (splitted[2], splitted[0], splitted[1])
             (x01, x05, x15) = self._convert_tripplet(app_stats[app_key])
-            stats["%s.01" % (metric)] = x01
-            stats["%s.05" % (metric)] = x05
-            stats["%s.15" % (metric)] = x15
+            stats["%s.01" % metric] = x01
+            stats["%s.05" % metric] = x05
+            stats["%s.15" % metric] = x15
 
         return stats
 
@@ -250,9 +253,9 @@ class IcingaStatsCollector(diamond.collector.Collector):
 
             (x01, x05, x15) = self._convert_tripplet(app_stats[app_key])
             scratch = app_key.split("_")[1]
-            stats["%ss.cached.01" % (scratch)] = x01
-            stats["%ss.cached.05" % (scratch)] = x05
-            stats["%ss.cached.15" % (scratch)] = x15
+            stats["%ss.cached.01" % scratch] = x01
+            stats["%ss.cached.05" % scratch] = x05
+            stats["%ss.cached.15" % scratch] = x15
 
         return stats
 

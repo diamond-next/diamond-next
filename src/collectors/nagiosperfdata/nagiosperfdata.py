@@ -176,9 +176,9 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
         """
         metrics = []
         counters = re.findall(self.TOKENIZER_RE, s)
+
         if counters is None:
-            self.log.warning("Failed to parse performance data: {s}".format(
-                s=s))
+            self.log.warning("Failed to parse performance data: {s}".format(s=s))
             return metrics
 
         for (key, value, uom, warn, crit, min, max) in counters:
@@ -186,9 +186,7 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
                 norm_value = self._normalize_to_unit(float(value), uom)
                 metrics.append((key, norm_value))
             except ValueError:
-                self.log.warning(
-                    "Couldn't convert value '{value}' to float".format(
-                        value=value))
+                self.log.warning("Couldn't convert value '{value}' to float".format(value=value))
 
         return metrics
 
@@ -202,16 +200,15 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
 
             os.remove(path)
         except IOError as ex:
-            self.log.error("Could not open file `{path}': {error}".format(
-                path=path, error=ex.strerror))
+            self.log.error("Could not open file `{path}': {error}".format(path=path, error=ex.strerror))
 
     def _process_line(self, line):
         """Parse and submit the metrics from a line of perfdata output
         """
         fields = self._extract_fields(line)
+
         if not self._fields_valid(fields):
-            self.log.warning("Missing required fields for line: {line}".format(
-                line=line))
+            self.log.warning("Missing required fields for line: {line}".format(line=line))
 
         metric_path_base = []
         graphite_prefix = fields.get('GRAPHITEPREFIX')
@@ -222,13 +219,14 @@ class NagiosPerfdataCollector(diamond.collector.Collector):
 
         hostname = fields['HOSTNAME'].lower()
         metric_path_base.append(hostname)
-
         datatype = fields['DATATYPE']
+
         if datatype == 'HOSTPERFDATA':
             metric_path_base.append('host')
         elif datatype == 'SERVICEPERFDATA':
             service_desc = fields.get('SERVICEDESC')
             graphite_postfix = fields.get('GRAPHITEPOSTFIX')
+
             if graphite_postfix:
                 metric_path_base.append(graphite_postfix)
             else:

@@ -18,6 +18,7 @@ instances
 # should suffice
 
 import diamond.collector
+
 try:
     import vms
 except ImportError:
@@ -39,8 +40,8 @@ class VMSDomsCollector(diamond.collector.Collector):
 
     def get_default_config_help(self):
         config_help = super(VMSDomsCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -49,7 +50,7 @@ class VMSDomsCollector(diamond.collector.Collector):
         """
         config = super(VMSDomsCollector, self).get_default_config()
         config.update({
-            'path':     'vms'
+            'path': 'vms'
         })
         return config
 
@@ -74,9 +75,12 @@ class VMSDomsCollector(diamond.collector.Collector):
 
             # Grab a control connection.
             dom = hypervisor.domain_lookup(d)
+
             if dom is None:
                 continue
+
             ctrl = dom._wait_for_control(wait=False)
+
             if ctrl is None:
                 continue
 
@@ -103,7 +107,7 @@ class VMSDomsCollector(diamond.collector.Collector):
             for dom, ctrl in vms_domains:
                 try:
                     # Get value and scale.
-                    value = long(ctrl.get(key)) * scale
+                    value = int(ctrl.get(key)) * scale
                 except vms.control.ControlException:
                     continue
 

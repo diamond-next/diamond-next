@@ -54,17 +54,18 @@ restart diamond.
 """
 
 import os
+
 import sys
 import time
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)),
-                                'snmp'))
+import diamond.metric
+
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), 'snmp'))
+
 from snmp import SNMPCollector as parent_SNMPCollector
-from diamond.metric import Metric
 
 
 class SNMPRawCollector(parent_SNMPCollector):
-
     def process_config(self):
         super(SNMPRawCollector, self).process_config()
         # list to save non-existing oid's per device, to avoid repetition of
@@ -76,13 +77,13 @@ class SNMPRawCollector(parent_SNMPCollector):
         Override SNMPCollector.get_default_config method to provide
         default_config for the SNMPInterfaceCollector
         """
-        default_config = super(SNMPRawCollector,
-                               self).get_default_config()
+        default_config = super(SNMPRawCollector, self).get_default_config()
         default_config.update({
             'oids': {},
             'path_prefix': 'servers',
             'path_suffix': 'snmp',
         })
+
         return default_config
 
     def _precision(self, value):
@@ -91,15 +92,17 @@ class SNMPRawCollector(parent_SNMPCollector):
         """
         value = str(value)
         decimal = value.rfind('.')
+
         if decimal == -1:
             return 0
+
         return len(value) - decimal - 1
 
     def _skip(self, device, oid, reason=None):
         self.skip_list.append((device, oid))
+
         if reason is not None:
-            self.log.warn('Muted \'{}\' on \'{}\', because: {}'.format(
-                oid, device, reason))
+            self.log.warn('Muted \'{}\' on \'{}\', because: {}'.format(oid, device, reason))
 
     def _get_value_walk(self, device, oid, host, port, community):
         data = self.walk(oid, host, port, community)
@@ -108,15 +111,10 @@ class SNMPRawCollector(parent_SNMPCollector):
             self._skip(device, oid, 'device down (#2)')
             return
 
-        self.log.debug('Data received from WALK \'{}\': [{}]'.format(
-            device, data))
+        self.log.debug('Data received from WALK \'{}\': [{}]'.format(device, data))
 
         if len(data) != 1:
-            self._skip(
-                device,
-                oid,
-                'unexpected response, data has {} entries'.format(
-                    len(data)))
+            self._skip(device, oid, 'unexpected response, data has {} entries'.format(len(data)))
             return
 
         # because we only allow 1-key dicts, we can pick with absolute index
@@ -130,8 +128,7 @@ class SNMPRawCollector(parent_SNMPCollector):
             self._skip(device, oid, 'device down (#1)')
             return
 
-        self.log.debug('Data received from GET \'{}\': [{}]'.format(
-            device, data))
+        self.log.debug('Data received from GET \'{}\': [{}]'.format(device, data))
 
         if len(data) == 0:
             self._skip(device, oid, 'empty response, device down?')
@@ -144,6 +141,7 @@ class SNMPRawCollector(parent_SNMPCollector):
             return
 
         value = data[oid]
+
         if value == 'No Such Object currently exists at this OID':
             self._skip(device, oid, 'no object at OID (#2)')
             return
@@ -157,31 +155,25 @@ class SNMPRawCollector(parent_SNMPCollector):
         """
         Collect SNMP interface data from device
         """
-        self.log.debug(
-            'Collecting raw SNMP statistics from device \'{}\''.format(device))
+        self.log.debug('Collecting raw SNMP statistics from device \'{}\''.format(device))
 
         dev_config = self.config['devices'][device]
+
         if 'oids' in dev_config:
             for oid, metricName in dev_config['oids'].items():
 
                 if (device, oid) in self.skip_list:
-                    self.log.debug(
-                        'Skipping OID \'{}\' ({}) on device \'{}\''.format(
-                            oid, metricName, device))
+                    self.log.debug('Skipping OID \'{}\' ({}) on device \'{}\''.format(oid, metricName, device))
                     continue
 
                 timestamp = time.time()
                 value = self._get_value(device, oid, host, port, community)
+
                 if value is None:
                     continue
 
-                self.log.debug(
-                    '\'{}\' ({}) on device \'{}\' - value=[{}]'.format(
-                        oid, metricName, device, value))
+                self.log.debug('\'{}\' ({}) on device \'{}\' - value=[{}]'.format(oid, metricName, device, value))
 
-                path = '.'.join([self.config['path_prefix'], device,
-                                 self.config['path_suffix'], metricName])
-                metric = Metric(path=path, value=value, timestamp=timestamp,
-                                precision=self._precision(value),
-                                metric_type='GAUGE')
+                path = '.'.join([self.config['path_prefix'], device, self.config['path_suffix'], metricName])
+                metric = diamond.metric.Metric(path=path, value=value, timestamp=timestamp, precision=self._precision(value), metric_type='GAUGE')
                 self.publish_metric(metric)

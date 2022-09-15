@@ -1,26 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import io
+import unittest
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.memory.memory import MemoryCollector
 from diamond.collector import Collector
-from memory import MemoryCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMemoryCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MemoryCollector', {
             'interval': 10,
@@ -32,11 +23,11 @@ class TestMemoryCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(MemoryCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_meminfo(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/meminfo')
 
@@ -64,11 +55,9 @@ class TestMemoryCollector(CollectorTestCase):
             'VmallocChunk': 34311049240
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

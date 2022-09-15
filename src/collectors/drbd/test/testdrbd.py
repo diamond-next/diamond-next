@@ -1,18 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
+import unittest
+
+from collectors.drbd.drbd import DRBDCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from test import unittest
-
-from drbd import DRBDCollector
-
-##########################################################################
 
 
 class TestDRBDCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('DRBDCollector', {})
 
@@ -21,6 +17,6 @@ class TestDRBDCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(DRBDCollector)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

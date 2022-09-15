@@ -10,9 +10,10 @@ by their apps, tools and services into actionable insight.
 
 """
 
-from Handler import Handler
 import logging
 from collections import deque
+
+from diamond.handler.Handler import Handler
 
 try:
     import dogapi
@@ -21,7 +22,6 @@ except ImportError:
 
 
 class DatadogHandler(Handler):
-
     def __init__(self, config=None):
         """
         New instance of DatadogHandler class
@@ -71,6 +71,7 @@ class DatadogHandler(Handler):
         """
 
         self.queue.append(metric)
+
         if len(self.queue) >= self.queue_size:
             self._send()
 

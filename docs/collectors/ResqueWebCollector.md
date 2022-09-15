@@ -8,7 +8,7 @@ Collects data for Resque Web
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 
 #### Options

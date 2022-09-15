@@ -13,15 +13,16 @@ apcuspd in NIS mode.
 
 """
 
-import diamond.collector
-import socket
-from struct import pack
 import re
+import socket
+import struct
+
 import time
+
+import diamond.collector
 
 
 class ApcupsdCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(ApcupsdCollector, self).get_default_config_help()
         config_help.update({
@@ -49,13 +50,13 @@ class ApcupsdCollector(diamond.collector.Collector):
         })
         return config
 
-    def getData(self):
+    def get_data(self):
         # Get the data via TCP stream
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect((self.config['hostname'], int(self.config['port'])))
 
         # Packet is pad byte, size byte, and command
-        s.send(pack('xb6s', 6, 'status'))
+        s.send(struct.pack('xb6s', 6, 'status'))
 
         # Ditch the header
         s.recv(1024)
@@ -64,27 +65,32 @@ class ApcupsdCollector(diamond.collector.Collector):
 
         # We're done. Close the socket
         s.close()
+
         return data
 
     def collect(self):
         metrics = {}
         raw = {}
 
-        data = self.getData()
-
+        data = self.get_data()
         data = data.split('\n\x00')
+
         for d in data:
             matches = re.search("([A-Z]+)\s+:\s+(.*)$", d)
+
             if matches:
                 value = matches.group(2).strip()
                 raw[matches.group(1)] = matches.group(2).strip()
                 vmatch = re.search("([0-9.]+)", value)
+
                 if not vmatch:
                     continue
+
                 try:
                     value = float(vmatch.group(1))
                 except ValueError:
                     continue
+
                 metrics[matches.group(1)] = value
 
         for metric in self.config['metrics']:
@@ -92,7 +98,6 @@ class ApcupsdCollector(diamond.collector.Collector):
                 continue
 
             metric_name = "%s.%s" % (raw['UPSNAME'], metric)
-
             value = metrics[metric]
 
             if metric in ['TONBATT', 'CUMONBATT', 'NUMXFERS']:

@@ -6,7 +6,7 @@ This allows for 'subscribing' to messages based on the routing key, which is
 the metric path
 """
 
-from Handler import Handler
+from diamond.handler.Handler import Handler
 
 try:
     import pika
@@ -14,7 +14,7 @@ except ImportError:
     pika = None
 
 
-class rmqHandler (Handler):
+class rmqHandler(Handler):
     """
       Implements the abstract Handler class
       Sending data to a RabbitMQ topic exchange.
@@ -43,8 +43,7 @@ class rmqHandler (Handler):
         self.user = self.config.get('user', 'guest')
         self.password = self.config.get('password', 'guest')
         self.routing_key = self.config.get('routing_key', 'metric')
-        self.custom_routing_key = self.config.get(
-            'custom_routing_key', 'diamond')
+        self.custom_routing_key = self.config.get('custom_routing_key', 'diamond')
 
         if not pika:
             self.log.error('pika import failed. Handler disabled')
@@ -98,18 +97,14 @@ class rmqHandler (Handler):
         """
 
         credentials = pika.PlainCredentials(self.user, self.password)
-        params = pika.ConnectionParameters(credentials=credentials,
-                                           host=self.server,
-                                           virtual_host=self.vhost,
-                                           port=self.port)
+        params = pika.ConnectionParameters(credentials=credentials, host=self.server, virtual_host=self.vhost, port=self.port)
 
         self.connection = pika.BlockingConnection(params)
         self.channel = self.connection.channel()
 
         # NOTE : PIKA version uses 'exchange_type' instead of 'type'
 
-        self.channel.exchange_declare(exchange=self.topic_exchange,
-                                      exchange_type="topic")
+        self.channel.exchange_declare(exchange=self.topic_exchange, exchange_type="topic")
 
     def __del__(self):
         """
@@ -124,11 +119,12 @@ class rmqHandler (Handler):
         """
           Process a metric and send it to RabbitMQ topic exchange
         """
+
         # Send the data as ......
         if not pika:
             return
 
-        routingKeyDic = {
+        routing_key_dic = {
             'metric': lambda: metric.path,
             'custom': lambda: self.custom_routing_key,
 
@@ -144,12 +140,8 @@ class rmqHandler (Handler):
         }
 
         try:
-            self.channel.basic_publish(
-                exchange=self.topic_exchange,
-                routing_key=routingKeyDic[self.routing_key](),
-                body="%s" % metric)
+            self.channel.basic_publish(exchange=self.topic_exchange, routing_key=routing_key_dic[self.routing_key](), body="%s" % metric)
 
         except Exception:  # Rough connection re-try logic.
-            self.log.info(
-                "Failed publishing to rabbitMQ. Attempting reconnect")
+            self.log.info("Failed publishing to rabbitMQ. Attempting reconnect")
             self._bind()

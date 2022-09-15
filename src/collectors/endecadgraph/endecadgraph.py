@@ -11,15 +11,15 @@ Renzo Toma <rtoma@bol.com>
 
 """
 
-import diamond.collector
-import urllib2
-from StringIO import StringIO
+import io
 import re
+import urllib.request
 import xml.etree.cElementTree as ElementTree
+
+import diamond.collector
 
 
 class EndecaDgraphCollector(diamond.collector.Collector):
-
     # ignore these elements, because they are of no use
     IGNORE_ELEMENTS = [
         'most_expensive_queries',
@@ -49,8 +49,7 @@ class EndecaDgraphCollector(diamond.collector.Collector):
     XML_NS = '{http://xmlns.endeca.com/ene/dgraph}'
 
     def get_default_config_help(self):
-        config_help = super(EndecaDgraphCollector,
-                            self).get_default_config_help()
+        config_help = super(EndecaDgraphCollector, self).get_default_config_help()
         config_help.update({
             'host': "Hostname of Endeca Dgraph instance",
             'port': "Port of the Dgraph API listener",
@@ -72,10 +71,10 @@ class EndecaDgraphCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-
         def makeSane(stat):
             stat = self.CHAR_BLACKLIST.sub('_', stat.lower())
             stat = self.UNDERSCORE_UNDUPE.sub('_', stat)
+
             return stat
 
         def createKey(element):
@@ -84,11 +83,13 @@ class EndecaDgraphCollector(diamond.collector.Collector):
                 key = makeSane(key)
             else:
                 key = element.tag[len(self.XML_NS):]
+
             return key
 
         def processElem(elem, keyList):
             for k, v in elem.items():
                 prefix = '.'.join(keyList)
+
                 if k not in self.IGNORE_ELEMENTS and self.NUMVAL_MATCH.match(v):
                     k = makeSane(k)
                     self.publish('%s.%s' % (prefix, k), v)
@@ -96,26 +97,29 @@ class EndecaDgraphCollector(diamond.collector.Collector):
         def walkXML(context, elemList):
             try:
                 for event, elem in context:
-                    elemName = createKey(elem)
+                    elem_name = createKey(elem)
+
                     if event == 'start':
-                        elemList.append(elemName)
+                        elemList.append(elem_name)
+
                         if len(elem) == 0:
                             if set(elemList).intersection(self.IGNORE_ELEMENTS):
                                 continue
+
                             processElem(elem, elemList)
                     elif event == 'end':
                         elemList.pop()
             except Exception as e:
                 self.log.error('Something went wrong: %s', e)
 
-        url = 'http://%s:%d/admin?op=stats' % (self.config['host'],
-                                               self.config['port'])
+        url = 'http://%s:%d/admin?op=stats' % (self.config['host'], self.config['port'])
+
         try:
-            xml = urllib2.urlopen(url, timeout=self.config['timeout']).read()
+            xml = urllib.request.urlopen(url, timeout=self.config['timeout']).read()
         except Exception as e:
             self.log.error('Could not connect to endeca on %s: %s' % (url, e))
             return {}
 
-        context = ElementTree.iterparse(StringIO(xml), events=('start', 'end'))
-        elemList = []
-        walkXML(context, elemList)
+        context = ElementTree.iterparse(io.StringIO(xml), events=('start', 'end'))
+        elem_list = []
+        walkXML(context, elem_list)

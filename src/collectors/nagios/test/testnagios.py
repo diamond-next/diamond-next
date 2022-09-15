@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.nagios.nagios import NagiosStatsCollector
 from diamond.collector import Collector
-from nagios import NagiosStatsCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNagiosStatsCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('NagiosStatsCollector', {
             'interval': 10,
@@ -33,9 +28,8 @@ class TestNagiosStatsCollector(CollectorTestCase):
     def test_should_work_with_real_data(self, publish_mock):
         patch_communicate = patch(
             'subprocess.Popen.communicate',
-            Mock(return_value=(
-                self.getFixture('nagiostat').getvalue(),
-                '')))
+            Mock(return_value=(self.getFixture('nagiostat').getvalue(), ''))
+        )
 
         patch_communicate.start()
         self.collector.collect()
@@ -71,11 +65,9 @@ class TestNagiosStatsCollector(CollectorTestCase):
             'NUMPSVSVCCHECKS5M': 0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

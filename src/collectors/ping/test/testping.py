@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.ping.ping import PingCollector
 from diamond.collector import Collector
-from ping import PingCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestPingCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('PingCollector', {
             'interval': 10,
@@ -214,6 +209,6 @@ class TestPingCollector(CollectorTestCase):
             'localhost': 10000
         })
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

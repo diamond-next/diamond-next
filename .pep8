@@ -1,3 +1,3 @@
 [pep8]
-max-line-length = 120
+max-line-length = 160
 exclude = .svn,CVS,.bzr,.hg,.git,.tox

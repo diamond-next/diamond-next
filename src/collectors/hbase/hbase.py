@@ -4,15 +4,15 @@
 Diamond collector for HBase metrics, see:
 """
 
-from diamond.metric import Metric
-import diamond.collector
 import glob
-import re
 import os
+import re
+
+import diamond.collector
+import diamond.metric
 
 
 class HBaseCollector(diamond.collector.Collector):
-
     re_log = re.compile(r'^(?P<timestamp>\d+) (?P<name>\S+): (?P<metrics>.*)$')
 
     def get_default_config_help(self):
@@ -28,8 +28,8 @@ class HBaseCollector(diamond.collector.Collector):
         """
         config = super(HBaseCollector, self).get_default_config()
         config.update({
-            'path':     'hbase',
-            'metrics':  ['/var/log/hbase/*.metrics'],
+            'path': 'hbase',
+            'metrics': ['/var/log/hbase/*.metrics'],
         })
         return config
 
@@ -56,15 +56,16 @@ class HBaseCollector(diamond.collector.Collector):
             metrics = {}
 
             data = match.groupdict()
+
             for metric in data['metrics'].split(','):
                 metric = metric.strip()
+
                 if '=' in metric:
                     key, value = metric.split('=', 1)
                     metrics[key] = value
 
             for metric in metrics.keys():
                 try:
-
                     if data['name'] == 'jvm.metrics':
                         path = self.get_metric_path('.'.join([
                             data['name'],
@@ -98,13 +99,10 @@ class HBaseCollector(diamond.collector.Collector):
 
                     value = float(metrics[metric])
 
-                    self.publish_metric(
-                        Metric(path,
-                               value,
-                               timestamp=int(data['timestamp']) / 1000))
-
+                    self.publish_metric(diamond.metric.Metric(path, value, timestamp=int(data['timestamp']) / 1000))
                 except ValueError:
                     pass
+
         fd.seek(0)
         fd.truncate()
         fd.close()

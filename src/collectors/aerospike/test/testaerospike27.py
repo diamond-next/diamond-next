@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock, call
-from mock import patch
+import unittest
+from unittest.mock import Mock, call, patch
 
+from collectors.aerospike.aerospike import AerospikeCollector
 from diamond.collector import Collector
-
-from aerospike import AerospikeCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestAerospike27Collector(CollectorTestCase):
-
     def bootStrap(self, custom_config={}):
         config = get_collector_config('AerospikeCollector', custom_config)
 
@@ -28,9 +22,7 @@ class TestAerospike27Collector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_latency(self, publish_counter_mock,
-                     publish_gauge_mock, publish_mock):
-
+    def test_latency(self, publish_counter_mock, publish_gauge_mock, publish_mock):
         mockTelnet = Mock(**{
             'read_until.side_effect':
             [
@@ -88,15 +80,13 @@ class TestAerospike27Collector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_statistics(self, publish_counter_mock,
-                        publish_gauge_mock, publish_mock):
-
+    def test_statistics(self, publish_counter_mock, publish_gauge_mock, publish_mock):
         mockTelnet = Mock(**{
             'read_until.side_effect':
             [
                 "2.7.1\n",
                 self.getFixture('v2.7/statistics').getvalue()
-                ]
+            ]
         })
 
         patch_Telnet = patch('telnetlib.Telnet', Mock(return_value=mockTelnet))
@@ -129,19 +119,18 @@ class TestAerospike27Collector(CollectorTestCase):
         }
 
         self.assertPublishedMany(
-            [publish_mock,
-             publish_gauge_mock,
-             publish_counter_mock,
-             ],
+            [
+                publish_mock,
+                publish_gauge_mock,
+                publish_counter_mock,
+            ],
             metrics,
         )
 
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_throughput(self, publish_counter_mock,
-                        publish_gauge_mock, publish_mock):
-
+    def test_throughput(self, publish_counter_mock, publish_gauge_mock, publish_mock):
         mockTelnet = Mock(**{
             'read_until.side_effect':
             [
@@ -174,19 +163,18 @@ class TestAerospike27Collector(CollectorTestCase):
         }
 
         self.assertPublishedMany(
-            [publish_mock,
-             publish_gauge_mock,
-             publish_counter_mock,
-             ],
+            [
+                publish_mock,
+                publish_gauge_mock,
+                publish_counter_mock,
+            ],
             metrics,
         )
 
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_namespaces(self, publish_counter_mock,
-                        publish_gauge_mock, publish_mock):
-
+    def test_namespaces(self, publish_counter_mock, publish_gauge_mock, publish_mock):
         mockTelnet = Mock(**{
             'read_until.side_effect':
             [
@@ -194,7 +182,7 @@ class TestAerospike27Collector(CollectorTestCase):
                 self.getFixture('v2.7/namespaces').getvalue(),
                 self.getFixture('v2.7/namespace_foo').getvalue(),
                 self.getFixture('v2.7/namespace_bar').getvalue(),
-                ],
+            ],
         })
 
         patch_Telnet = patch('telnetlib.Telnet', Mock(return_value=mockTelnet))
@@ -239,15 +227,15 @@ class TestAerospike27Collector(CollectorTestCase):
         }
 
         self.assertPublishedMany(
-            [publish_mock,
-             publish_gauge_mock,
-             publish_counter_mock,
-             ],
+            [
+                publish_mock,
+                publish_gauge_mock,
+                publish_counter_mock,
+            ],
             metrics,
         )
 
     def test_namespace_whitelist(self):
-
         mockTelnet = Mock(**{
             'read_until.side_effect':
             [
@@ -281,6 +269,5 @@ class TestAerospike27Collector(CollectorTestCase):
         )
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

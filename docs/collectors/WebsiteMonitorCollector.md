@@ -7,7 +7,7 @@ WebsiteMonitorCollector
 Gather HTTP Response code and Duration of HTTP request
 
 #### Dependencies
-  * urllib2
+  * urllib
 
 
 #### Options

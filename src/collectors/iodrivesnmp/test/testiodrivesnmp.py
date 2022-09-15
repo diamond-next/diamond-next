@@ -1,18 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
+from collectors.iodrivesnmp.iodrivesnmp import IODriveSNMPCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-
-from iodrivesnmp import IODriveSNMPCollector
 
 
 class TestIODriveSNMPCollector(CollectorTestCase):
-
     def setUp(self, allowed_names=None):
         if not allowed_names:
             allowed_names = []
+
         config = get_collector_config('IODriveSNMPCollector', {
             'allowed_names': allowed_names,
             'interval': 1

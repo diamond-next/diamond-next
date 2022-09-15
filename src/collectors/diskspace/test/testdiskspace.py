@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.diskspace.diskspace import DiskSpaceCollector
 from diamond.collector import Collector
-from diskspace import DiskSpaceCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestDiskSpaceCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('DiskSpaceCollector', {
             'interval': 10,
@@ -33,8 +28,7 @@ class TestDiskSpaceCollector(CollectorTestCase):
     def run_collection(self, statvfs_mock, os_major, os_minor):
         os_stat_mock = patch('os.stat')
         os_path_isdir_mock = patch('os.path.isdir', Mock(return_value=False))
-        open_mock = patch('__builtin__.open',
-                          Mock(return_value=self.getFixture('proc_mounts')))
+        open_mock = patch('builtins.open', Mock(return_value=self.getFixture('proc_mounts')))
         os_statvfs_mock = patch('os.statvfs', Mock(return_value=statvfs_mock))
 
         os_stat_mock.start()
@@ -53,8 +47,7 @@ class TestDiskSpaceCollector(CollectorTestCase):
 
         os_stat_mock = patch('os.stat')
         os_realpath_mock = patch('os.path.realpath')
-        open_mock = patch('__builtin__.open',
-                          Mock(return_value=self.getFixture('proc_mounts')))
+        open_mock = patch('builtins.open', Mock(return_value=self.getFixture('proc_mounts')))
 
         stat_mock = os_stat_mock.start()
         stat_mock.return_value.st_dev = 42
@@ -121,7 +114,6 @@ class TestDiskSpaceCollector(CollectorTestCase):
         config = get_collector_config('DiskSpaceCollector', {
             'interval': 10,
             'byte_unit': ['gigabyte'],
-            'exclude_filters': [],
             'filesystems': 'tmpfs',
             'exclude_filters': '^/sys'
         })
@@ -161,7 +153,6 @@ class TestDiskSpaceCollector(CollectorTestCase):
         config = get_collector_config('DiskSpaceCollector', {
             'interval': 10,
             'byte_unit': ['gigabyte'],
-            'exclude_filters': [],
             'filesystems': 'tmpfs',
             'exclude_filters': '^/tmp'
         })
@@ -190,11 +181,9 @@ class TestDiskSpaceCollector(CollectorTestCase):
             '_sys_fs_cgroup.inodes_avail': 91229495,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

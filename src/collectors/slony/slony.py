@@ -44,7 +44,6 @@ except ImportError:
 
 
 class SlonyCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(SlonyCollector, self).get_default_config_help()
         config_help.update({
@@ -84,6 +83,7 @@ class SlonyCollector(diamond.collector.Collector):
             return {}
 
         instances = self.config['instances']
+
         # HACK: setting default with subcategory messes up merging of configs,
         # so we only set the default if one wasn't provided.
         if not instances:
@@ -94,38 +94,33 @@ class SlonyCollector(diamond.collector.Collector):
                 }
             }
 
-        for name, instance in instances.iteritems():
+        for name, instance in iter(instances.items()):
             host = self.config['host']
             port = self.config['port']
             user = instance.get('user') or self.config['user']
             password = instance.get('password') or self.config['password']
-            slony_node_string = instance.get('slony_node_string') or \
-                self.config['slony_node_string']
+            slony_node_string = instance.get('slony_node_string') or self.config['slony_node_string']
             slony_db = instance['slony_db']
             slony_schema = instance['slony_schema']
 
-            stats = self._get_stats_by_database(
-                host, port, user, password, slony_db,
-                slony_schema, slony_node_string
-            )
+            stats = self._get_stats_by_database(host, port, user, password, slony_db, slony_schema, slony_node_string)
             [self.publish(metric, value) for metric, value in stats]
 
-    def _get_stats_by_database(self, host, port, user,
-                               password, db, schema, node_string):
+    def _get_stats_by_database(self, host, port, user, password, db, schema, node_string):
         path = "slony.%(datname)s.%(metric)s.lag_events"
         conn = psycopg2.connect(
             host=host,
             user=user,
             password=password,
             port=port,
-            database=db)
+            database=db
+        )
 
         # Avoid using transactions, set isolation level to autocommit
         conn.set_isolation_level(0)
 
         query = """
-            SELECT SUBSTRING(sl.no_comment FROM %(node_extractor)s) AS node,
-                   st.st_lag_num_events AS lag_events
+            SELECT SUBSTRING(sl.no_comment FROM %(node_extractor)s) AS node, st.st_lag_num_events AS lag_events
             FROM %(schema)s.sl_status AS st, %(schema)s.sl_node AS sl
             WHERE sl.no_id = st.st_received
         """
@@ -136,10 +131,9 @@ class SlonyCollector(diamond.collector.Collector):
         })
 
         metrics = []
+
         for row in cursor.fetchall():
             stats = row.copy()
-            metrics.append((
-                path % {'datname': db, 'metric': stats.get('node')},
-                stats.get('lag_events')
-            ))
+            metrics.append((path % {'datname': db, 'metric': stats.get('node')}, stats.get('lag_events')))
+
         return metrics

@@ -5,8 +5,7 @@ Send metrics to signalfx
 
 #### Dependencies
 
- * urllib2
-
+ * urllib
 
 #### Configuration
 Enable this handler
@@ -22,32 +21,35 @@ Enable this handler
      metrics
 """
 
-from Handler import Handler
-from diamond.util import get_diamond_version
 import json
 import logging
-import time
-import urllib2
 import re
+import urllib.error
+import urllib.request
+
+import time
+
+import diamond.handler.Handler
+import diamond.util
 
 
-class SignalfxHandler(Handler):
-
+class SignalfxHandler(diamond.handler.Handler.Handler):
     # Inititalize Handler with url and batch size
     def __init__(self, config=None):
-        Handler.__init__(self, config)
+        diamond.handler.Handler.Handler.__init__(self, config)
         self.metrics = []
         self.filter_metrics = self.config["filter_metrics_regex"]
         self.batch_size = int(self.config['batch'])
         self.url = self.config['url']
         self.auth_token = self.config['auth_token']
         self.batch_max_interval = int(self.config['batch_max_interval'])
-        self.resetBatchTimeout()
+        self.reset_batch_timeout()
         self._compiled_filters = []
+
         for fltr in self.filter_metrics:
             collector, metric = fltr.split(":")
-            self._compiled_filters.append((collector,
-                                           re.compile(metric),))
+            self._compiled_filters.append((collector, re.compile(metric)))
+
         if self.auth_token == "":
             logging.error("Failed to load Signalfx module")
             return
@@ -58,14 +60,17 @@ class SignalfxHandler(Handler):
         """
         if len(self._compiled_filters) == 0:
             return True
+
         for (collector, filter_regex) in self._compiled_filters:
             if collector != metric.getCollectorPath():
                 continue
+
             if filter_regex.match(metric.getMetricPath()):
                 return True
+
         return False
 
-    def resetBatchTimeout(self):
+    def reset_batch_timeout(self):
         self.batch_max_timestamp = time.time() + self.batch_max_interval
 
     def get_default_config_help(self):
@@ -102,16 +107,16 @@ class SignalfxHandler(Handler):
 
     def process(self, metric):
         """
-        Queue a metric.  Flushing queue if batch size reached
+        Queue a metric. Flushing queue if batch size reached
         """
         if self._match_metric(metric):
             self.metrics.append(metric)
+
         if self.should_flush():
             self._send()
 
     def should_flush(self):
-        return len(self.metrics) >= self.batch_size or \
-            time.time() >= self.batch_max_timestamp
+        return len(self.metrics) >= self.batch_size or time.time() >= self.batch_max_timestamp
 
     def into_signalfx_point(self, metric):
         """
@@ -121,6 +126,7 @@ class SignalfxHandler(Handler):
             "collector": metric.getCollectorPath(),
             "prefix": metric.getPathPrefix(),
         }
+
         if metric.host is not None and metric.host != "":
             dims["host"] = metric.host
 
@@ -140,28 +146,30 @@ class SignalfxHandler(Handler):
         """
         HTTP user agent
         """
-        return "Diamond: %s" % get_diamond_version()
+        return "Diamond: %s" % diamond.util.get_diamond_version()
 
     def _send(self):
         # Potentially use protobufs in the future
-        postDictionary = {}
+        post_dictionary = {}
+
         for metric in self.metrics:
             t = metric.metric_type.lower()
-            if t not in postDictionary:
-                postDictionary[t] = []
-            postDictionary[t].append(self.into_signalfx_point(metric))
+
+            if t not in post_dictionary:
+                post_dictionary[t] = []
+
+            post_dictionary[t].append(self.into_signalfx_point(metric))
 
         self.metrics = []
-        postBody = json.dumps(postDictionary)
-        logging.debug("Body is %s", postBody)
-        req = urllib2.Request(self.url, postBody,
-                              {"Content-type": "application/json",
-                               "X-SF-TOKEN": self.auth_token,
-                               "User-Agent": self.user_agent()})
-        self.resetBatchTimeout()
+        post_body = json.dumps(post_dictionary)
+        logging.debug("Body is %s", post_body)
+        req = urllib.request.Request(self.url, post_body, {"Content-type": "application/json", "X-SF-TOKEN": self.auth_token, "User-Agent": self.user_agent()})
+        self.reset_batch_timeout()
+
         try:
-            urllib2.urlopen(req)
-        except urllib2.URLError as err:
+            urllib.request.urlopen(req)
+        except urllib.error.URLError as err:
             error_message = err.read()
             logging.exception("Unable to post signalfx metrics" + error_message)
+
             return

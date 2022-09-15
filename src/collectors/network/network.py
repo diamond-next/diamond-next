@@ -10,11 +10,11 @@ using /proc/net/dev.
 
 """
 
-import diamond.collector
-from diamond.collector import str_to_bool
-import diamond.convertor
 import os
 import re
+
+import diamond.collector
+import diamond.convertor
 
 try:
     import psutil
@@ -23,7 +23,6 @@ except ImportError:
 
 
 class NetworkCollector(diamond.collector.Collector):
-
     PROC = '/proc/net/dev'
 
     def get_default_config_help(self):
@@ -32,6 +31,7 @@ class NetworkCollector(diamond.collector.Collector):
             'interfaces': 'List of interface types to collect',
             'greedy': 'Greedy match interfaces',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -40,11 +40,10 @@ class NetworkCollector(diamond.collector.Collector):
         """
         config = super(NetworkCollector, self).get_default_config()
         config.update({
-            'path':         'network',
-            'interfaces':   ['eth', 'bond', 'em', 'p1p', 'eno', 'enp', 'ens',
-                             'enx'],
-            'byte_unit':    ['bit', 'byte'],
-            'greedy':       'true',
+            'path': 'network',
+            'interfaces': ['eth', 'bond', 'em', 'p1p', 'eno', 'enp', 'ens', 'enx'],
+            'byte_unit': ['bit', 'byte'],
+            'greedy': 'true',
         })
         return config
 
@@ -57,12 +56,12 @@ class NetworkCollector(diamond.collector.Collector):
         results = {}
 
         if os.access(self.PROC, os.R_OK):
-
             # Open File
             file = open(self.PROC)
             # Build Regular Expression
             greed = ''
-            if str_to_bool(self.config['greedy']):
+
+            if diamond.collector.str_to_bool(self.config['greedy']):
                 greed = '\S*'
 
             exp = (('^(?:\s*)((?:%s)%s):(?:\s*)' +
@@ -85,11 +84,14 @@ class NetworkCollector(diamond.collector.Collector):
                    (('|'.join(self.config['interfaces'])), greed))
             reg = re.compile(exp)
             # Match Interfaces
+
             for line in file:
                 match = reg.match(line)
+
                 if match:
                     device = match.group(1)
                     results[device] = match.groupdict()
+
             # Close File
             file.close()
         else:
@@ -99,6 +101,7 @@ class NetworkCollector(diamond.collector.Collector):
                 return None
 
             network_stats = psutil.network_io_counters(True)
+
             for device in network_stats.keys():
                 network_stat = network_stats[device]
                 results[device] = {}
@@ -109,23 +112,21 @@ class NetworkCollector(diamond.collector.Collector):
 
         for device in results:
             stats = results[device]
+
             for s, v in stats.items():
                 # Get Metric Name
                 metric_name = '.'.join([device, s])
+
                 # Get Metric Value
-                metric_value = self.derivative(metric_name,
-                                               long(v),
-                                               diamond.collector.MAX_COUNTER)
+                metric_value = self.derivative(metric_name, int(v), diamond.collector.MAX_COUNTER)
 
                 # Convert rx_bytes and tx_bytes
                 if s == 'rx_bytes' or s == 'tx_bytes':
-                    convertor = diamond.convertor.binary(value=metric_value,
-                                                         unit='byte')
+                    convertor = diamond.convertor.binary(value=metric_value, unit='byte')
 
                     for u in self.config['byte_unit']:
                         # Public Converted Metric
-                        self.publish(metric_name.replace('bytes', u),
-                                     convertor.get(unit=u), 2)
+                        self.publish(metric_name.replace('bytes', u), convertor.get(unit=u), 2)
                 else:
                     # Publish Metric Derivative
                     self.publish(metric_name, metric_value)

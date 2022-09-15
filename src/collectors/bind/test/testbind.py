@@ -1,25 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.bind.bind import BindCollector
 from diamond.collector import Collector
-from bind import BindCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestBindCollector(CollectorTestCase):
-
     def setUp(self):
-        config = get_collector_config('BindCollector', {
-            'interval': 10,
-        })
+        config = get_collector_config('BindCollector', {'interval': 10})
 
         self.collector = BindCollector(config, None)
 
@@ -28,8 +21,7 @@ class TestBindCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('bind.xml')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('bind.xml')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -171,12 +163,9 @@ class TestBindCollector(CollectorTestCase):
             'sockstat.FDwatchRecvErr': 0.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

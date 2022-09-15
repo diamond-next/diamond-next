@@ -1,18 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
-from mock import Mock
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.flume.flume import FlumeCollector
 from diamond.collector import Collector
-from flume import FlumeCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestFlumeCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('FlumeCollector', {
             'interval': 10
@@ -26,12 +24,8 @@ class TestFlumeCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_collect_should_work(self,
-                                 publish_mock,
-                                 publish_gauge_mock,
-                                 publish_counter_mock):
-        patch_urlopen = patch('urllib2.urlopen',
-                              Mock(return_value=self.getFixture('metrics')))
+    def test_collect_should_work(self, publish_mock, publish_gauge_mock, publish_counter_mock):
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('metrics')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -60,18 +54,12 @@ class TestFlumeCollector(CollectorTestCase):
             'SOURCE.source1.OpenConnection': 0
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
-        self.assertPublishedMany([publish_mock,
-                                  publish_gauge_mock,
-                                  publish_counter_mock
-                                  ], metrics)
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
+        self.assertPublishedMany([publish_mock, publish_gauge_mock, publish_counter_mock], metrics)
 
     @patch.object(Collector, 'publish')
     def test_blank_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=self.getFixture('metrics_blank')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('metrics_blank')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -81,15 +69,14 @@ class TestFlumeCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_invalid_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch(
-            'urllib2.urlopen',
-            Mock(return_value=self.getFixture('metrics_invalid')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('metrics_invalid')))
 
         patch_urlopen.start()
         self.collector.collect()
         patch_urlopen.stop()
 
         self.assertPublishedMany(publish_mock, {})
+
 
 if __name__ == "__main__":
     unittest.main()

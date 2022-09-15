@@ -24,18 +24,17 @@ community = mycommunitystring
 
 """
 
-import sys
 import os
-import time
 import struct
 
-# Fix Path for locating the SNMPCollector
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             '../',
-                                             'snmp',
-                                             )))
+import sys
+import time
 
-from diamond.metric import Metric
+import diamond.metric
+
+# Fix Path for locating the SNMPCollector
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
+
 from snmp import SNMPCollector as parent_SNMPCollector
 
 
@@ -43,31 +42,24 @@ class IODriveSNMPCollector(parent_SNMPCollector):
     """
     SNMPCollector for a single Fusion IO Drive
     """
-
     IODRIVE_STATS = {
-
         "InternalTemp": "1.3.6.1.4.1.30018.1.2.1.1.1.24.5",
-
         "MilliVolts": "1.3.6.1.4.1.30018.1.2.1.1.1.32.5",
         "MilliWatts": "1.3.6.1.4.1.30018.1.2.1.1.1.35.5",
         "MilliAmps": "1.3.6.1.4.1.30018.1.2.1.1.1.37.5",
     }
 
     IODRIVE_BYTE_STATS = {
-
         "BytesReadU": "1.3.6.1.4.1.30018.1.2.2.1.1.12.5",
         "BytesReadL": "1.3.6.1.4.1.30018.1.2.2.1.1.13.5",
-
         "BytesWrittenU": "1.3.6.1.4.1.30018.1.2.2.1.1.14.5",
         "BytesWrittenL": "1.3.6.1.4.1.30018.1.2.2.1.1.15.5",
-
     }
 
     MAX_VALUE = 18446744073709551615
 
     def get_default_config_help(self):
-        config_help = super(IODriveSNMPCollector,
-                            self).get_default_config_help()
+        config_help = super(IODriveSNMPCollector, self).get_default_config_help()
         config_help.update({
             'host': 'Host address',
             'port': 'SNMP port to collect snmp data',
@@ -108,28 +100,28 @@ class IODriveSNMPCollector(parent_SNMPCollector):
 
         for k, v in self.IODRIVE_STATS.items():
             # Get Metric Name and Value
-            metricName = '.'.join([k])
-            metricValue = int(self.get(v, host, port, community)[v])
+            metric_name = '.'.join([k])
+            metric_value = int(self.get(v, host, port, community)[v])
 
             # Get Metric Path
-            metricPath = '.'.join(['servers', host, device, metricName])
+            metric_path = '.'.join(['servers', host, device, metric_name])
 
             # Create Metric
-            metric = Metric(metricPath, metricValue, timestamp, 0)
+            metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)
 
         for k, v in self.IODRIVE_BYTE_STATS.items():
             # Get Metric Name and Value
-            metricName = '.'.join([k])
-            metricValue = int(self.get(v, host, port, community)[v])
+            metric_name = '.'.join([k])
+            metric_value = int(self.get(v, host, port, community)[v])
 
             # Get Metric Path
-            metricPath = '.'.join(['servers', host, device, metricName])
+            metric_path = '.'.join(['servers', host, device, metric_name])
 
             # Create Metric
-            metric = Metric(metricPath, metricValue, timestamp, 0)
+            metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 0)
 
             # Publish Metric
             self.publish_metric(metric)

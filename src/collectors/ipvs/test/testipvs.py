@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.ipvs.ipvs import IPVSCollector
 from diamond.collector import Collector
-from ipvs import IPVSCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestIPVSCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('IPVSCollector', {
             'interval': 10,
@@ -33,9 +28,8 @@ class TestIPVSCollector(CollectorTestCase):
     def test_should_work_with_real_data(self, publish_mock):
         patch_communicate = patch(
             'subprocess.Popen.communicate',
-            Mock(return_value=(
-                self.getFixture('ipvsadm').getvalue(),
-                '')))
+            Mock(return_value=(self.getFixture('ipvsadm').getvalue(), ''))
+        )
 
         patch_communicate.start()
         self.collector.collect()
@@ -48,11 +42,9 @@ class TestIPVSCollector(CollectorTestCase):
             "TCP_172_16_1_56:443.10_68_15_66:443.outbytes": 216873,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

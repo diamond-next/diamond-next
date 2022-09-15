@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
+import unittest
+from unittest.mock import patch
 
+from collectors.eventstoreprojections.eventstoreprojections import EventstoreProjectionsCollector
 from diamond.collector import Collector
-
-from eventstoreprojections import EventstoreProjectionsCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestEventstoreProjectionsCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('EventstoreProjectionsCollector', {})
         self.collector = EventstoreProjectionsCollector(config, None)
@@ -23,7 +18,7 @@ class TestEventstoreProjectionsCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(EventstoreProjectionsCollector)
 
-    @patch('urllib2.urlopen')
+    @patch('urllib.request.urlopen')
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock, urlopen_mock):
         returns = [self.getFixture('projections')]
@@ -98,12 +93,9 @@ class TestEventstoreProjectionsCollector(CollectorTestCase):
             'projections._streams.writePendingEventsAfterCheckpoint': 0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics)
-
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics)
         self.assertPublishedMany(publish_mock, metrics)
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

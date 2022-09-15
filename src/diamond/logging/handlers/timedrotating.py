@@ -1,11 +1,10 @@
 # coding=utf-8
 
-from logging.handlers import TimedRotatingFileHandler as TRFH
 import sys
+from logging.handlers import TimedRotatingFileHandler as TRFH
 
 
 class TimedRotatingFileHandler(TRFH):
-
     def flush(self):
         try:
             super(TimedRotatingFileHandler, self).flush()

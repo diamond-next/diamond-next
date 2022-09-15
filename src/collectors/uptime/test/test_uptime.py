@@ -1,25 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from mock import Mock
-from mock import patch
+import io
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.uptime.uptime import UptimeCollector
 from diamond.collector import Collector
-from uptime import UptimeCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestUptimeCollector(CollectorTestCase):
-
     def setUp(self, config=None):
         if config is None:
             config = get_collector_config('UptimeCollector', {
@@ -33,11 +24,11 @@ class TestUptimeCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(UptimeCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.path.exists', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_uptime(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('1288459.83 10036802.26')
+        open_mock.return_value = io.StringIO('1288459.83 10036802.26')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/uptime')
 

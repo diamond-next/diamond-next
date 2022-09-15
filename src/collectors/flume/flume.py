@@ -5,12 +5,14 @@ Collect statistics from Flume
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json or simplejson
 
 """
 
-import urllib2
+import urllib.error
+import urllib.request
+
 import diamond.collector
 
 try:
@@ -20,7 +22,6 @@ except ImportError:
 
 
 class FlumeCollector(diamond.collector.Collector):
-
     # items to collect
     _metrics_collect = {
         'CHANNEL': [
@@ -58,6 +59,7 @@ class FlumeCollector(diamond.collector.Collector):
             'req_port': 'Port',
             'req_path': 'Path',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -69,6 +71,7 @@ class FlumeCollector(diamond.collector.Collector):
         default_config['req_host'] = 'localhost'
         default_config['req_port'] = 41414
         default_config['req_path'] = '/metrics'
+
         return default_config
 
     def collect(self):
@@ -79,22 +82,26 @@ class FlumeCollector(diamond.collector.Collector):
         )
 
         try:
-            resp = urllib2.urlopen(url)
+            resp = urllib.request.urlopen(url)
+
             try:
                 j = json.loads(resp.read())
                 resp.close()
             except Exception as e:
                 resp.close()
                 self.log.error('Cannot load json data: %s', e)
+
                 return None
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             self.log.error('Failed to open url: %s', e)
+
             return None
         except Exception as e:
             self.log.error('Unknown error opening url: %s', e)
+
             return None
 
-        for comp in j.iteritems():
+        for comp in iter(j.items()):
             comp_name = comp[0]
             comp_items = comp[1]
             comp_type = comp_items['Type']

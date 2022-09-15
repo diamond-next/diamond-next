@@ -20,17 +20,17 @@ dsn = postgresql://user:secret@localhost
 dsn = host=localhost port=5432 dbname=mydb
 ```
 """
+
+import diamond.collector
+
 try:
     import psycopg2
     import psycopg2.extras
 except ImportError:
     psycopg2 = None
 
-import diamond.collector
-
 
 class PgQCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(PgQCollector, self).get_default_config_help()
         config_help.update({
@@ -38,6 +38,7 @@ class PgQCollector(diamond.collector.Collector):
                          "`dsn` attribute, which must be a valid libpq "
                          "connection string."
         })
+
         return config_help
 
     def get_default_config(self):
@@ -45,14 +46,16 @@ class PgQCollector(diamond.collector.Collector):
         config.update({
             'instances': {},
         })
+
         return config
 
     def collect(self):
         if psycopg2 is None:
             self.log.error('Unable to import module psycopg2')
+
             return None
 
-        for instance, configuration in self.config['instances'].iteritems():
+        for instance, configuration in iter(self.config['instances'].items()):
             connection = psycopg2.connect(configuration['dsn'])
             connection.set_isolation_level(
                 psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT,
@@ -68,6 +71,7 @@ class PgQCollector(diamond.collector.Collector):
 
         with connection.cursor() as cursor:
             consumers = self.get_consumer_info(instance, cursor)
+
             for queue, consumer, metrics in consumers:
                 for name, metric in metrics.items():
                     key_parts = (instance, queue, 'consumers', consumer, name)
@@ -84,6 +88,7 @@ class PgQCollector(diamond.collector.Collector):
     def get_queue_info(self, instance, cursor):
         """Collects metrics for all queues on the connected database."""
         cursor.execute(self.QUEUE_INFO_STATEMENT)
+
         for queue_name, ticker_lag, ev_per_sec in cursor:
             yield queue_name, {
                 'ticker_lag': ticker_lag,
@@ -103,6 +108,7 @@ class PgQCollector(diamond.collector.Collector):
     def get_consumer_info(self, instance, cursor):
         """Collects metrics for all consumers on the connected database."""
         cursor.execute(self.CONSUMER_INFO_STATEMENT)
+
         for queue_name, consumer_name, lag, pending_events, last_seen in cursor:
             yield queue_name, consumer_name, {
                 'lag': lag,

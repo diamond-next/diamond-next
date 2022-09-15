@@ -5,12 +5,12 @@ This is a meta handler to act as a shim for the new threading model. Please
 do not try to use it as a normal handler
 """
 
-from Handler import Handler
-import Queue
+from queue import Full
+
+from diamond.handler.Handler import Handler
 
 
 class QueueHandler(Handler):
-
     def __init__(self, config=None, queue=None, log=None):
         # Initialize Handler
         Handler.__init__(self, config=config, log=log)
@@ -34,7 +34,7 @@ class QueueHandler(Handler):
         """
         try:
             self.queue.put(metric, block=False)
-        except Queue.Full:
+        except Full:
             self._throttle_error('Queue full, check handlers for delays')
 
     def flush(self):
@@ -45,8 +45,9 @@ class QueueHandler(Handler):
         We skip any locking code due to the fact that this is now a single
         process per collector
         """
+
         # Send a None down the queue to indicate a flush
         try:
             self.queue.put(None, block=False)
-        except Queue.Full:
+        except Full:
             self._throttle_error('Queue full, check handlers for delays')

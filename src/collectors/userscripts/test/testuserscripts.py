@@ -1,29 +1,24 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
 import os
+import unittest
+from unittest.mock import patch
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import patch
-
+from collectors.userscripts.userscripts import UserScriptsCollector
 from diamond.collector import Collector
-from userscripts import UserScriptsCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_kitchen_is_available(func):
     import subprocess
     pred = lambda: subprocess is not None
+
     return run_only(func, pred)
 
 
 class TestUserScriptsCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('UserScriptsCollector', {
             'interval': 10,
@@ -46,8 +41,7 @@ class TestUserScriptsCollector(CollectorTestCase):
             'example.3': 12.1212,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics)
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics)
         self.assertPublishedMany(publish_mock, metrics)
 
     @run_only_if_kitchen_is_available
@@ -58,6 +52,6 @@ class TestUserScriptsCollector(CollectorTestCase):
         # be due to raising an exception. Meh.
         assert publish_mock.call_args_list
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

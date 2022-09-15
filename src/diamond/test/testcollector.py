@@ -1,22 +1,21 @@
 #!/usr/bin/python
 # coding=utf-8
-##########################################################################
 
-from mock import patch
-from test import unittest
+import unittest
+from unittest.mock import patch
+
 import configobj
 
 from diamond.collector import Collector
 
 
 class BaseCollectorTest(unittest.TestCase):
-
     def test_SetCustomHostname(self):
         config = configobj.ConfigObj()
         config['server'] = {}
         config['server']['collectors_config_path'] = ''
         config['collectors'] = {}
-        config['collectors']['default'] = {
+        config['collectors']['collectorsDefault'] = {
             'hostname': 'custom.localhost',
         }
         c = Collector(config, [])
@@ -27,21 +26,20 @@ class BaseCollectorTest(unittest.TestCase):
         config['server'] = {}
         config['server']['collectors_config_path'] = ''
         config['collectors'] = {}
-        config['collectors']['default'] = {
+        config['collectors']['collectorsDefault'] = {
             'hostname': 'echo custom.localhost',
             'hostname_method': 'shell',
         }
         c = Collector(config, [])
-        self.assertEquals('custom.localhost', c.get_hostname())
+        self.assertEquals(b'custom.localhost', c.get_hostname())
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_no_prefix(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
-        config['collectors']['default'] = {}
-        config['collectors']['default']['path_prefix'] = ''
-        config['collectors']['default']['path'] = 'bar'
+        config['collectors']['collectorsDefault'] = {}
+        config['collectors']['collectorsDefault']['path_prefix'] = ''
+        config['collectors']['collectorsDefault']['path'] = 'bar'
 
         get_hostname_mock.return_value = None
 
@@ -51,12 +49,11 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_no_prefix_no_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
-        config['collectors']['default'] = {}
-        config['collectors']['default']['path_prefix'] = ''
-        config['collectors']['default']['path'] = ''
+        config['collectors']['collectorsDefault'] = {}
+        config['collectors']['collectorsDefault']['path_prefix'] = ''
+        config['collectors']['collectorsDefault']['path'] = ''
 
         get_hostname_mock.return_value = None
 
@@ -66,12 +63,11 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_no_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
-        config['collectors']['default'] = {}
-        config['collectors']['default']['path_prefix'] = 'bar'
-        config['collectors']['default']['path'] = ''
+        config['collectors']['collectorsDefault'] = {}
+        config['collectors']['collectorsDefault']['path_prefix'] = 'bar'
+        config['collectors']['collectorsDefault']['path'] = ''
 
         get_hostname_mock.return_value = None
 
@@ -81,12 +77,11 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path_dot_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
-        config['collectors']['default'] = {}
-        config['collectors']['default']['path_prefix'] = 'bar'
-        config['collectors']['default']['path'] = '.'
+        config['collectors']['collectorsDefault'] = {}
+        config['collectors']['collectorsDefault']['path_prefix'] = 'bar'
+        config['collectors']['collectorsDefault']['path'] = '.'
 
         get_hostname_mock.return_value = None
 
@@ -96,12 +91,11 @@ class BaseCollectorTest(unittest.TestCase):
 
     @patch('diamond.collector.get_hostname')
     def test_get_metric_path(self, get_hostname_mock):
-
         config = configobj.ConfigObj()
         config['collectors'] = {}
-        config['collectors']['default'] = {}
-        config['collectors']['default']['path_prefix'] = 'poof'
-        config['collectors']['default']['path'] = 'xyz'
+        config['collectors']['collectorsDefault'] = {}
+        config['collectors']['collectorsDefault']['path_prefix'] = 'poof'
+        config['collectors']['collectorsDefault']['path'] = 'xyz'
 
         get_hostname_mock.return_value = 'bar'
 

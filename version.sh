@@ -31,7 +31,7 @@ fi
 while getopts "mnr" opt; do
     case $opt in
         m)
-            # Major Version 
+            # Major Version
             echo "${VERSION_MAJ}"
             exit 0
             ;;
@@ -41,7 +41,7 @@ while getopts "mnr" opt; do
             exit 0
             ;;
         r)
-            # Revision Version 
+            # Revision Version
             echo "${VERSION_REV}"
             exit 0
             ;;

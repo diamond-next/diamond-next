@@ -5,17 +5,18 @@ Simple collector which get JSON and parse it into flat metrics
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 """
 
-import urllib2
 import json
+import urllib.error
+import urllib.request
+
 import diamond.collector
 
 
 class HTTPJSONCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(HTTPJSONCollector, self).get_default_config_help()
         config_help.update({
@@ -46,17 +47,17 @@ class HTTPJSONCollector(diamond.collector.Collector):
                 except ValueError:
                     value = None
                 finally:
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
 
     def collect(self):
         url = self.config['url']
 
-        req = urllib2.Request(url, headers=self.config['headers'])
+        req = urllib.request.Request(url, headers=self.config['headers'])
         req.add_header('Content-type', 'application/json')
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.URLError as e:
+            resp = urllib.request.urlopen(req)
+        except urllib.error.URLError as e:
             self.log.error("Can't open url %s. %s", url, e)
         else:
 
@@ -67,6 +68,5 @@ class HTTPJSONCollector(diamond.collector.Collector):
             except ValueError as e:
                 self.log.error("Can't parse JSON object from %s. %s", url, e)
             else:
-                for metric_name, metric_value in self._json_to_flat_metrics(
-                        "", data):
+                for metric_name, metric_value in self._json_to_flat_metrics("", data):
                     self.publish(metric_name, metric_value)

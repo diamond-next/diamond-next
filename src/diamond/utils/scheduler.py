@@ -1,27 +1,24 @@
 # coding=utf-8
 
-import time
 import math
 import multiprocessing
 import os
 import random
-import sys
 import signal
+import sys
+import time
+
+from diamond.utils.signals import SIGALRMException, SIGHUPException, signal_to_exception
 
 try:
     from setproctitle import getproctitle, setproctitle
 except ImportError:
     setproctitle = None
 
-from diamond.utils.signals import signal_to_exception
-from diamond.utils.signals import SIGALRMException
-from diamond.utils.signals import SIGHUPException
-
 
 def collector_process(collector, metric_queue, log):
-    """
-    """
     proc = multiprocessing.current_process()
+
     if setproctitle:
         setproctitle('%s - %s' % (getproctitle(), proc.name))
 
@@ -62,6 +59,7 @@ def collector_process(collector, metric_queue, log):
     while(True):
         try:
             time_to_sleep = (next_window + stagger_offset) - time.time()
+
             if time_to_sleep > 0:
                 time.sleep(time_to_sleep)
             elif time_to_sleep < 0:
@@ -82,8 +80,7 @@ def collector_process(collector, metric_queue, log):
         except SIGALRMException:
             log.error('Took too long to run! Killed!')
 
-            # Adjust  the stagger_offset to allow for more time to run the
-            # collector
+            # Adjust the stagger_offset to allow for more time to run the collector
             stagger_offset = stagger_offset * 0.9
 
             max_time = int(max(interval - stagger_offset, 1))
@@ -106,6 +103,7 @@ def collector_process(collector, metric_queue, log):
 
 def handler_process(handlers, metric_queue, log):
     proc = multiprocessing.current_process()
+
     if setproctitle:
         setproctitle('%s - %s' % (getproctitle(), proc.name))
 
@@ -113,6 +111,7 @@ def handler_process(handlers, metric_queue, log):
 
     while(True):
         metric = metric_queue.get(block=True, timeout=None)
+
         for handler in handlers:
             if metric is not None:
                 handler._process(metric)

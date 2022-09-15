@@ -1,34 +1,29 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
-import os
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
+import io
+import os
+import unittest
+from unittest.mock import Mock, patch
 
 from diamond.collector import Collector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
+
 from memory_cgroup import MemoryCgroupCollector
 
-dirname = os.path.dirname(__file__)
-fixtures_path = os.path.join(dirname, 'fixtures/')
+fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
 fixtures = []
+
 for root, dirnames, filenames in os.walk(fixtures_path):
     fixtures.append([root, dirnames, filenames])
 
 
 class TestMemoryCgroupCollector(CollectorTestCase):
-
     def test_import(self):
         self.assertTrue(MemoryCgroupCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.walk', Mock(return_value=iter(fixtures)))
     @patch.object(Collector, 'publish')
     def test_should_open_all_memory_stat(self, publish_mock, open_mock):
@@ -38,10 +33,9 @@ class TestMemoryCgroupCollector(CollectorTestCase):
         })
 
         self.collector = MemoryCgroupCollector(config, None)
-        open_mock.side_effect = lambda x: StringIO('')
+        open_mock.side_effect = lambda x: io.StringIO('')
         self.collector.collect()
-        open_mock.assert_any_call(
-            fixtures_path + 'lxc/testcontainer/memory.stat')
+        open_mock.assert_any_call(fixtures_path + 'lxc/testcontainer/memory.stat')
         open_mock.assert_any_call(fixtures_path + 'lxc/memory.stat')
         open_mock.assert_any_call(fixtures_path + 'memory.stat')
 
@@ -112,9 +106,10 @@ class TestMemoryCgroupCollector(CollectorTestCase):
             'lxc.testcontainer.total_swap': 1,
         }
         [self.assertPublished(publish_mock, k, v)
-         for k, v in should_be_published.iteritems()]
+         for k, v in iter(should_be_published.items())]
         [self.assertUnpublished(publish_mock, k, v)
-         for k, v in should_not_be_published.iteritems()]
+         for k, v in iter(should_not_be_published.items())]
+
 
 if __name__ == "__main__":
     unittest.main()

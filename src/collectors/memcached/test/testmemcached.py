@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import MagicMock
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
+from collectors.memcached.memcached import MemcachedCollector
 from diamond.collector import Collector
-from memcached import MemcachedCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMemcachedCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MemcachedCollector', {
             'interval': 10,
@@ -42,8 +36,8 @@ class TestMemcachedCollector(CollectorTestCase):
         patch_raw_stats = patch.object(
             MemcachedCollector,
             'get_raw_stats',
-            Mock(return_value=self.getFixture(
-                'stats').getvalue()))
+            Mock(return_value=self.getFixture('stats').getvalue())
+        )
 
         patch_raw_stats.start()
         self.collector.collect()
@@ -95,11 +89,9 @@ class TestMemcachedCollector(CollectorTestCase):
             'localhost.repcached_qi_free': 0.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

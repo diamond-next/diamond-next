@@ -1,26 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import io
+import unittest
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.filestat.filestat import FilestatCollector
 from diamond.collector import Collector
-from filestat import FilestatCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestFilestatCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('FilestatCollector', {
             'interval': 10
@@ -31,11 +22,11 @@ class TestFilestatCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(FilestatCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_sys_fs_file_nr(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/sys/fs/file-nr')
 
@@ -50,11 +41,9 @@ class TestFilestatCollector(CollectorTestCase):
             'max': 4835852
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

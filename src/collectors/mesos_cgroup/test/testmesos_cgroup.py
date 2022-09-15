@@ -1,23 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
 from __future__ import print_function
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import MagicMock, Mock, mock_open
-from mock import patch
 
+import unittest
+from unittest.mock import MagicMock, Mock, mock_open, patch
+
+from collectors.mesos_cgroup.mesos_cgroup import MesosCGroupCollector
 from diamond.collector import Collector
-
-from mesos_cgroup import MesosCGroupCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMesosCGroupCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MesosCGroupCollector', {})
 
@@ -28,14 +23,12 @@ class TestMesosCGroupCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data(self, publish_mock):
-
         task_id = 'b0d5971e-915c-414b-aa25-0da46e64ff4e'
 
         def urlopen_se(url):
             if url == 'http://localhost:5051/state.json':
                 return self.getFixture('state.json')
             else:
-                print(url)
                 raise NotImplementedError()
 
         def listdir_se(directory):
@@ -48,7 +41,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             if directory in cgroup_directories:
                 return ["b0d5971e-915c-414b-aa25-0da46e64ff4e"]
             else:
-                print(directory)
                 raise NotImplementedError()
 
         def isdir_se(directory):
@@ -61,7 +53,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             if directory in task_directories:
                 return True
             else:
-                print(directory)
                 raise NotImplementedError()
 
         def open_se(path, mode='r', create=True):
@@ -91,11 +82,10 @@ class TestMesosCGroupCollector(CollectorTestCase):
                 patch_open.start()
                 return o
 
-        patch_urlopen = patch('urllib2.urlopen', Mock(side_effect=urlopen_se))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(side_effect=urlopen_se))
         patch_listdir = patch('os.listdir', Mock(side_effect=listdir_se))
         patch_isdir = patch('os.path.isdir', Mock(side_effect=isdir_se))
-        patch_open = patch('__builtin__.open', MagicMock(spec=file,
-                                                         side_effect=open_se))
+        patch_open = patch('builtins.open', MagicMock(spec=open, side_effect=open_se))
 
         patch_urlopen.start()
         patch_listdir.start()
@@ -108,9 +98,7 @@ class TestMesosCGroupCollector(CollectorTestCase):
         patch_urlopen.stop()
 
         metrics = self.get_metrics()
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
         self.assertPublishedMany(publish_mock, metrics)
 
@@ -153,6 +141,6 @@ class TestMesosCGroupCollector(CollectorTestCase):
             'ENVIRONMENT.ROLE.TASK.0.memory.total_unevictable': '0'
         }
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

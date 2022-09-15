@@ -1,26 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import io
+import unittest
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.cpu.cpu import CPUCollector
 from diamond.collector import Collector
-from cpu import CPUCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestCPUCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CPUCollector', {
             'interval': 10,
@@ -32,19 +23,18 @@ class TestCPUCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(CPUCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_stat(self, publish_mock, open_mock):
         CPUCollector.PROC = '/proc/stat'
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/stat')
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
-            'cpu 100 200 300 400 500 0 0 0 0 0')))
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO('cpu 100 200 300 400 500 0 0 0 0 0')))
 
         patch_open.start()
         self.collector.collect()
@@ -52,8 +42,7 @@ class TestCPUCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
-            'cpu 110 220 330 440 550 0 0 0 0 0')))
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO('cpu 110 220 330 440 550 0 0 0 0 0')))
 
         patch_open.start()
         self.collector.collect()
@@ -85,9 +74,7 @@ class TestCPUCollector(CollectorTestCase):
             'total.user': 0.4
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
@@ -139,24 +126,23 @@ class TestCPUCollector(CollectorTestCase):
 
         for call in publish_mock.mock_calls:
             call = call[1]
+
             if call[0][:6] == 'total.':
                 continue
+
             if call[1] > 100:
-                raise ValueError("metric %s: %s should not be over 100!" % (
-                    call[0], call[1]))
+                raise ValueError("metric %s: %s should not be over 100!" % (call[0], call[1]))
+
             k = call[0][:4]
             totals[k] = totals.get(k, 0) + call[1]
 
         for t in totals:
             # Allow rounding errors
             if totals[t] >= 101:
-                raise ValueError(
-                    "metric total for %s: %s should not be over 100!" % (
-                        t, totals[t]))
+                raise ValueError("metric total for %s: %s should not be over 100!" % (t, totals[t]))
 
 
 class TestCPUCollectorNormalize(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CPUCollector', {
             'interval': 1,
@@ -193,18 +179,11 @@ class TestCPUCollectorNormalize(CollectorTestCase):
     # convert an input dict with values to a string that might come from
     # /proc/stat
     def input_dict_to_proc_string(self, cpu_id, dict_):
-        return ("cpu%s %i %i %i %i 0 0 0 0 0 0" %
-                (cpu_id,
-                 dict_['user'],
-                 dict_['nice'],
-                 dict_['system'],
-                 dict_['idle'],
-                 )
-                )
+        return "cpu%s %i %i %i %i 0 0 0 0 0 0" % (cpu_id, dict_['user'], dict_['nice'], dict_['system'], dict_['idle'])
 
     @patch.object(Collector, 'publish')
     def test_should_work_proc_stat(self, publish_mock):
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO(
             "\n".join([self.input_dict_to_proc_string('', self.input_base),
                        self.input_dict_to_proc_string('0', self.input_base),
                        self.input_dict_to_proc_string('1', self.input_base),
@@ -217,7 +196,7 @@ class TestCPUCollectorNormalize(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO(
             "\n".join([self.input_dict_to_proc_string('', self.input_next),
                        self.input_dict_to_proc_string('0', self.input_next),
                        self.input_dict_to_proc_string('1', self.input_next),
@@ -234,7 +213,6 @@ class TestCPUCollectorNormalize(CollectorTestCase):
     @patch('cpu.os')
     @patch('cpu.psutil')
     def test_should_work_psutil(self, psutil_mock, os_mock, publish_mock):
-
         os_mock.access.return_value = False
 
         total = Mock(**self.input_base)
@@ -257,6 +235,6 @@ class TestCPUCollectorNormalize(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, self.expected)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

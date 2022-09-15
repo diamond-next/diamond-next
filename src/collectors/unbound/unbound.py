@@ -9,22 +9,21 @@ Collect stats from the unbound resolver
 
 """
 
+import diamond.collector
+from diamond.collector import str_to_bool
+
 try:
     from collections import defaultdict
 except ImportError:
     from kitchen.pycompat25.collections import defaultdict
 
-import diamond.collector
-from diamond.collector import str_to_bool
-
 
 class UnboundCollector(diamond.collector.ProcessCollector):
-
     def get_default_config_help(self):
         config_help = super(UnboundCollector, self).get_default_config_help()
         config_help.update({
-            'bin':          'Path to unbound-control binary',
-            'histogram':    'Include histogram in collection',
+            'bin': 'Path to unbound-control binary',
+            'histogram': 'Include histogram in collection',
         })
         return config_help
 
@@ -34,9 +33,9 @@ class UnboundCollector(diamond.collector.ProcessCollector):
         """
         config = super(UnboundCollector, self).get_default_config()
         config.update({
-            'path':         'unbound',
-            'bin':          self.find_binary('/usr/sbin/unbound-control'),
-            'histogram':    True,
+            'path': 'unbound',
+            'bin': self.find_binary('/usr/sbin/unbound-control'),
+            'histogram': True,
         })
         return config
 
@@ -48,8 +47,7 @@ class UnboundCollector(diamond.collector.ProcessCollector):
                 # Let's compress <1ms into 1 data point
                 histogram['1ms'] += raw_histogram[intv]
             elif intv < 1.0:
-                # Convert to ms and since we're using the upper limit
-                # divide by 2 for lower limit
+                # Convert to ms and since we're using the upper limit divide by 2 for lower limit
                 intv_name = ''.join([str(int(intv / 0.001024 / 2)), 'ms+'])
                 histogram[intv_name] = raw_histogram[intv]
             elif intv == 1.0:
@@ -66,14 +64,14 @@ class UnboundCollector(diamond.collector.ProcessCollector):
 
     def collect(self):
         stats_output = self.run_command([' stats'])
+
         if stats_output is None:
             return
 
         stats_output = stats_output[0]
-
         raw_histogram = {}
-
         include_hist = str_to_bool(self.config['histogram'])
+
         for line in stats_output.splitlines():
             stat_name, stat_value = line.split('=')
 
@@ -86,5 +84,5 @@ class UnboundCollector(diamond.collector.ProcessCollector):
         if include_hist:
             histogram = self.get_massaged_histogram(raw_histogram)
 
-            for intv, value in histogram.iteritems():
+            for intv, value in iter(histogram.items()):
                 self.publish('histogram.' + intv, value)

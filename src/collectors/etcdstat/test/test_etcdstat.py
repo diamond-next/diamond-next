@@ -1,49 +1,44 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from diamond.collector import Collector
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
-from mock import Mock
+import unittest
+import unittest.mock
 
-from etcdstat import EtcdCollector
+import collectors.etcdstat.etcdstat
+import diamond.collector
+import diamond.testing
+import test
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-##########################################################################
 
-
-class TestEtcdCollector(CollectorTestCase):
-
+class TestEtcdCollector(diamond.testing.CollectorTestCase):
     def setUp(self):
-        config = get_collector_config('EtcdCollector', {
+        config = test.get_collector_config('EtcdCollector', {
             'interval': 10
         })
 
-        self.collector = EtcdCollector(config, None)
+        self.collector = collectors.etcdstat.etcdstat.EtcdCollector(config, None)
 
     def test_import(self):
-        self.assertTrue(EtcdCollector)
+        self.assertTrue(collectors.etcdstat.etcdstat.EtcdCollector)
 
-    @patch.object(Collector, 'publish')
+    @unittest.mock.patch.object(diamond.collector.Collector, 'publish')
     def test_should_work_with_real_follower_data(self, publish_mock):
-        patch1_collector = patch.object(
-            EtcdCollector,
+        patch1_collector = unittest.mock.patch.object(
+            collectors.etcdstat.etcdstat.EtcdCollector,
             'get_self_metrics',
-            Mock(return_value=json.loads(
-                 self.getFixture('follower-self-metrics.json').getvalue())))
+            unittest.mock.Mock(return_value=json.loads(self.getFixture('follower-self-metrics.json').getvalue()))
+        )
 
-        patch2_collector = patch.object(
-            EtcdCollector,
+        patch2_collector = unittest.mock.patch.object(
+            collectors.etcdstat.etcdstat.EtcdCollector,
             'get_store_metrics',
-            Mock(return_value=json.loads(
-                 self.getFixture('store-metrics2.json').getvalue())))
+            unittest.mock.Mock(return_value=json.loads(self.getFixture('store-metrics2.json').getvalue()))
+        )
 
         patch1_collector.start()
         patch2_collector.start()
@@ -77,19 +72,19 @@ class TestEtcdCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-    @patch.object(Collector, 'publish')
+    @unittest.mock.patch.object(diamond.collector.Collector, 'publish')
     def test_should_work_with_real_leader_data(self, publish_mock):
-        patch1_collector = patch.object(
-            EtcdCollector,
+        patch1_collector = unittest.mock.patch.object(
+            collectors.etcdstat.etcdstat.EtcdCollector,
             'get_self_metrics',
-            Mock(return_value=json.loads(
-                 self.getFixture('leader-self-metrics.json').getvalue())))
+            unittest.mock.Mock(return_value=json.loads(self.getFixture('leader-self-metrics.json').getvalue()))
+        )
 
-        patch2_collector = patch.object(
-            EtcdCollector,
+        patch2_collector = unittest.mock.patch.object(
+            collectors.etcdstat.etcdstat.EtcdCollector,
             'get_store_metrics',
-            Mock(return_value=json.loads(
-                 self.getFixture('store-metrics.json').getvalue())))
+            unittest.mock.Mock(return_value=json.loads(self.getFixture('store-metrics.json').getvalue()))
+        )
 
         patch1_collector.start()
         patch2_collector.start()
@@ -123,10 +118,8 @@ class TestEtcdCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

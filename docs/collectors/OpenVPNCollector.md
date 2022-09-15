@@ -33,7 +33,7 @@ You can also specify multiple and mixed instances::
 
 #### Dependencies
 
- * urlparse
+ * urllib
 
 
 #### Options

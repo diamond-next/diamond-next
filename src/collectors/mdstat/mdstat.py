@@ -46,8 +46,9 @@ bitmap: 1/1 pages [4KB], 65536KB chunk
 - recovery.remaining_time
 """
 
-import diamond.collector
 import re
+
+import diamond.collector
 
 
 class MdStatCollector(diamond.collector.Collector):
@@ -77,20 +78,17 @@ class MdStatCollector(diamond.collector.Collector):
             consisting of the hierarchically concatenated keys
             of its branch.
             """
-            for key, value in d.iteritems():
+            for key, value in iter(d.items()):
                 if isinstance(value, dict):
                     if metric_name == '':
                         metric_name_next = key
                     else:
                         metric_name_next = metric_name + '.' + key
+
                     traverse(value, metric_name_next)
                 else:
                     metric_name_finished = metric_name + '.' + key
-                    self.publish_gauge(
-                        name=metric_name_finished,
-                        value=value,
-                        precision=1
-                    )
+                    self.publish_gauge(name=metric_name_finished, value=value, precision=1)
 
         md_state = self._parse_mdstat()
 
@@ -118,12 +116,8 @@ class MdStatCollector(diamond.collector.Collector):
             with open(self.MDSTAT_PATH, 'r') as f:
                 lines = f.readlines()
         except IOError as err:
-            self.log.exception(
-                'Error opening {mdstat_path} for reading: {err}'.format(
-                    mdstat_path=self.MDSTAT_PATH,
-                    err=err
-                )
-            )
+            self.log.exception('Error opening {mdstat_path} for reading: {err}'.format(mdstat_path=self.MDSTAT_PATH, err=err))
+
             return arrays
 
         # concatenate all lines except the first and last one
@@ -133,8 +127,10 @@ class MdStatCollector(diamond.collector.Collector):
         if mdstat_array_blocks == '':
             # no md arrays found
             return arrays
+
         for block in mdstat_array_blocks.split('\n\n'):
             md_device_name = self._parse_device_name(block)
+
             if md_device_name:
                 # this block begins with a md device name
 
@@ -147,14 +143,12 @@ class MdStatCollector(diamond.collector.Collector):
                 # 'bitmap' and 'recovery' are optional keys
                 bitmap_status = self._parse_array_bitmap(block)
                 recovery_status = self._parse_array_recovery(block)
+
                 if bitmap_status:
-                    arrays[md_device_name].update(
-                        {'bitmap': bitmap_status}
-                    )
+                    arrays[md_device_name].update({'bitmap': bitmap_status})
+
                 if recovery_status:
-                    arrays[md_device_name].update(
-                        {'recovery': recovery_status}
-                    )
+                    arrays[md_device_name].update({'recovery': recovery_status})
 
         return arrays
 
@@ -203,6 +197,7 @@ class MdStatCollector(diamond.collector.Collector):
             'faulty': 0,
             'spare': 0
         }
+
         for member in members:
             member_dict = device_regexp.match(member).groupdict()
 
@@ -243,15 +238,15 @@ class MdStatCollector(diamond.collector.Collector):
             '(?:(?P<rounding_factor>\d*)k rounding)?.*$'
         )
 
-        array_status_dict = \
-            array_status_regexp.match(block.split('\n')[1]).groupdict()
+        array_status_dict = array_status_regexp.match(block.split('\n')[1]).groupdict()
 
         array_status_dict_sanitizied = {}
 
         # convert all non None values to float
-        for key, value in array_status_dict.iteritems():
+        for key, value in iter(array_status_dict.items()):
             if not value:
                 continue
+
             if key == 'superblock_version':
                 array_status_dict_sanitizied[key] = float(value)
             else:
@@ -303,10 +298,11 @@ class MdStatCollector(diamond.collector.Collector):
         array_bitmap_dict_sanitizied = {}
 
         # convert all values to int
-        for key, value in array_bitmap_dict.iteritems():
-                if not value:
-                    continue
-                array_bitmap_dict_sanitizied[key] = int(value)
+        for key, value in iter(array_bitmap_dict.items()):
+            if not value:
+                continue
+
+            array_bitmap_dict_sanitizied[key] = int(value)
 
         # convert page_size to bytes
         array_bitmap_dict_sanitizied['page_size'] *= 1024
@@ -350,15 +346,12 @@ class MdStatCollector(diamond.collector.Collector):
 
         array_recovery_dict = regexp_res.groupdict()
 
-        array_recovery_dict['percent'] = \
-            float(array_recovery_dict['percent'])
+        array_recovery_dict['percent'] = float(array_recovery_dict['percent'])
 
         # convert speed to bits
-        array_recovery_dict['speed'] = \
-            int(array_recovery_dict['speed']) * 1024
+        array_recovery_dict['speed'] = int(array_recovery_dict['speed']) * 1024
 
         # convert minutes to milliseconds
-        array_recovery_dict['remaining_time'] = \
-            int(float(array_recovery_dict['remaining_time'])*60*1000)
+        array_recovery_dict['remaining_time'] = int(float(array_recovery_dict['remaining_time'])*60*1000)
 
         return array_recovery_dict

@@ -9,7 +9,7 @@ basic stats on each registered process.
 
 #### Dependencies
 
- * xmlrpclib
+ * xmlrpc
  * supervisor
  * diamond
 
@@ -27,21 +27,19 @@ xmlrpc_server_path = /var/run/supervisor.sock
 
 """
 
-import xmlrpclib
+import xmlrpc.client
+
+import diamond.collector
 
 try:
     import supervisor.xmlrpc
 except ImportError:
     supervisor = None
 
-import diamond.collector
-
 
 class SupervisordCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(SupervisordCollector,
-                            self).get_default_config_help()
+        config_help = super(SupervisordCollector, self).get_default_config_help()
         config_help.update({
             'xmlrpc_server_protocol': 'XML-RPC server protocol. Options: unix, http',  # NOQA
             'xmlrpc_server_path': 'XML-RPC server path.'
@@ -53,47 +51,42 @@ class SupervisordCollector(diamond.collector.Collector):
         default_config['path'] = 'supervisor'
         default_config['xmlrpc_server_protocol'] = 'unix'
         default_config['xmlrpc_server_path'] = '/var/run/supervisor.sock'
+
         return default_config
 
-    def getAllProcessInfo(self):
-
+    def get_all_process_info(self):
         server = None
         protocol = self.config['xmlrpc_server_protocol']
         path = self.config['xmlrpc_server_path']
         uri = '{}://{}'.format(protocol, path)
 
-        self.log.debug(
-            'Attempting to connect to XML-RPC server "%s"', uri)
+        self.log.debug('Attempting to connect to XML-RPC server "%s"', uri)
 
         if protocol == 'unix':
-            server = xmlrpclib.ServerProxy(
+            server = xmlrpc.client.ServerProxy(
                 'http://127.0.0.1',
                 supervisor.xmlrpc.SupervisorTransport(None, None, uri)
             ).supervisor
-
         elif protocol == 'http':
-            server = xmlrpclib.Server(uri).supervisor
-
+            server = xmlrpc.client.Server(uri).supervisor
         else:
-            self.log.debug(
-                'Invalid xmlrpc_server_protocol config setting "%s"',
-                protocol)
+            self.log.debug('Invalid xmlrpc_server_protocol config setting "%s"', protocol)
+
             return None
 
-        return server.getAllProcessInfo()
+        return server.get_all_process_info()
 
     def collect(self):
-
-        processes = self.getAllProcessInfo()
+        processes = self.get_all_process_info()
 
         self.log.debug('Found %s supervisord processes', len(processes))
 
         for process in processes:
-            statPrefix = "%s.%s" % (process["group"], process["name"])
+            stat_prefix = "%s.%s" % (process["group"], process["name"])
 
             # state
 
-            self.publish(statPrefix + ".state", process["state"])
+            self.publish(stat_prefix + ".state", process["state"])
 
             # uptime
 
@@ -102,4 +95,4 @@ class SupervisordCollector(diamond.collector.Collector):
             if process["statename"] == "RUNNING":
                 uptime = process["now"] - process["start"]
 
-            self.publish(statPrefix + ".uptime", uptime)
+            self.publish(stat_prefix + ".uptime", uptime)

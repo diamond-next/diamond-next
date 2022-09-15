@@ -8,7 +8,7 @@ Collect statistics from Nginx
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 #### Usage
 

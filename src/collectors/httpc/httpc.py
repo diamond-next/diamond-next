@@ -5,7 +5,7 @@ Collect statistics from a HTTP or HTTPS connexion
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 #### Usage
 Add the collector config as :
@@ -27,21 +27,19 @@ Metrics are collected as :
        http:__www_site_com_admin_page_html
 """
 
-import urllib2
-import diamond.collector
 import datetime
+import urllib.request
+
+import diamond.collector
 
 
 class HttpCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(HttpCollector, self).get_default_config_help()
         config_help.update({
             'req_port': 'Port',
-            'req_url':
-            'array of full URL to get (ex : https://www.ici.net/mypage.html)',
-            'req_vhost':
-            'Host header variable if needed. Will be added to every request',
+            'req_url': 'array of full URL to get (ex : https://www.ici.net/mypage.html)',
+            'req_vhost': 'Host header variable if needed. Will be added to every request',
         })
         return config_help
 
@@ -51,11 +49,11 @@ class HttpCollector(diamond.collector.Collector):
         default_config['req_vhost'] = ''
         default_config['req_url'] = ['http://localhost/']
 
-        default_config['headers'] = {'User-Agent': 'Diamond HTTP collector', }
+        default_config['headers'] = {'User-Agent': 'Diamond HTTP collector'}
         return default_config
 
     def collect(self):
-        # create urllib2 vars
+        # create urllib vars
         if self.config['req_vhost'] != "":
             self.config['headers']['Host'] = self.config['req_vhost']
 
@@ -63,9 +61,10 @@ class HttpCollector(diamond.collector.Collector):
         for url in self.config['req_url']:
             self.log.debug("collecting %s", str(url))
             req_start = datetime.datetime.now()
-            req = urllib2.Request(url, headers=self.config['headers'])
+            req = urllib.request.Request(url, headers=self.config['headers'])
+
             try:
-                handle = urllib2.urlopen(req)
+                handle = urllib.request.urlopen(req)
                 the_page = handle.read()
                 req_end = datetime.datetime.now()
                 req_time = req_end - req_start
@@ -86,8 +85,7 @@ class HttpCollector(diamond.collector.Collector):
                     metric_name + '.size',
                     len(the_page))
 
-            except IOError as e:
-                self.log.error("Unable to open %s",
-                               self.config['req_url'])
+            except IOError:
+                self.log.error("Unable to open %s", self.config['req_url'])
             except Exception as e:
                 self.log.error("Unknown error opening url: %s", e)

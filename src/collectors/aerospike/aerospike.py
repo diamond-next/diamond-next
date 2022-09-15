@@ -8,18 +8,17 @@ Collect statistics from Aerospike
  * socket
  * telnetlib
  * re
-
-
 """
+
+import distutils.version
+import re
 import socket
 import telnetlib
-import re
+
 import diamond.collector
-from distutils.version import LooseVersion
 
 
 class AerospikeCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(AerospikeCollector, self).get_default_config_help()
         config_help.update({
@@ -29,16 +28,12 @@ class AerospikeCollector(diamond.collector.Collector):
             'latency': 'Collect latency metrics',
             'throughput': 'Collect throughput metrics',
             'namespaces': 'Collect per-namespace metrics',
-            'namespaces_whitelist':
-                'List of namespaces to collect metrics' +
-                ' from (default is to collect from all)',
-            'statistics_whitelist':
-                'List of global statistics values to collect',
-            'namespace_statistics_whitelist':
-                'List of per-namespace statistics values to collect',
+            'namespaces_whitelist': 'List of namespaces to collect metrics from (default is to collect from all)',
+            'statistics_whitelist': 'List of global statistics values to collect',
+            'namespace_statistics_whitelist': 'List of per-namespace statistics values to collect',
             'path': 'Metric path',
-
         })
+
         return config_help
 
     def get_default_config(self):
@@ -119,17 +114,19 @@ class AerospikeCollector(diamond.collector.Collector):
         return default_config
 
     def collect_latency(self, data):
-
         fields = ['ops', '1ms', '8ms', '64ms']
 
         if self.config['dialect'] >= 39:
             # Get "header" section of each histogram
             labels = data.split(';')[::2]
+
             # Get contents of histogram
             datasets = data.split(';')[1::2]
+
             for i, label in enumerate(labels):
                 # Extract namespace and histogram type from header label
                 match = re.match('\{(\w+)\}-(\w+)', label)
+
                 if match:
                     namespace = match.group(1)
                     histogram = match.group(2)
@@ -140,9 +137,7 @@ class AerospikeCollector(diamond.collector.Collector):
 
                     # Publish a metric for each field in the histogram
                     for field in fields:
-                        self.publish_gauge('latency.%s.%s.%s' %
-                                           (namespace, histogram, field),
-                                           metrics[field])
+                        self.publish_gauge('latency.%s.%s.%s' % (namespace, histogram, field), metrics[field])
 
         elif self.config['dialect'] < 39:
             # Get individual data lines (every other output line is data)
@@ -161,30 +156,31 @@ class AerospikeCollector(diamond.collector.Collector):
 
                 # publish each metric
                 for metric in metrics.keys():
-                    self.publish_gauge('latency.%s.%s' %
-                                       (op_type, metric), metrics[metric])
+                    self.publish_gauge('latency.%s.%s' % (op_type, metric), metrics[metric])
 
     def collect_statistics(self, data):
-
         # Only gather whitelisted metrics
         gather_stats = self.config['statistics_whitelist']
 
         # Break data into k/v pairs
         for statline in data.split(';'):
             (stat, value) = statline.split('=')
+
             if stat in gather_stats:
                 self.publish_gauge('statistics.%s' % stat, value)
 
     def collect_throughput(self, data):
-
         if self.config['dialect'] >= 39:
             # Get "header" section of each histogram
             labels = data.split(';')[::2]
+
             # Get contents of histogram
             datasets = data.split(';')[1::2]
+
             for i, label in enumerate(labels):
                 # Extract namespace and histogram type from header label
                 match = re.match('\{(\w+)\}-(\w+)', label)
+
                 if match:
                     namespace = match.group(1)
                     histogram = match.group(2)
@@ -192,9 +188,7 @@ class AerospikeCollector(diamond.collector.Collector):
                     # Exctract metric from dataset
                     metric = datasets[i].split(',')[1]
 
-                    self.publish_gauge('throughput.%s.%s' %
-                                       (namespace, histogram), metric)
-
+                    self.publish_gauge('throughput.%s.%s' % (namespace, histogram), metric)
         elif self.config['dialect'] < 39:
             # Get individual data lines (every other output line is data)
             raw_lines = {}
@@ -211,67 +205,63 @@ class AerospikeCollector(diamond.collector.Collector):
                 self.publish_gauge('throughput.%s' % op_type, metric)
 
     def collect_namespace(self, namespace, data):
-
         # Only gather whitelisted metrics
         gather_stats = self.config['namespace_statistics_whitelist']
 
         # Break data into k/v pairs
         for statline in data.split(';'):
             (stat, value) = statline.split('=')
+
             if stat in gather_stats:
                 self.publish_gauge('namespace.%s.%s' % (namespace, stat), value)
 
     def collect(self):
-
-        self.log.debug('Connecting to %s:%s' %
-                       (self.config['req_host'], self.config['req_port']))
+        self.log.debug('Connecting to %s:%s' % (self.config['req_host'], self.config['req_port']))
         t = telnetlib.Telnet(self.config['req_host'], self.config['req_port'])
 
         try:
-
             # Detect the version of aerospike for later
             self.log.debug('Checking aerospike version')
             t.write('version\n')
             version = t.read_until('\n', 1)
-            if LooseVersion(version) >= LooseVersion("3.9"):
+
+            if distutils.version.LooseVersion(version) >= distutils.version.LooseVersion("3.9"):
                 self.config['dialect'] = 39
             else:
                 self.config['dialect'] = 27
 
-            self.log.debug('Got version %s and selecting dialect %s' %
-                           (version, self.config['dialect']))
+            self.log.debug('Got version %s and selecting dialect %s' % (version, self.config['dialect']))
 
             # Only collect metrics we're asked for
-            if (self.config['latency']):
+            if self.config['latency']:
                 self.log.debug('Polling for latency')
                 t.write('latency:\n')
                 latency = t.read_until('\n', 1)
                 self.collect_latency(latency)
 
-            if (self.config['statistics']):
+            if self.config['statistics']:
                 self.log.debug('Polling for statistics')
                 t.write('statistics\n')
                 statistics = t.read_until('\n', 1)
                 self.collect_statistics(statistics)
 
-            if (self.config['throughput']):
+            if self.config['throughput']:
                 self.log.debug('Polling for throughput')
                 t.write('throughput:\n')
                 throughput = t.read_until('\n', 1)
                 self.collect_throughput(throughput)
 
-            if (self.config['namespaces']):
+            if self.config['namespaces']:
                 self.log.debug('Polling for namespaces')
                 t.write('namespaces\n')
                 namespaces = t.read_until('\n', 1).strip()
-                for namespace in namespaces.split(';'):
 
+                for namespace in namespaces.split(';'):
                     self.log.debug('Polling namespace: %s' % namespace)
+
                     # Skip namespaces not whitelisted if there is a whitelist
-                    if (self.config['namespaces_whitelist'] and
-                       namespace not in self.config['namespaces_whitelist']):
-                        self.log.debug('Skipping non-whitelisted namespace: %s'
-                                       % namespace)
+                    if self.config['namespaces_whitelist'] and namespace not in self.config['namespaces_whitelist']:
+                        self.log.debug('Skipping non-whitelisted namespace: %s' % namespace)
                         continue
 
                     t.write('namespace/%s\n' % namespace)

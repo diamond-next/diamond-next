@@ -16,9 +16,10 @@ http://gluster.readthedocs.org/en/latest/Administrator%20Guide/Monitoring%20Work
 
 """
 
-import diamond.collector
 import subprocess
-import sys
+
+import diamond.collector
+
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
@@ -30,7 +31,6 @@ target_brick = ''
 
 
 class GlusterFSCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(GlusterFSCollector, self).get_default_config_help()
         config_help.update({
@@ -60,7 +60,7 @@ class GlusterFSCollector(diamond.collector.Collector):
         target_brick = self.config['target_brick']
 
         # Return empty if this isn't the target brick and the target isn't all
-        if (brick_name != target_brick and target_brick != ''):
+        if brick_name != target_brick and target_brick != '':
             return
 
         # self.log.info("checking gluster brick " + brick_name)
@@ -102,15 +102,14 @@ class GlusterFSCollector(diamond.collector.Collector):
 
     def collect(self):
         gluster_call = self.config['gluster_path'] + ' volume list'
-        out = subprocess.Popen([gluster_call], stdout=subprocess.PIPE,
-                               shell=True)
+        out = subprocess.Popen([gluster_call], stdout=subprocess.PIPE, shell=True)
         (volumes, err) = out.communicate()
 
         for volume in volumes.splitlines():
             target_volume = self.config['target_volume']
             # Return empty if this isn't the target volume and the target
             # volume isn't all
-            if (brick_name != target_volume and target_volume != ''):
+            if brick_name != target_volume and target_volume != '':
                 continue
 
             # self.log.info("checking gluster volume " + volume)
@@ -126,6 +125,5 @@ class GlusterFSCollector(diamond.collector.Collector):
             xml_metrics = ET.XML(raw_metrics)
 
             for self.volelem in xml_metrics.find('volProfile'):
-                if (self.volelem.tag == 'brick'):
-
+                if self.volelem.tag == 'brick':
                     brick_metrics = self.get_brick_metrics()

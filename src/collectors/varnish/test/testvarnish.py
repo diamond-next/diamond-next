@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.varnish.varnish import VarnishCollector
 from diamond.collector import Collector
-
-from varnish import VarnishCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestVarnishCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('VarnishCollector', {})
 
@@ -27,8 +21,7 @@ class TestVarnishCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data_3_dot_0(self, publish_mock):
-        collector_mock = patch.object(VarnishCollector, 'poll', Mock(
-            return_value=self.getFixture('3.0/varnish_stats').getvalue()))
+        collector_mock = patch.object(VarnishCollector, 'poll', Mock(return_value=self.getFixture('3.0/varnish_stats').getvalue()))
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -131,15 +124,12 @@ class TestVarnishCollector(CollectorTestCase):
             'n_gunzip': 11982,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_real_data_4_dot_0(self, publish_mock):
-        collector_mock = patch.object(VarnishCollector, 'poll', Mock(
-            return_value=self.getFixture('4.0/varnish_stats').getvalue()))
+        collector_mock = patch.object(VarnishCollector, 'poll', Mock(return_value=self.getFixture('4.0/varnish_stats').getvalue()))
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -352,22 +342,18 @@ class TestVarnishCollector(CollectorTestCase):
             'LCK.pipestat.locks': 0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        collector_mock = patch.object(VarnishCollector, 'poll', Mock(
-            return_value=self.getFixture(
-                'varnish_stats_blank').getvalue()))
+        collector_mock = patch.object(VarnishCollector, 'poll', Mock(return_value=self.getFixture('varnish_stats_blank').getvalue()))
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
 
         self.assertPublishedMany(publish_mock, {})
 
-###############################################################################
+
 if __name__ == "__main__":
     unittest.main()

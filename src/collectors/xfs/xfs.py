@@ -13,13 +13,12 @@ import diamond.collector
 
 
 class XFSCollector(diamond.collector.Collector):
-
     PROC = '/proc/fs/xfs/stat'
 
     def get_default_config_help(self):
         config_help = super(XFSCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -30,6 +29,7 @@ class XFSCollector(diamond.collector.Collector):
         config.update({
             'path': 'xfs'
         })
+
         return config
 
     def collect(self):
@@ -252,6 +252,7 @@ class XFSCollector(diamond.collector.Collector):
         f.close()
 
         stats = {}
+
         for line in new_stats:
             items = line.rstrip().split()
             stats[items[0]] = [int(a) for a in items[1:]]

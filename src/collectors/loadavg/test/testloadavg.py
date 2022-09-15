@@ -1,27 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
+import io
 import os
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.loadavg.loadavg import LoadAverageCollector
 from diamond.collector import Collector
-from loadavg import LoadAverageCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestLoadAverageCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('LoadAverageCollector', {
             'interval': 10
@@ -32,7 +23,7 @@ class TestLoadAverageCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(LoadAverageCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_loadavg(self, publish_mock, open_mock):
@@ -40,15 +31,15 @@ class TestLoadAverageCollector(CollectorTestCase):
             # on platforms that don't provide /proc/loadavg: don't bother
             # testing this.
             return
-        open_mock.return_value = StringIO('')
+
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/loadavg')
 
     @patch('multiprocessing.cpu_count')
     @patch('os.getloadavg')
     @patch.object(Collector, 'publish')
-    def test_should_work_with_real_data(self, publish_mock, getloadavg_mock,
-                                        cpu_count_mock):
+    def test_should_work_with_real_data(self, publish_mock, getloadavg_mock, cpu_count_mock):
         LoadAverageCollector.PROC_LOADAVG = self.getFixturePath('proc_loadavg')
         getloadavg_mock.return_value = (0.12, 0.23, 0.34)
         cpu_count_mock.return_value = 2
@@ -65,11 +56,9 @@ class TestLoadAverageCollector(CollectorTestCase):
             'processes_total': 235
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

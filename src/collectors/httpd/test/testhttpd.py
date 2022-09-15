@@ -1,22 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from http.client import HTTPConnection, HTTPResponse
+from unittest.mock import Mock, patch
 
+from collectors.httpd.httpd import HttpdCollector
 from diamond.collector import Collector
-from httpd import HttpdCollector
-import httplib
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
-class TestHTTPResponse(httplib.HTTPResponse):
-
+class TestHTTPResponse(HTTPResponse):
     def __init__(self):
         pass
 
@@ -25,12 +20,11 @@ class TestHTTPResponse(httplib.HTTPResponse):
 
 
 class TestHttpdCollector(CollectorTestCase):
-
     def setUp(self, config=None):
         if config is None:
             config = get_collector_config('HttpdCollector', {
                 'interval': '10',
-                'url':      'http://www.example.com:80/server-status?auto'
+                'url': 'http://www.example.com:80/server-status?auto'
             })
         else:
             config = get_collector_config('HttpdCollector', config)
@@ -39,9 +33,8 @@ class TestHttpdCollector(CollectorTestCase):
 
         self.HTTPResponse = TestHTTPResponse()
 
-        httplib.HTTPConnection.request = Mock(return_value=True)
-        httplib.HTTPConnection.getresponse = Mock(
-            return_value=self.HTTPResponse)
+        HTTPConnection.request = Mock(return_value=True)
+        HTTPConnection.getresponse = Mock(return_value=self.HTTPResponse)
 
     def test_import(self):
         self.assertTrue(HttpdCollector)
@@ -53,8 +46,8 @@ class TestHttpdCollector(CollectorTestCase):
         patch_read = patch.object(
             TestHTTPResponse,
             'read',
-            Mock(return_value=self.getFixture(
-                'server-status-fake-1').getvalue()))
+            Mock(return_value=self.getFixture('server-status-fake-1').getvalue())
+        )
 
         patch_headers = patch.object(
             TestHTTPResponse,
@@ -401,11 +394,9 @@ class TestHttpdCollector(CollectorTestCase):
             'nickname2.CleanupWorkers': 0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

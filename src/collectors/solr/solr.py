@@ -6,24 +6,23 @@ Collect the solr stats for the local node
 #### Dependencies
 
  * posixpath
- * urllib2
+ * urllib
  * json
 
 """
 
 import posixpath
-import urllib2
+import urllib.request
+
+import diamond.collector
 
 try:
     import json
 except ImportError:
     import simplejson as json
 
-import diamond.collector
-
 
 class SolrCollector(diamond.collector.Collector):
-
     def __init__(self, *args, **kwargs):
         super(SolrCollector, self).__init__(*args, ** kwargs)
         self.config['host'] = self.config['host'].rstrip('/')
@@ -51,31 +50,32 @@ class SolrCollector(diamond.collector.Collector):
         """
         config = super(SolrCollector, self).get_default_config()
         config.update({
-            'host':     'localhost',
-            'port':     8983,
-            'path':     'solr',
-            'core':     None,
-            'stats':    ['jvm', 'core', 'response',
-                         'query', 'update', 'cache'],
+            'host': 'localhost',
+            'port': 8983,
+            'path': 'solr',
+            'core': None,
+            'stats': ['jvm', 'core', 'response', 'query', 'update', 'cache'],
         })
         return config
 
     def _try_convert(self, value):
         if isinstance(value, (int, float)):
             return value
+
         try:
             if '.' in value:
                 return float(value)
+
             return int(value)
         except ValueError:
             return value
 
     def _get(self, path):
         path = path.lstrip('/')
-        url = 'http://%s:%i/%s' % (
-            self.config['host'], int(self.config['port']), path)
+        url = 'http://%s:%i/%s' % (self.config['host'], int(self.config['port']), path)
+
         try:
-            response = urllib2.urlopen(url)
+            response = urllib.request.urlopen(url)
         except Exception as err:
             self.log.error("%s: %s", url, err)
             return False
@@ -83,8 +83,7 @@ class SolrCollector(diamond.collector.Collector):
         try:
             return json.load(response)
         except (TypeError, ValueError):
-            self.log.error("Unable to parse response from solr as a"
-                           " json object")
+            self.log.error("Unable to parse response from solr as a json object")
             return False
 
     def collect(self):
@@ -93,45 +92,45 @@ class SolrCollector(diamond.collector.Collector):
             return {}
 
         cores = []
+
         if self.config['core']:
             cores = [self.config['core']]
         else:
             # If no core is specified, provide statistics for all cores
             result = self._get('/solr/admin/cores?action=STATUS&wt=json')
+
             if result:
                 cores = result['status'].keys()
 
         metrics = {}
+
         for core in cores:
             if core:
                 path = "{}.".format(core)
             else:
                 path = ""
 
-            ping_url = posixpath.normpath(
-                "/solr/{}/admin/ping?wt=json".format(core))
+            ping_url = posixpath.normpath("/solr/{}/admin/ping?wt=json".format(core))
 
             if 'response' in self.config['stats']:
                 result = self._get(ping_url)
+
                 if not result:
                     continue
 
                 metrics.update({
-                    "{}response.QueryTime".format(path):
-                    result["responseHeader"]["QTime"],
-                    "{}response.Status".format(path):
-                    result["responseHeader"]["status"],
+                    "{}response.QueryTime".format(path): result["responseHeader"]["QTime"],
+                    "{}response.Status".format(path): result["responseHeader"]["status"],
                 })
 
-            stats_url = posixpath.normpath(
-                "/solr/{}/admin/mbeans?stats=true&wt=json".format(core))
-
+            stats_url = posixpath.normpath("/solr/{}/admin/mbeans?stats=true&wt=json".format(core))
             result = self._get(stats_url)
+
             if not result:
                 continue
 
             s = result['solr-mbeans']
-            stats = dict((s[i], s[i + 1]) for i in xrange(0, len(s), 2))
+            stats = dict((s[i], s[i + 1]) for i in range(0, len(s), 2))
 
             if 'core' in self.config['stats']:
                 core_searcher = stats["CORE"]["searcher"]["stats"]
@@ -149,29 +148,23 @@ class SolrCollector(diamond.collector.Collector):
                 metrics.update([
                     ("{}queryhandler.standard.{}".format(path, key),
                      standard[key])
-                    for key in ("requests", "errors", "timeouts", "totalTime",
-                                "avgTimePerRequest", "avgRequestsPerSecond")
+                    for key in ("requests", "errors", "timeouts", "totalTime", "avgTimePerRequest", "avgRequestsPerSecond")
                 ])
 
                 metrics.update([
                     ("{}queryhandler.update.{}".format(path, key),
                      update[key])
-                    for key in ("requests", "errors", "timeouts", "totalTime",
-                                "avgTimePerRequest", "avgRequestsPerSecond")
+                    for key in ("requests", "errors", "timeouts", "totalTime", "avgTimePerRequest", "avgRequestsPerSecond")
                     if update[key] != 'NaN'
                 ])
 
             if 'update' in self.config['stats']:
-                updatehandler = \
-                    stats["UPDATEHANDLER"]["updateHandler"]["stats"]
+                updatehandler = stats["UPDATEHANDLER"]["updateHandler"]["stats"]
 
                 metrics.update([
                     ("{}updatehandler.{}".format(path, key),
                      updatehandler[key])
-                    for key in (
-                        "commits", "autocommits", "optimizes",
-                        "rollbacks", "docsPending", "adds", "errors",
-                        "cumulative_adds", "cumulative_errors")
+                    for key in ("commits", "autocommits", "optimizes", "rollbacks", "docsPending", "adds", "errors", "cumulative_adds", "cumulative_errors")
                 ])
 
             if 'cache' in self.config['stats']:
@@ -192,10 +185,9 @@ class SolrCollector(diamond.collector.Collector):
                 ])
 
             if 'jvm' in self.config['stats']:
-                system_url = posixpath.normpath(
-                    "/solr/{}/admin/system?stats=true&wt=json".format(core))
-
+                system_url = posixpath.normpath("/solr/{}/admin/system?stats=true&wt=json".format(core))
                 result = self._get(system_url)
+
                 if not result:
                     continue
 

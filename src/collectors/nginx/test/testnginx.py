@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.nginx.nginx import NginxCollector
 from diamond.collector import Collector
-
-from nginx import NginxCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNginxCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('NginxCollector', {})
 
@@ -28,18 +22,14 @@ class TestNginxCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_should_work_with_real_data(self, publish_counter_mock,
-                                        publish_gauge_mock, publish_mock):
-
-        mockMimeMessage = Mock(**{'gettype.return_value': 'text/html'})
-        mockResponse = Mock(**{
+    def test_should_work_with_real_data(self, publish_counter_mock, publish_gauge_mock, publish_mock):
+        mock_mime_message = Mock(**{'gettype.return_value': 'text/html'})
+        mock_response = Mock(**{
             'readlines.return_value': self.getFixture('status').readlines(),
-            'info.return_value': mockMimeMessage,
-            }
-        )
+            'info.return_value': mock_mime_message,
+        })
 
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=mockResponse))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mock_response))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -55,31 +45,21 @@ class TestNginxCollector(CollectorTestCase):
             'act_waits': 0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
-        self.assertPublishedMany([publish_mock,
-                                  publish_gauge_mock,
-                                  publish_counter_mock
-                                  ], metrics)
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
+        self.assertPublishedMany([publish_mock, publish_gauge_mock, publish_counter_mock], metrics)
 
     @patch.object(Collector, 'publish')
     @patch.object(Collector, 'publish_gauge')
     @patch.object(Collector, 'publish_counter')
-    def test_plus_should_work_with_real_data(self, publish_counter_mock,
-                                             publish_gauge_mock, publish_mock):
-
-        mockMimeMessage = Mock(**{'gettype.return_value': 'application/json'})
-        mockResponse = Mock(**{
-            'readlines.return_value':
-                self.getFixture('plus_status').readlines(),
-            'info.return_value': mockMimeMessage,
+    def test_plus_should_work_with_real_data(self, publish_counter_mock, publish_gauge_mock, publish_mock):
+        mock_mime_message = Mock(**{'gettype.return_value': 'application/json'})
+        mock_response = Mock(**{
+            'readlines.return_value': self.getFixture('plus_status').readlines(),
+            'info.return_value': mock_mime_message,
             'read.return_value': self.getFixture('plus_status').read(),
-            }
-        )
+        })
 
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=mockResponse))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mock_response))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -135,13 +115,11 @@ class TestNginxCollector(CollectorTestCase):
             'upstreams.www-upstream.peers.1_1_1_94-8080.unavail': 0,
 
             'upstreams.www-upstream.peers.1_1_1_94-8080.responses.1xx': 0,
-            'upstreams.www-upstream.peers.1_1_1_94-8080.responses.2xx':
-                106277550,
+            'upstreams.www-upstream.peers.1_1_1_94-8080.responses.2xx': 106277550,
             'upstreams.www-upstream.peers.1_1_1_94-8080.responses.3xx': 33,
             'upstreams.www-upstream.peers.1_1_1_94-8080.responses.4xx': 39694,
             'upstreams.www-upstream.peers.1_1_1_94-8080.responses.5xx': 0,
-            'upstreams.www-upstream.peers.1_1_1_94-8080.responses.total':
-                106317277,
+            'upstreams.www-upstream.peers.1_1_1_94-8080.responses.total': 106317277,
 
             'upstreams.app_upstream.keepalive': 0,
             'upstreams.app_upstream.peers.1_2_5_3-8080.active': 0,
@@ -158,29 +136,20 @@ class TestNginxCollector(CollectorTestCase):
             'upstreams.app_upstream.peers.1_2_5_8-8080.responses.4xx': 1,
             'upstreams.app_upstream.peers.1_2_5_8-8080.responses.5xx': 0,
             'upstreams.app_upstream.peers.1_2_5_8-8080.responses.total': 3,
-
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
-        self.assertPublishedMany([publish_mock,
-                                  publish_gauge_mock,
-                                  publish_counter_mock
-                                  ], metrics)
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
+        self.assertPublishedMany([publish_mock, publish_gauge_mock, publish_counter_mock], metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        mockMimeMessage = Mock(**{'gettype.return_value': 'text/html'})
-        mockResponse = Mock(**{
-            'readlines.return_value':
-                self.getFixture('status_blank').readlines(),
-            'info.return_value': mockMimeMessage,
-            }
-        )
+        mock_mime_message = Mock(**{'gettype.return_value': 'text/html'})
+        mock_response = Mock(**{
+            'readlines.return_value': self.getFixture('status_blank').readlines(),
+            'info.return_value': mock_mime_message,
+        })
 
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-            return_value=mockResponse))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=mock_response))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -188,6 +157,6 @@ class TestNginxCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, {})
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

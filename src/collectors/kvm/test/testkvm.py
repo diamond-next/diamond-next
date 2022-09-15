@@ -1,28 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
+import io
 import os
+import unittest
+from unittest.mock import Mock, patch
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.kvm.kvm import KVMCollector
 from diamond.collector import Collector
-from kvm import KVMCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestKVMCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('KVMCollector', {
             'interval': 10,
@@ -37,7 +27,7 @@ class TestKVMCollector(CollectorTestCase):
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_open = patch('__builtin__.open', Mock(return_value=StringIO(
+        patch_open = patch('builtins.open', Mock(return_value=io.StringIO(
             '0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0' +
             '\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n0\n'
         )))
@@ -85,11 +75,9 @@ class TestKVMCollector(CollectorTestCase):
             'tlb_flush': 0.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

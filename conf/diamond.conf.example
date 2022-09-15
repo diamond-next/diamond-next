@@ -50,8 +50,8 @@ abort_on_handlers_process_exit = False
 # daemon logging handler(s)
 keys = rotated_file
 
-### Defaults options for all Handlers
-[[default]]
+### Default options for all Handlers
+[[handlersDefault]]
 
 [[ArchiveHandler]]
 
@@ -143,8 +143,8 @@ batch = 100
 ### Options for collectors
 [collectors]
 
-[[default]]
-### Defaults options for all Collectors
+[[collectorsDefault]]
+### Default options for all Collectors
 
 # Uncomment and set to hardcode a hostname for the collector path
 # Keep in mind, periods are seperators in graphite

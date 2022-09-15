@@ -1,9 +1,12 @@
-include         LICENSE
-include         MANIFEST.in
-include         version.txt
-graft           bin
-graft           conf
-exclude         conf/*.conf
-graft           src/collectors
-global-exclude  */tests/*
+include LICENSE
+include MANIFEST.in
+include version.txt
+include .keep
+graft rpm
+graft bin
+graft debian
+graft conf
+exclude conf/*.conf
+graft src/collectors
+global-exclude */tests/*
 recursive-exclude src/collectors/*/test *

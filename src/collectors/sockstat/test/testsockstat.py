@@ -1,23 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
-from mock import call
+import unittest
 from collections import Iterator
+from unittest.mock import Mock, call, patch
 
+from collectors.sockstat.sockstat import SockstatCollector
 from diamond.collector import Collector
-from sockstat import SockstatCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestSockstatCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('SockstatCollector', {
             'interval': 10
@@ -28,12 +22,11 @@ class TestSockstatCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(SockstatCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_net_sockstat(self, publish_mock, open_mock):
         class Klass(Iterator):
-
             def close(self):
                 pass
 
@@ -62,11 +55,9 @@ class TestSockstatCollector(CollectorTestCase):
             'udp_mem': 0
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.aurora.aurora import AuroraCollector
 from diamond.collector import Collector
-
-from aurora import AuroraCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestAuroraCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('AuroraCollector', {})
 
@@ -31,7 +25,7 @@ class TestAuroraCollector(CollectorTestCase):
             if url == 'http://localhost:8081/vars':
                 return self.getFixture('metrics')
 
-        patch_urlopen = patch('urllib2.urlopen', Mock(side_effect=se))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(side_effect=se))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -39,15 +33,12 @@ class TestAuroraCollector(CollectorTestCase):
 
         metrics = self.get_metrics()
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-                              return_value=self.getFixture('metrics_blank')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('metrics_blank')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -68,6 +59,6 @@ class TestAuroraCollector(CollectorTestCase):
             'tasks.FAILED.reporting.prod.report-processing': 2.0
         }
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

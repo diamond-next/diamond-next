@@ -25,9 +25,10 @@ TO use a unix socket, set a host string like this
 ```
 """
 
-import diamond.collector
-import socket
 import re
+import socket
+
+import diamond.collector
 
 
 class MemcachedCollector(diamond.collector.Collector):
@@ -64,7 +65,7 @@ class MemcachedCollector(diamond.collector.Collector):
         """
         config = super(MemcachedCollector, self).get_default_config()
         config.update({
-            'path':     'memcached',
+            'path': 'memcached',
 
             # Which rows of 'status' you would like to publish.
             # 'telnet host port' and type stats and hit enter to see the list of
@@ -104,9 +105,10 @@ class MemcachedCollector(diamond.collector.Collector):
                 if data.endswith('END\r\n'):
                     break
         except socket.error:
-            self.log.exception('Failed to get stats from %s:%s',
-                               host, port)
+            self.log.exception('Failed to get stats from %s:%s', host, port)
+
         sock.close()
+
         return data
 
     def get_stats(self, host, port):
@@ -151,7 +153,7 @@ class MemcachedCollector(diamond.collector.Collector):
         hosts = self.config.get('hosts')
 
         # Convert a string config value to be an array
-        if isinstance(hosts, basestring):
+        if isinstance(hosts, str):
             hosts = [hosts]
 
         for host in hosts:
@@ -171,15 +173,12 @@ class MemcachedCollector(diamond.collector.Collector):
             # for everything we want
             for stat in desired:
                 if stat in stats:
-
                     # we have it
                     if stat in self.GAUGES:
                         self.publish_gauge(alias + "." + stat, stats[stat])
                     else:
                         self.publish_counter(alias + "." + stat, stats[stat])
-
                 else:
-
                     # we don't, must be somehting configured in publish so we
                     # should log an error about it
                     self.log.error("No such key '%s' available, issue 'stats' "

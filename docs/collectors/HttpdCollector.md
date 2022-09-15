@@ -10,7 +10,7 @@ Collect stats from Apache HTTPD server using mod_status
 
  * mod_status
  * httplib
- * urlparse
+ * urllib
 
 
 #### Options

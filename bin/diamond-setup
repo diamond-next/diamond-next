@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-##########################################################################
 
 from __future__ import print_function
+
+import optparse
 import os
 import sys
-import optparse
 import traceback
 
 from configobj import ConfigObj
@@ -26,30 +26,30 @@ from diamond.collector import Collector
 from diamond.collector import str_to_bool
 
 
-def getIncludePaths(path):
+def get_include_paths(path):
     for f in os.listdir(path):
-        cPath = os.path.abspath(os.path.join(path, f))
+        c_path = os.path.abspath(os.path.join(path, f))
 
-        if os.path.isfile(cPath) and len(f) > 3 and f[-3:] == '.py':
-            sys.path.append(os.path.dirname(cPath))
+        if os.path.isfile(c_path) and len(f) > 3 and f[-3:] == '.py':
+            sys.path.append(os.path.dirname(c_path))
 
     for f in os.listdir(path):
-        cPath = os.path.abspath(os.path.join(path, f))
-        if os.path.isdir(cPath):
-            getIncludePaths(cPath)
+        c_path = os.path.abspath(os.path.join(path, f))
+
+        if os.path.isdir(c_path):
+            get_include_paths(c_path)
+
 
 collectors = {}
 
 
-def getCollectors(path):
+def get_collectors(path):
     for f in os.listdir(path):
-        cPath = os.path.abspath(os.path.join(path, f))
+        c_path = os.path.abspath(os.path.join(path, f))
 
-        if (os.path.isfile(cPath)
-                and len(f) > 3
-                and f[-3:] == '.py'
-                and f[0:4] != 'test'):
+        if os.path.isfile(c_path) and len(f) > 3 and f[-3:] == '.py' and f[0:4] != 'test':
             modname = f[:-3]
+
             try:
                 # Import the module
                 module = __import__(modname, globals(), locals(), ['*'])
@@ -57,28 +57,29 @@ def getCollectors(path):
                 # Find the name
                 for attr in dir(module):
                     cls = getattr(module, attr)
+
                     try:
-                        if (issubclass(cls, Collector)
-                                and cls.__name__ not in collectors):
+                        if issubclass(cls, Collector) and cls.__name__ not in collectors:
                             collectors[cls.__name__] = module
                             break
                     except TypeError:
                         continue
+
                 # print("Imported module: %s %s" % (modname, cls.__name__))
             except Exception:
-                print("Failed to import module: %s. %s" % (
-                    modname, traceback.format_exc()))
+                print("Failed to import module: %s. %s" % (modname, traceback.format_exc()))
                 collectors[modname] = False
                 continue
 
     for f in os.listdir(path):
-        cPath = os.path.abspath(os.path.join(path, f))
-        if os.path.isdir(cPath):
-            getCollectors(cPath)
+        c_path = os.path.abspath(os.path.join(path, f))
+
+        if os.path.isdir(c_path):
+            get_collectors(c_path)
 
 
-def typeToString(key):
-    if isinstance(obj.config[key], basestring):
+def type_to_string(key):
+    if isinstance(obj.config[key], str):
         user_val = obj.config[key]
     elif isinstance(obj.config[key], bool):
         user_val = str(obj.config[key])
@@ -92,10 +93,10 @@ def typeToString(key):
     return user_val
 
 
-def stringToType(key, val):
+def string_to_type(key, val):
     if type(obj.config[key]) is type(val):
         config_file[key] = val
-    elif isinstance(obj.config[key], basestring):
+    elif isinstance(obj.config[key], str):
         if val.lower() == 'false':
             config_file[key] = False
         elif val.lower() == 'true':
@@ -103,7 +104,7 @@ def stringToType(key, val):
         else:
             config_file[key] = val
     elif isinstance(obj.config[key], bool):
-        if isinstance(val, basestring):
+        if isinstance(val, str):
             config_file[key] = str_to_bool(val)
         else:
             config_file[key] = bool(val)
@@ -116,8 +117,8 @@ def stringToType(key, val):
         raise NotImplementedError("Unknown type!")
 
 
-def boolCheck(val):
-    if isinstance(val, basestring):
+def bool_check(val):
+    if isinstance(val, str):
         return str_to_bool(val)
     elif isinstance(val, bool):
         return val
@@ -125,51 +126,41 @@ def boolCheck(val):
         raise NotImplementedError("Unknown type!")
 
 
-def configureKey(key):
+def configure_key(key):
     if not config_keys[key]:
         return
 
     try:
-        user_val = typeToString(key)
+        user_val = type_to_string(key)
     except NotImplementedError:
         return
 
     print("\n")
+
     if key in default_conf_help:
         print(default_conf_help[key])
-    val = raw_input(key + ' [' + user_val + ']: ')
+
+    val = input(key + ' [' + user_val + ']: ')
 
     # Empty user input? Default to current value
     if len(val) == 0:
         val = obj.config[key]
 
     try:
-        stringToType(key, val)
+        string_to_type(key, val)
     except NotImplementedError:
         return
 
-##########################################################################
 
 if __name__ == "__main__":
-
     if setproctitle:
         setproctitle('diamond-setup')
 
     # Initialize Options
     parser = optparse.OptionParser()
-    parser.add_option("-c", "--configfile",
-                      dest="configfile",
-                      default="/etc/diamond/diamond.conf",
-                      help="Path to the config file")
-    parser.add_option("-C", "--collector",
-                      dest="collector",
-                      default=None,
-                      help="Configure a single collector")
-    parser.add_option("-p", "--print",
-                      action="store_true",
-                      dest="dump",
-                      default=False,
-                      help="Just print the defaults")
+    parser.add_option("-c", "--configfile", dest="configfile", default="/etc/diamond/diamond.conf", help="Path to the config file")
+    parser.add_option("-C", "--collector", dest="collector", default=None, help="Configure a single collector")
+    parser.add_option("-p", "--print", action="store_true", dest="dump", default=False, help="Just print the defaults")
 
     # Parse Command Line Args
     (options, args) = parser.parse_args()
@@ -178,10 +169,8 @@ if __name__ == "__main__":
     if os.path.exists(options.configfile):
         config = ConfigObj(os.path.abspath(options.configfile))
     else:
-        print("ERROR: Config file: %s does not exist." % (
-            options.configfile), file=sys.stderr)
-        print("Please run python config.py -c /path/to/diamond.conf",
-              file=sys.stderr)
+        print("ERROR: Config file: %s does not exist." % options.configfile, file=sys.stderr)
+        print("Please run python build_doc.py -c /path/to/diamond.conf", file=sys.stderr)
         parser.print_help(sys.stderr)
         sys.exit(1)
 
@@ -191,15 +180,17 @@ if __name__ == "__main__":
         print(config['server']['collectors_config_path'])
         print('Please type yes to continue')
 
-        val = raw_input('Are you sure? ')
+        val = input('Are you sure? ')
+
         if val != 'yes':
             sys.exit()
 
-    getIncludePaths(config['server']['collectors_path'])
-    getCollectors(config['server']['collectors_path'])
-    tests = []
+    get_include_paths(config['server']['collectors_path'])
+    get_collectors(config['server']['collectors_path'])
 
+    tests = []
     foundcollector = False
+
     for collector in collectors:
         if options.collector and collector != options.collector:
             continue
@@ -212,12 +203,10 @@ if __name__ == "__main__":
 
         config_keys = {}
         config_file = ConfigObj()
-        config_file.filename = (config['server']['collectors_config_path']
-                                + "/" + collector + ".conf")
+        config_file.filename = (config['server']['collectors_config_path'] + "/" + collector + ".conf")
 
         # Find the class and load it from the collector module
         try:
-
             # We can for the name above, so we dont have to scan here anymore
             if not hasattr(collectors[collector], collector):
                 continue
@@ -247,22 +236,24 @@ if __name__ == "__main__":
             print(collectors[collector].__doc__)
 
             print("(%s)" % collector)
-            configureKey('enabled')
+            configure_key('enabled')
 
-            if boolCheck(config_file['enabled']):
+            if bool_check(config_file['enabled']):
                 for key in config_keys:
                     if key == 'enabled':
                         continue
-                    configureKey(key)
+
+                    configure_key(key)
 
             config_file.write()
 
-        except IOError as (errno, strerror):
-            print("I/O error({}): {}".format(errno, strerror))
+        except IOError as ex:
+            print("I/O error({}): {}".format(ex.errno, ex.strerror))
         except KeyboardInterrupt:
             print()
             sys.exit()
         except:
             continue
+
     if not foundcollector:
         print("Collector not found.")

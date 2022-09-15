@@ -1,18 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import MagicMock, Mock
-from mock import patch
+import unittest
+from unittest.mock import MagicMock, Mock, patch
 
+from collectors.mountstats.mountstats import MountStatsCollector
 from diamond.collector import Collector
-from mountstats import MountStatsCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMountStatsCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MountStatsCollector', {
             'exclude_filters': ['^/mnt/path2'],
@@ -24,7 +22,7 @@ class TestMountStatsCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(MountStatsCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_mountstats(self, publish_mock, open_mock):

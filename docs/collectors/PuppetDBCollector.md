@@ -8,7 +8,7 @@ Collect metrics from Puppet DB Dashboard
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json
 
 

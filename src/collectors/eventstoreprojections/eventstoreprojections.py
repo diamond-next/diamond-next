@@ -13,17 +13,18 @@ This collector is based upon the HTTPJSONCollector.
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 """
 
-import urllib2
 import json
+import urllib.error
+import urllib.request
+
 import diamond.collector
 
 
 class EventstoreProjectionsCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(
             EventstoreProjectionsCollector, self).get_default_config_help(
@@ -58,19 +59,17 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
         return default_config
 
     def _json_to_flat_metrics(self, prefix, data):
-
         for key, value in data.items():
             if isinstance(value, dict):
-                for k, v in self._json_to_flat_metrics(
-                        "%s.%s" % (prefix, key), value):
+                for k, v in self._json_to_flat_metrics("%s.%s" % (prefix, key), value):
                     yield k, v
-            elif isinstance(value, basestring):
+            elif isinstance(value, str):
                 if value == "Running":
                     value = 1
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
                 elif value == "Stopped":
                     value = 0
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
                 else:
                     if self.config['debug']:
                         self.log.debug("ignoring string value = %s", value)
@@ -81,7 +80,7 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
                 except ValueError:
                     self.log.debug("cast to int failed, value = %s", value)
                 finally:
-                    yield ("%s.%s" % (prefix, key), value)
+                    yield "%s.%s" % (prefix, key), value
 
     def collect(self):
         eventstore_host = "%s%s:%s%s" % (
@@ -91,33 +90,30 @@ class EventstoreProjectionsCollector(diamond.collector.Collector):
             self.config['route']
         )
 
-        req = urllib2.Request(eventstore_host, headers=self.config['headers'])
+        req = urllib.request.Request(eventstore_host, headers=self.config['headers'])
         req.add_header('Content-type', 'application/json')
 
         try:
-            resp = urllib2.urlopen(req)
-        except urllib2.URLError as e:
+            resp = urllib.request.urlopen(req)
+        except urllib.error.URLError as e:
             self.log.error("Can't open url %s. %s", eventstore_host, e)
         else:
             content = resp.read()
+
             try:
                 json_dict = json.loads(content)
                 projections = json_dict['projections']
-
                 data = {}
+
                 for projection in projections:
                     if self.config['replace_dollarsign']:
-                        name = projection["name"].replace(
-                            '$',
-                            self.config['replace_dollarsign']
-                        )
+                        name = projection['name'].replace('$', self.config['replace_dollarsign'])
                     else:
                         name = projection["name"]
+
                     data[name] = projection
             except ValueError as e:
-                self.log.error("failed parsing JSON Object \
-                                from %s. %s", eventstore_host, e)
+                self.log.error("failed parsing JSON Object from %s. %s", eventstore_host, e)
             else:
-                for metric_name, metric_value in self._json_to_flat_metrics(
-                        "projections", data):
+                for metric_name, metric_value in self._json_to_flat_metrics("projections", data):
                     self.publish(metric_name, metric_value)

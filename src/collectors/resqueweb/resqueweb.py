@@ -5,20 +5,19 @@ Collects data for Resque Web
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 """
 
-import urllib2
+import urllib.request
+
 import diamond.collector
 
 
 class ResqueWebCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(ResqueWebCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
         return config_help
 
     def get_default_config(self):
@@ -35,8 +34,7 @@ class ResqueWebCollector(diamond.collector.Collector):
 
     def collect(self):
         try:
-            response = urllib2.urlopen("http://%s:%s/stats.txt" % (
-                self.config['host'], int(self.config['port'])))
+            response = urllib.request.urlopen("http://%s:%s/stats.txt" % (self.config['host'], int(self.config['port'])))
         except Exception as e:
             self.log.error('Could not connect to resque-web: %s', e)
             return {}
@@ -46,14 +44,14 @@ class ResqueWebCollector(diamond.collector.Collector):
                 continue
 
             item, count = data.strip().split("=")
+
             try:
                 count = int(count)
                 (item, queue) = item.split(".")
 
                 if item == "resque":
                     if queue[-1] == "+":
-                        self.publish("%s.total" %
-                                     queue.replace("+", ""), count)
+                        self.publish("%s.total" % queue.replace("+", ""), count)
                     else:
                         self.publish("%s.current" % queue, count)
                 else:

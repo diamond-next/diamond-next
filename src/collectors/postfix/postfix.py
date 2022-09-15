@@ -15,27 +15,23 @@ get realtime cumulative stats.
 
 import socket
 
+import diamond.collector
+
 try:
     import json
 except ImportError:
     import simplejson as json
 
-import diamond.collector
-
-from diamond.collector import str_to_bool
-
 DOTS_TO_UNDERS = {ord(u'.'): u'_'}
 
 
 class PostfixCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(PostfixCollector,
-                            self).get_default_config_help()
+        config_help = super(PostfixCollector, self).get_default_config_help()
         config_help.update({
-            'host':             'Hostname to connect to',
-            'port':             'Port to connect to',
-            'include_clients':  'Include client connection stats',
+            'host': 'Hostname to connect to',
+            'port': 'Port to connect to',
+            'include_clients': 'Include client connection stats',
         })
         return config_help
 
@@ -45,29 +41,29 @@ class PostfixCollector(diamond.collector.Collector):
         """
         config = super(PostfixCollector, self).get_default_config()
         config.update({
-            'path':             'postfix',
-            'host':             'localhost',
-            'port':             7777,
-            'include_clients':  True,
+            'path': 'postfix',
+            'host': 'localhost',
+            'port': 7777,
+            'include_clients': True,
         })
         return config
 
     def get_json(self):
         json_string = ''
-
         address = (self.config['host'], int(self.config['port']))
-
         s = None
+
         try:
             try:
                 s = socket.create_connection(address, timeout=1)
-
                 s.sendall('stats\n')
 
                 while 1:
                     data = s.recv(4096)
+
                     if not data:
                         break
+
                     json_string += data
             except socket.error:
                 self.log.exception("Error talking to postfix-stats")
@@ -95,11 +91,10 @@ class PostfixCollector(diamond.collector.Collector):
         if not data:
             return
 
-        if str_to_bool(self.config['include_clients']) and u'clients' in data:
-            for client, value in data['clients'].iteritems():
+        if diamond.collector.str_to_bool(self.config['include_clients']) and u'clients' in data:
+            for client, value in iter(data['clients'].items()):
                 # translate dots to underscores in client names
-                metric = u'.'.join(['clients',
-                                    client.translate(DOTS_TO_UNDERS)])
+                metric = u'.'.join(['clients', client.translate(DOTS_TO_UNDERS)])
 
                 dvalue = self.derivative(metric, value)
 
@@ -109,20 +104,16 @@ class PostfixCollector(diamond.collector.Collector):
             if action not in data:
                 continue
 
-            for sect, stats in data[action].iteritems():
-                for status, value in stats.iteritems():
-                    metric = '.'.join([action,
-                                       sect,
-                                       status.translate(DOTS_TO_UNDERS)])
-
+            for sect, stats in iter(data[action].items()):
+                for status, value in iter(stats.items()):
+                    metric = '.'.join([action, sect, status.translate(DOTS_TO_UNDERS)])
                     dvalue = self.derivative(metric, value)
 
                     self.publish(metric, dvalue, precision=4)
 
         if u'local' in data:
-            for key, value in data[u'local'].iteritems():
+            for key, value in iter(data[u'local'].items()):
                 metric = '.'.join(['local', key])
-
                 dvalue = self.derivative(metric, value)
 
                 self.publish(metric, dvalue, precision=4)

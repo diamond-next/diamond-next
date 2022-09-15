@@ -8,18 +8,17 @@ http://www.servertech.com/
 
 """
 
-import time
-import re
 import os
+import re
+
 import sys
+import time
+
+import diamond.metric
 
 # Fix Path for locating the SNMPCollector
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                             '../',
-                                             'snmp',
-                                             )))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../', 'snmp')))
 
-from diamond.metric import Metric
 from snmp import SNMPCollector as parent_SNMPCollector
 
 
@@ -42,8 +41,7 @@ class ServerTechPDUCollector(parent_SNMPCollector):
     }
 
     def get_default_config_help(self):
-        config_help = super(ServerTechPDUCollector,
-                            self).get_default_config_help()
+        config_help = super(ServerTechPDUCollector, self).get_default_config_help()
         config_help.update({
             'host': 'PDU dns address',
             'port': 'PDU port to collect snmp data',
@@ -57,7 +55,7 @@ class ServerTechPDUCollector(parent_SNMPCollector):
         """
         config = super(ServerTechPDUCollector, self).get_default_config()
         config.update({
-            'path':     'pdu',
+            'path': 'pdu',
             'timeout': 15,
             'retries': 3,
         })
@@ -73,57 +71,62 @@ class ServerTechPDUCollector(parent_SNMPCollector):
         # Set timestamp
         timestamp = time.time()
 
-        inputFeeds = {}
+        input_feeds = {}
 
         # Collect PDU input gauge values
         for gaugeName, gaugeOid in self.PDU_SYSTEM_GAUGES.items():
-            systemGauges = self.walk(gaugeOid, host, port, community)
-            for o, gaugeValue in systemGauges.items():
+            system_gauges = self.walk(gaugeOid, host, port, community)
+
+            for o, gaugeValue in system_gauges.items():
                 # Get Metric Name
-                metricName = gaugeName
+                metric_name = gaugeName
+
                 # Get Metric Value
-                metricValue = float(gaugeValue)
+                metric_value = float(gaugeValue)
+
                 # Get Metric Path
-                metricPath = '.'.join(
-                    ['devices', device, 'system', metricName])
+                metric_path = '.'.join(['devices', device, 'system', metric_name])
+
                 # Create Metric
-                metric = Metric(metricPath, metricValue, timestamp, 2)
+                metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 2)
+
                 # Publish Metric
                 self.publish_metric(metric)
 
         # Collect PDU input feed names
-        inputFeedNames = self.walk(
-            self.PDU_INFEED_NAMES, host, port, community)
-        for o, inputFeedName in inputFeedNames.items():
+        input_feed_names = self.walk(self.PDU_INFEED_NAMES, host, port, community)
+
+        for o, inputFeedName in input_feed_names.items():
             # Extract input feed name
-            inputFeed = ".".join(o.split(".")[-2:])
-            inputFeeds[inputFeed] = inputFeedName
+            input_feed = ".".join(o.split(".")[-2:])
+            input_feeds[input_feed] = inputFeedName
 
         # Collect PDU input gauge values
         for gaugeName, gaugeOid in self.PDU_INFEED_GAUGES.items():
-            inputFeedGauges = self.walk(gaugeOid, host, port, community)
-            for o, gaugeValue in inputFeedGauges.items():
+            input_feed_gauges = self.walk(gaugeOid, host, port, community)
+
+            for o, gaugeValue in input_feed_gauges.items():
                 # Extract input feed name
-                inputFeed = ".".join(o.split(".")[-2:])
+                input_feed = ".".join(o.split(".")[-2:])
 
                 # Get Metric Name
-                metricName = '.'.join([re.sub(r'\.|\\', '_',
-                                              inputFeeds[inputFeed]),
-                                       gaugeName])
+                metric_name = '.'.join([re.sub(r'\.|\\', '_', input_feeds[input_feed]), gaugeName])
 
                 # Get Metric Value
                 if gaugeName == "infeedVolts":
                     # Note: Voltage is in "tenth volts", so divide by 10
-                    metricValue = float(gaugeValue) / 10.0
+                    metric_value = float(gaugeValue) / 10.0
                 elif gaugeName == "infeedAmps":
                     # Note: Amps is in "hundredth amps", so divide by 100
-                    metricValue = float(gaugeValue) / 100.0
+                    metric_value = float(gaugeValue) / 100.0
                 else:
-                    metricValue = float(gaugeValue)
+                    metric_value = float(gaugeValue)
 
                 # Get Metric Path
-                metricPath = '.'.join(['devices', device, 'input', metricName])
+                metric_path = '.'.join(['devices', device, 'input', metric_name])
+
                 # Create Metric
-                metric = Metric(metricPath, metricValue, timestamp, 2)
+                metric = diamond.metric.Metric(metric_path, metric_value, timestamp, 2)
+
                 # Publish Metric
                 self.publish_metric(metric)

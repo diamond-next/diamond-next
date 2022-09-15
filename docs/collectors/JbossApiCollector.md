@@ -20,7 +20,7 @@ http://middlewaremagic.com/jboss/?p=2476
 
 TODO:
 This code was made to work with the local system 'curl' command, due to
-difficulties getting urllib2 or pycurl to work under the python 2.4 options
+difficulties getting urllib or pycurl to work under the python 2.4 options
 successfully doing SSL Digest Authentication.
 
 Plan is to make this code work with newer versions of python and possibly
@@ -39,7 +39,7 @@ curl as an option.
 
 ##### Configuration
 
-# Uses local system curl until can be made to work with either urllib2, pycurl,
+# Uses local system curl until can be made to work with either urllib, pycurl,
 or requests (http://docs.python-requests.org/en/latest/)
 
 

@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.apcupsd.apcupsd import ApcupsdCollector
 from diamond.collector import Collector
-from apcupsd import ApcupsdCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestApcupsdCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('ApcupsdCollector', {
             'interval': 10
@@ -28,7 +23,7 @@ class TestApcupsdCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_work_with_synthetic_data(self, publish_mock):
-        patch_getdata = patch.object(ApcupsdCollector, 'getData', Mock(
+        patch_getdata = patch.object(ApcupsdCollector, 'get_data', Mock(
             return_value=(
                 'APC      : 001,039,1056\n\x00' +
                 '\'DATE     : 2012-07-16 12:53:58 -0700  \n\x00' +
@@ -81,12 +76,10 @@ class TestApcupsdCollector(CollectorTestCase):
             'localhost.TONBATT': 0.000000,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
 
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

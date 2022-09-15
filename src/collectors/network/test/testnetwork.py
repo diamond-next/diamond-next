@@ -1,26 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import io
+import unittest
+from unittest.mock import Mock, patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.network.network import NetworkCollector
 from diamond.collector import Collector
-from network import NetworkCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNetworkCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('NetworkCollector', {
             'interfaces': ['eth', 'em', 'bond', 'veth', 'br-lxc'],
@@ -33,17 +24,16 @@ class TestNetworkCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(NetworkCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch('os.access', Mock(return_value=True))
     @patch.object(Collector, 'publish')
     def test_should_open_proc_net_dev(self, publish_mock, open_mock):
-        open_mock.return_value = StringIO('')
+        open_mock.return_value = io.StringIO('')
         self.collector.collect()
         open_mock.assert_called_once_with('/proc/net/dev')
 
     @patch.object(Collector, 'publish')
-    def test_should_work_with_virtual_interfaces_and_bridges(self,
-                                                             publish_mock):
+    def test_should_work_with_virtual_interfaces_and_bridges(self, publish_mock):
         NetworkCollector.PROC = self.getFixturePath('proc_net_dev_1')
         self.collector.collect()
 
@@ -67,9 +57,7 @@ class TestNetworkCollector(CollectorTestCase):
             'br-lxc-247.rx_megabyte': (0.032, 2)
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
@@ -93,9 +81,7 @@ class TestNetworkCollector(CollectorTestCase):
             'bond3.tx_megabyte': (4.707, 2)
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     # Named test_z_* to run after test_should_open_proc_net_dev
@@ -322,6 +308,6 @@ class TestNetworkCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

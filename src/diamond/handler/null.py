@@ -4,7 +4,7 @@
 Output the collected values to the debug log channel.
 """
 
-from Handler import Handler
+from diamond.handler.Handler import Handler
 
 
 class NullHandler(Handler):
@@ -24,8 +24,7 @@ class NullHandler(Handler):
         """
         config = super(NullHandler, self).get_default_config_help()
 
-        config.update({
-        })
+        config.update({})
 
         return config
 
@@ -35,7 +34,6 @@ class NullHandler(Handler):
         """
         config = super(NullHandler, self).get_default_config()
 
-        config.update({
-        })
+        config.update({})
 
         return config

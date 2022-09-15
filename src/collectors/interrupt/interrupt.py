@@ -10,8 +10,9 @@ The InterruptCollector class collects metrics on interrupts from
 
 """
 
-import platform
 import os
+import platform
+
 import diamond.collector
 
 # Detect the architecture of the system
@@ -26,7 +27,6 @@ else:
 
 
 class InterruptCollector(diamond.collector.Collector):
-
     PROC = '/proc/interrupts'
 
     def get_default_config_help(self):
@@ -41,7 +41,7 @@ class InterruptCollector(diamond.collector.Collector):
         """
         config = super(InterruptCollector, self).get_default_config()
         config.update({
-            'path':     'interrupts'
+            'path': 'interrupts'
         })
         return config
 
@@ -54,24 +54,23 @@ class InterruptCollector(diamond.collector.Collector):
 
         # Open PROC file
         file = open(self.PROC, 'r')
+
         # Get data
-        cpuCount = None
+        cpu_count = None
+
         for line in file:
-            if not cpuCount:
-                cpuCount = len(line.split())
+            if not cpu_count:
+                cpu_count = len(line.split())
             else:
-                data = line.strip().split(None, cpuCount + 2)
+                data = line.strip().split(None, cpu_count + 2)
                 data[0] = data[0].replace(':', '')
 
                 if len(data) == 2:
                     metric_name = data[0]
                     metric_value = data[1]
-                    self.publish(metric_name,
-                                 self.derivative(metric_name,
-                                                 long(metric_value),
-                                                 counter))
+                    self.publish(metric_name, self.derivative(metric_name, int(metric_value), counter))
                 else:
-                    if len(data[0]) == cpuCount + 1:
+                    if len(data[0]) == cpu_count + 1:
                         metric_name = data[0] + '.'
                     elif len(data[0]) == 3:
                         metric_name = (
@@ -85,12 +84,11 @@ class InterruptCollector(diamond.collector.Collector):
                             '.' + data[0] + '.')
                     total = 0
                     for index, value in enumerate(data):
-                        if index == 0 or index >= cpuCount + 1:
+                        if index == 0 or index >= cpu_count + 1:
                             continue
 
                         metric_name_node = metric_name + 'CPU' + str(index - 1)
-                        value = int(self.derivative(metric_name_node,
-                                                    long(value), counter))
+                        value = int(self.derivative(metric_name_node, int(value), counter))
                         total += value
                         self.publish(metric_name_node, value)
 

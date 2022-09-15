@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.conntrack.conntrack import ConnTrackCollector
 from diamond.collector import Collector
-from conntrack import ConnTrackCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestConnTrackCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('ConnTrackCollector', {
             'interval': 10,
@@ -65,6 +60,6 @@ class TestConnTrackCollector(CollectorTestCase):
         self.collector.collect()
         self.assertPublishedMany(publish_mock, {})
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

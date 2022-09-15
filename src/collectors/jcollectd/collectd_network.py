@@ -23,22 +23,13 @@
 Collectd network protocol implementation.
 """
 
+import copy
+import datetime
+import io
 import socket
 import struct
+
 import select
-import sys
-from datetime import datetime
-from copy import deepcopy
-
-if sys.version_info.major == 2:
-    # Python 2.7 io.StringIO does not like unicode
-    from StringIO import StringIO
-else:
-    try:
-        from io import StringIO
-    except ImportError:
-        from cStringIO import StringIO
-
 
 DEFAULT_PORT = 25826
 """Default port"""
@@ -172,11 +163,11 @@ class Data(object):
 
     @property
     def datetime(self):
-        return datetime.fromtimestamp(self.time)
+        return datetime.datetime.fromtimestamp(self.time)
 
     @property
     def source(self):
-        buf = StringIO()
+        buf = io.StringIO()
         if self.host:
             buf.write(str(self.host))
         if self.plugin:
@@ -261,10 +252,10 @@ def interpret_opcodes(iterable):
             nt.severity = data
         elif kind == TYPE_MESSAGE:
             nt.message = data
-            yield deepcopy(nt)
+            yield copy.deepcopy(nt)
         elif kind == TYPE_VALUES:
             vl[:] = data
-            yield deepcopy(vl)
+            yield copy.deepcopy(vl)
 
 
 class Reader(object):
@@ -309,16 +300,13 @@ class Reader(object):
 
         if multicast:
             if hasattr(socket, "SO_REUSEPORT"):
-                self._sock.setsockopt(
-                    socket.SOL_SOCKET,
-                    socket.SO_REUSEPORT, 1)
+                self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
 
             val = None
+
             if family == socket.AF_INET:
                 assert "." in self.host
-                val = struct.pack("4sl",
-                                  socket.inet_aton(self.host),
-                                  socket.INADDR_ANY)
+                val = struct.pack("4sl", socket.inet_aton(self.host), socket.INADDR_ANY)
             elif family == socket.AF_INET6:
                 raise NotImplementedError("IPv6 support not ready yet")
             else:
@@ -341,8 +329,7 @@ class Reader(object):
     def receive(self, poll_interval):
         """Receives a single raw collect network packet.
         """
-        readable, writeable, errored = select.select(self._readlist, [], [],
-                                                     poll_interval)
+        readable, writeable, errored = select.select(self._readlist, [], [], poll_interval)
         for s in readable:
             data, addr = s.recvfrom(self.BUFFER_SIZE)
             if data:
@@ -367,7 +354,7 @@ class Reader(object):
             if iterable is None:
                 return None
 
-        if isinstance(iterable, basestring):
+        if isinstance(iterable, str):
             iterable = self.decode(poll_interval, iterable)
 
         return interpret_opcodes(iterable)

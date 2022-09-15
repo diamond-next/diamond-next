@@ -5,8 +5,10 @@ Emulate a gmetric client for usage with
 [Ganglia Monitoring System](http://ganglia.sourceforge.net/)
 """
 
-from Handler import Handler
 import logging
+
+from diamond.handler.Handler import Handler
+
 try:
     import gmetric
 except ImportError:
@@ -18,16 +20,17 @@ class GmetricHandler(Handler):
     Implements the abstract Handler class, sending data the same way that
     gmetric does.
     """
-
     def __init__(self, config=None):
         """
         Create a new instance of the GmetricHandler class
         """
+
         # Initialize Handler
         Handler.__init__(self, config)
 
         if gmetric is None:
             logging.error("Failed to load gmetric module")
+
             return
 
         # Initialize Data
@@ -37,6 +40,7 @@ class GmetricHandler(Handler):
         self.host = self.config['host']
         self.port = int(self.config['port'])
         self.protocol = self.config['protocol']
+
         if not self.protocol:
             self.protocol = 'udp'
 
@@ -92,18 +96,12 @@ class GmetricHandler(Handler):
         tmax = "60"
         dmax = "0"
         slope = "both"
+
         # FIXME: Badness, shouldn't *assume* double type
         metric_type = "double"
         units = ""
         group = ""
-        self.gmetric.send(metric_name,
-                          metric.value,
-                          metric_type,
-                          units,
-                          slope,
-                          tmax,
-                          dmax,
-                          group)
+        self.gmetric.send(metric_name, metric.value, metric_type, units, slope, tmax, dmax, group)
 
     def _close(self):
         """

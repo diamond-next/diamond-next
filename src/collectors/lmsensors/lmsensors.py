@@ -18,7 +18,7 @@ written against: sensors version 3.1.2 with libsensors version 3.1.2
 """
 
 import diamond.collector
-from diamond.collector import str_to_bool
+
 try:
     import sensors
     sensors  # workaround for pyflakes issue #13
@@ -27,7 +27,6 @@ except ImportError:
 
 
 class LMSensorsCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(LMSensorsCollector, self).get_default_config_help()
         config_help.update({
@@ -52,20 +51,20 @@ class LMSensorsCollector(diamond.collector.Collector):
             return {}
 
         sensors.init()
+
         try:
             for chip in sensors.iter_detected_chips():
                 for feature in chip:
                     label = feature.label.replace(' ', '-')
                     value = None
+
                     try:
                         value = feature.get_value()
                     except Exception:
-                        if str_to_bool(self.config['send_zero']):
+                        if diamond.collector.str_to_bool(self.config['send_zero']):
                             value = 0
 
                     if value is not None:
-                        self.publish(".".join([str(chip), label]),
-                                     value,
-                                     precision=2)
+                        self.publish(".".join([str(chip), label]), value, precision=2)
         finally:
             sensors.cleanup()

@@ -1,20 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
+from collectors.openldap.openldap import OpenLDAPCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-
-from openldap import OpenLDAPCollector
 
 
 class TestOpenLDAPCollector(CollectorTestCase):
-
     def setUp(self, allowed_names=None):
         if not allowed_names:
             allowed_names = []
-        config = get_collector_config('OpenLDAPCollector', {
-        })
+
+        config = get_collector_config('OpenLDAPCollector', {})
         self.collector = OpenLDAPCollector(config, None)
 
     def test_import(self):

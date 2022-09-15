@@ -10,12 +10,10 @@ Collector that reports amavis metrics as reported by amavisd-agent
 """
 
 import os
-import subprocess
 import re
+import subprocess
 
 import diamond.collector
-import diamond.convertor
-from diamond.collector import str_to_bool
 
 
 class AmavisCollector(diamond.collector.Collector):
@@ -45,6 +43,7 @@ class AmavisCollector(diamond.collector.Collector):
             'sudo_exe': 'The path to sudo',
             'sudo_user': 'The user to use if using sudo',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -56,6 +55,7 @@ class AmavisCollector(diamond.collector.Collector):
             'sudo_exe': '/usr/bin/sudo',
             'sudo_user': 'amavis',
         })
+
         return config
 
     def collect(self):
@@ -63,7 +63,7 @@ class AmavisCollector(diamond.collector.Collector):
         Collect memory stats
         """
         try:
-            if str_to_bool(self.config['use_sudo']):
+            if diamond.collector.str_to_bool(self.config['use_sudo']):
                 # Use -u instead of --user as the former is more portable. Not
                 # all versions of sudo support the long form --user.
                 cmdline = [
@@ -72,31 +72,34 @@ class AmavisCollector(diamond.collector.Collector):
                 ]
             else:
                 cmdline = [self.config['amavisd_exe'], '-c', '1']
+
             agent = subprocess.Popen(cmdline, stdout=subprocess.PIPE)
             agent_out = agent.communicate()[0]
             lines = agent_out.strip().split(os.linesep)
+
             for line in lines:
                 for rex in self.matchers:
                     res = rex.match(line)
+
                     if res:
                         groups = res.groupdict()
                         name = groups['name']
+
                         for metric, value in groups.items():
                             if metric == 'name':
                                 continue
+
                             mtype = 'GAUGE'
                             precision = 2
+
                             if metric in ('count', 'time'):
                                 mtype = 'COUNTER'
                                 precision = 0
-                            self.publish("{}.{}".format(name, metric),
-                                         value, metric_type=mtype,
-                                         precision=precision)
+
+                            self.publish("{}.{}".format(name, metric), value, metric_type=mtype, precision=precision)
 
         except OSError as err:
-            self.log.error("Could not run %s: %s",
-                           self.config['amavisd_exe'],
-                           err)
+            self.log.error("Could not run %s: %s", self.config['amavisd_exe'], err)
             return None
 
         return True

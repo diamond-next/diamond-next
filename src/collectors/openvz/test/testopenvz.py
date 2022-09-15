@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.openvz.openvz import OpenvzCollector
 from diamond.collector import Collector
-
-from openvz import OpenvzCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestOpenvzCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('OpenvzCollector', {})
 
@@ -27,8 +21,7 @@ class TestOpenvzCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_parse_values(self, publish_mock):
-        collector_mock = patch.object(OpenvzCollector, 'poll', Mock(
-            return_value=self.getFixture('vzlist.json').getvalue()))
+        collector_mock = patch.object(OpenvzCollector, 'poll', Mock(return_value=self.getFixture('vzlist.json').getvalue()))
         collector_mock.start()
         self.collector.collect()
         collector_mock.stop()
@@ -48,11 +41,9 @@ class TestOpenvzCollector(CollectorTestCase):
             'mqtt_home_loc.laverage.15': 1.5,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-###############################################################################
+
 if __name__ == "__main__":
     unittest.main()

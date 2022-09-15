@@ -8,7 +8,7 @@ Collect metrics from Puppet Dashboard
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 
 #### Options

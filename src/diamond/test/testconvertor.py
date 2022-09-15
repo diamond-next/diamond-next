@@ -1,10 +1,9 @@
-from diamond.convertor import time
-
 import unittest
+
+from diamond.convertor import time
 
 
 class TestConvertor(unittest.TestCase):
-
     def test_basic(self):
         self.assertEquals(time.convert(60, 's', 's'), 60.0)
         self.assertEquals(time.convert(60, 's', 'm'), 1.0)
@@ -18,8 +17,7 @@ class TestConvertor(unittest.TestCase):
         self.assertEquals(time.convert(1000, 'ms', 'us'), 1000000)
         self.assertEquals(time.convert(1000, 'ms', 'ns'), 1000000000)
 
-        self.assertEquals(time.convert(1.5, 'y', 'ns'),
-                          1.5 * 365 * 24 * 3600 * 1000 * 1000 * 1000)
+        self.assertEquals(time.convert(1.5, 'y', 'ns'), 1.5 * 365 * 24 * 3600 * 1000 * 1000 * 1000)
 
     def test_unrecognised_unit(self):
         self.assertRaises(NotImplementedError, time.convert, 60, 's', 'months')

@@ -14,7 +14,6 @@ import diamond.collector
 
 
 class KafkaConsumerLagCollector(diamond.collector.ProcessCollector):
-
     def get_default_config_help(self):
         collector = super(KafkaConsumerLagCollector, self)
         config_help = collector.get_default_config_help()

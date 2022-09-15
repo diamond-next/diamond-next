@@ -1,16 +1,13 @@
-from test import CollectorTestCase
-from test import get_collector_config
-
-from mock import call, Mock, patch
 from unittest import TestCase
+from unittest.mock import Mock, call, patch
 
+from collectors.portstat.portstat import PortStatCollector, get_port_stats
 from diamond.collector import Collector
-
-from portstat import get_port_stats, PortStatCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class PortStatCollectorTestCase(CollectorTestCase):
-
     TEST_CONFIG = {
         'port': {
             'something1': {
@@ -23,8 +20,7 @@ class PortStatCollectorTestCase(CollectorTestCase):
     }
 
     def setUp(self):
-        config = get_collector_config('PortStatCollector',
-                                      self.TEST_CONFIG)
+        config = get_collector_config('PortStatCollector', self.TEST_CONFIG)
 
         self.collector = PortStatCollector(config, None)
 
@@ -39,14 +35,12 @@ class PortStatCollectorTestCase(CollectorTestCase):
 
         self.collector.collect()
 
-        get_port_stats_mock.assert_has_calls([call(5222), call(8888)],
-                                             any_order=True)
+        get_port_stats_mock.assert_has_calls([call(5222), call(8888)], any_order=True)
         self.assertPublished(publish_mock, 'something1.foo', 1)
         self.assertPublished(publish_mock, 'something2.foo', 1)
 
 
 class GetPortStatsTestCase(TestCase):
-
     @patch('portstat.psutil.net_connections')
     def test_get_port_stats(self, net_connections_mock):
 

@@ -19,3 +19,8 @@ gentoo/diamond-*.ebuild
 .python-version
 .coverage
 env
+/debian/.debhelper
+/debian/diamond
+/debian/diamond.substvars
+/debian/files
+/venv

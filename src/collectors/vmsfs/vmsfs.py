@@ -9,12 +9,12 @@ Uses /sys/fs/vmsfs to collect host-global data on VMS memory usage
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class VMSFSCollector(diamond.collector.Collector):
-
     SYSFS = '/sys/fs/vmsfs'
 
     VMSFS_STATS = {
@@ -27,12 +27,13 @@ class VMSFSCollector(diamond.collector.Collector):
 
         # Open vmsfs sys info.
         stats_fd = None
+
         try:
             stats_fd = open(filename)
 
             for line in stats_fd:
                 tokens = line.split()
-                stats[tokens[0][0:-1]] = long(tokens[1])
+                stats[tokens[0][0:-1]] = int(tokens[1])
         except:
             if stats_fd:
                 stats_fd.close()
@@ -41,16 +42,18 @@ class VMSFSCollector(diamond.collector.Collector):
 
     def vmsfs_stats_dispatch(self, filename, prefix=''):
         stats = self.vmsfs_stats_read(filename)
+
         for stat in self.VMSFS_STATS:
             name = self.VMSFS_STATS[stat][0]
             scale = self.VMSFS_STATS[stat][1]
+
             if name in stats:
                 self.publish(prefix + name, stats[name] * scale)
 
     def get_default_config_help(self):
         config_help = super(VMSFSCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -59,8 +62,9 @@ class VMSFSCollector(diamond.collector.Collector):
         """
         config = super(VMSFSCollector, self).get_default_config()
         config.update({
-            'path':     'vmsfs'
+            'path': 'vmsfs'
         })
+
         return config
 
     def collect(self):
@@ -85,10 +89,9 @@ class VMSFSCollector(diamond.collector.Collector):
         # We favor (2) currently, but there's not much value in implementing it
         # until it can be exposed to the user.
         if False:
-            TO_IGNORE = ('stats', 'version',
-                         '00000000-0000-0000-0000-000000000000')
+            to_ignore = ('stats', 'version', '00000000-0000-0000-0000-000000000000')
             files = os.listdir(self.SYSFS)
+
             for f in files:
-                if f not in TO_IGNORE:
-                    self.vmsfs_stats_dispatch('/sys/fs/vmsfs/' + f,
-                                              prefix=('%s.' % f))
+                if f not in to_ignore:
+                    self.vmsfs_stats_dispatch('/sys/fs/vmsfs/' + f, prefix=('%s.' % f))

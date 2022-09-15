@@ -8,7 +8,7 @@ Collect statistics from a HTTP or HTTPS connexion
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 #### Usage
 Add the collector config as :

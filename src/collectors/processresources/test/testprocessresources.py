@@ -1,19 +1,15 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
 import os
 import time
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import patch
+import unittest
+from unittest.mock import patch
 
+from collectors.processresources.processresources import ProcessResourcesCollector
 from diamond.collector import Collector
-from processresources import ProcessResourcesCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_psutil_is_available(func):
@@ -21,6 +17,7 @@ def run_only_if_psutil_is_available(func):
         import psutil
     except ImportError:
         psutil = None
+
     return run_only(func, lambda: psutil is not None)
 
 
@@ -53,8 +50,7 @@ class TestProcessResourcesCollector(CollectorTestCase):
     SELFMON_PID = 10001  # used for selfmonitoring
 
     def setUp(self):
-        config = get_collector_config('ProcessResourcesCollector',
-                                      self.TEST_CONFIG)
+        config = get_collector_config('ProcessResourcesCollector', self.TEST_CONFIG)
 
         self.collector = ProcessResourcesCollector(config, None)
 
@@ -157,8 +153,7 @@ class TestProcessResourcesCollector(CollectorTestCase):
             def as_dict(self, attrs=None, ad_value=None):
                 from collections import namedtuple
                 meminfo = namedtuple('meminfo', 'rss vms')
-                ext_meminfo = namedtuple('meminfo',
-                                         'rss vms shared text lib data dirty')
+                ext_meminfo = namedtuple('meminfo', 'rss vms shared text lib data dirty')
                 cputimes = namedtuple('cputimes', 'user system')
                 thread = namedtuple('thread', 'id user_time system_time')
                 user = namedtuple('user', 'real effective saved')
@@ -213,23 +208,20 @@ class TestProcessResourcesCollector(CollectorTestCase):
 
         getpid_mock.return_value = self.SELFMON_PID
 
-        patch_psutil_process_iter = patch('psutil.process_iter',
-                                          return_value=process_iter_mock)
+        patch_psutil_process_iter = patch('psutil.process_iter', return_value=process_iter_mock)
         patch_psutil_process_iter.start()
         self.collector.collect()
         patch_psutil_process_iter.stop()
         self.assertPublished(publish_mock, 'foo.uptime', 1234567890)
         self.assertPublished(publish_mock, 'foo.num_fds', 10)
-        self.assertPublished(publish_mock, 'postgres.memory_info_ex.rss',
-                             1000000 + 100000 + 10000 + 1000 + 100)
+        self.assertPublished(publish_mock, 'postgres.memory_info_ex.rss', 1000000 + 100000 + 10000 + 1000 + 100)
         self.assertPublished(publish_mock, 'foo.memory_info_ex.rss', 1)
         self.assertPublished(publish_mock, 'bar.memory_info_ex.rss', 3)
         self.assertPublished(publish_mock, 'barexe.memory_info_ex.rss', 3)
-        self.assertPublished(publish_mock,
-                             'diamond-selfmon.memory_info_ex.rss', 1234)
+        self.assertPublished(publish_mock, 'diamond-selfmon.memory_info_ex.rss', 1234)
         self.assertPublished(publish_mock, 'noprocess.workers_count', 0)
         self.assertUnpublished(publish_mock, 'noprocess.uptime', 0)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

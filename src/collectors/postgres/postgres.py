@@ -10,7 +10,6 @@ Collect metrics from postgresql
 """
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 try:
     import psycopg2
@@ -23,13 +22,11 @@ class PostgresqlCollector(diamond.collector.Collector):
     """
     PostgreSQL collector class
     """
-
     def get_default_config_help(self):
         """
         Return help text for collector
         """
-        config_help = super(PostgresqlCollector,
-                            self).get_default_config_help()
+        config_help = super(PostgresqlCollector, self).get_default_config_help()
         config_help.update({
             'host': 'Hostname',
             'dbname': 'DB to connect to in order to get list of DBs in PgSQL',
@@ -81,16 +78,18 @@ class PostgresqlCollector(diamond.collector.Collector):
 
         # Get list of databases
         dbs = self._get_db_names()
+
         if len(dbs) == 0:
             self.log.error("I have 0 databases!")
+
             return {}
 
         if self.config['metrics']:
             metrics = self.config['metrics']
-        elif str_to_bool(self.config['extended']):
+        elif diamond.collector.str_to_bool(self.config['extended']):
             metrics = registry['extended']
-            if str_to_bool(self.config['has_admin']) \
-                    and 'WalSegmentStats' not in metrics:
+
+            if diamond.collector.str_to_bool(self.config['has_admin']) and 'WalSegmentStats' not in metrics:
                 metrics.append('WalSegmentStats')
 
         else:
@@ -224,14 +223,12 @@ class QueryStats(object):
                 # If row > length 2, assume each column name maps to
                 # key => value
                 else:
-                    for key, value in row.iteritems():
-                        if key in ('datname', 'schemaname', 'relname',
-                                   'indexrelname', 'funcname',):
+                    for key, value in iter(row.items()):
+                        if key in ('datname', 'schemaname', 'relname', 'indexrelname', 'funcname'):
                             continue
 
                         self.data.append({
-                            'datname': self._translate_datname(row.get(
-                                'datname', self.dbname)),
+                            'datname': self._translate_datname(row.get('datname', self.dbname)),
                             'schemaname': row.get('schemaname', None),
                             'relname': row.get('relname', None),
                             'indexrelname': row.get('indexrelname', None),
@@ -246,7 +243,7 @@ class QueryStats(object):
 
     def __iter__(self):
         for data_point in self.data:
-            yield (self.path % data_point, data_point['value'])
+            yield self.path % data_point, data_point['value']
 
 
 class DatabaseStats(QueryStats):
@@ -274,11 +271,7 @@ class DatabaseStats(QueryStats):
         WHERE pg_stat_database.datname
         NOT IN ('template0','template1','postgres', 'rdsadmin')
     """
-    query = post_92_query.replace(
-        'pg_stat_database.temp_files as temp_files,',
-        '').replace(
-        'pg_stat_database.temp_bytes as temp_bytes,',
-        '')
+    query = post_92_query.replace('pg_stat_database.temp_files as temp_files,', '').replace('pg_stat_database.temp_bytes as temp_bytes,', '')
 
 
 class UserFunctionStats(QueryStats):

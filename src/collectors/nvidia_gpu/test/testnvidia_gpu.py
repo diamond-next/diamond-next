@@ -1,23 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch, Mock
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.nvidia_gpu.nvidia_gpu import NvidiaGPUCollector
 from diamond.collector import Collector
-from nvidia_gpu import NvidiaGPUCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNvidiaGPUCollector(CollectorTestCase):
-
     def setUp(self):
-        config = get_collector_config('NvidiaGPUCollector', {
-        })
+        config = get_collector_config('NvidiaGPUCollector', {})
 
         self.collector = NvidiaGPUCollector(config, None)
 
@@ -26,14 +21,8 @@ class TestNvidiaGPUCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_publish_gpu_stat(self, publish_mock):
-        output_mock = Mock(
-            return_value=(self.getFixture('nvidia_smi').getvalue(), '')
-        )
-        collector_mock = patch.object(
-            NvidiaGPUCollector,
-            'run_command',
-            output_mock
-        )
+        output_mock = Mock(return_value=(self.getFixture('nvidia_smi').getvalue(), ''))
+        collector_mock = patch.object(NvidiaGPUCollector, 'run_command', output_mock)
 
         collector_mock.start()
         self.collector.collect()
@@ -66,12 +55,9 @@ class TestNvidiaGPUCollector(CollectorTestCase):
             'gpu_3.temperature.gpu': 44
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

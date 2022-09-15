@@ -2,9 +2,12 @@
 # coding=utf-8
 
 from __future__ import print_function
+
 import os
 import sys
+
 import configobj
+
 if os.name != 'nt':
     import pwd
     import grp
@@ -44,64 +47,17 @@ def main():
 
         parser = optparse.OptionParser()
 
-        parser.add_option("-c", "--configfile",
-                          dest="configfile",
-                          default="/etc/diamond/diamond.conf",
-                          help="config file")
-
-        parser.add_option("-f", "--foreground",
-                          dest="foreground",
-                          default=False,
-                          action="store_true",
-                          help="run in foreground")
-
-        parser.add_option("-l", "--log-stdout",
-                          dest="log_stdout",
-                          default=False,
-                          action="store_true",
-                          help="log to stdout")
-
-        parser.add_option("-p", "--pidfile",
-                          dest="pidfile",
-                          default=None,
-                          help="pid file")
-
-        parser.add_option("-r", "--run",
-                          dest="collector",
-                          default=None,
-                          help="run a given collector once and exit")
-
-        parser.add_option("-v", "--version",
-                          dest="version",
-                          default=False,
-                          action="store_true",
-                          help="display the version and exit")
-
-        parser.add_option("--skip-pidfile",
-                          dest="skip_pidfile",
-                          default=defaults['skip_pidfile'],
-                          action="store_true",
-                          help="Skip creating PID file")
-
-        parser.add_option("-u", "--user",
-                          dest="user",
-                          default=None,
-                          help="Change to specified unprivilegd user")
-        parser.add_option("-g", "--group",
-                          dest="group",
-                          default=None,
-                          help="Change to specified unprivilegd group")
-        parser.add_option("--skip-change-user",
-                          dest="skip_change_user",
-                          default=False,
-                          action="store_true",
-                          help="Skip changing to an unprivilegd user")
-
-        parser.add_option("--skip-fork",
-                          dest="skip_fork",
-                          default=False,
-                          action="store_true",
-                          help="Skip forking (damonizing) process")
+        parser.add_option("-c", "--configfile", dest="configfile", default="/etc/diamond/diamond.conf", help="config file")
+        parser.add_option("-f", "--foreground", dest="foreground", default=False, action="store_true", help="run in foreground")
+        parser.add_option("-l", "--log-stdout", dest="log_stdout", default=False, action="store_true", help="log to stdout")
+        parser.add_option("-p", "--pidfile", dest="pidfile", default=None, help="pid file")
+        parser.add_option("-r", "--run", dest="collector", default=None, help="run a given collector once and exit")
+        parser.add_option("-v", "--version", dest="version", default=False, action="store_true", help="display the version and exit")
+        parser.add_option("--skip-pidfile", dest="skip_pidfile", default=defaults['skip_pidfile'], action="store_true", help="Skip creating PID file")
+        parser.add_option("-u", "--user", dest="user", default=None, help="Change to specified unprivilegd user")
+        parser.add_option("-g", "--group", dest="group", default=None, help="Change to specified unprivilegd group")
+        parser.add_option("--skip-change-user", dest="skip_change_user", default=False, action="store_true", help="Skip changing to an unprivilegd user")
+        parser.add_option("--skip-fork", dest="skip_fork", default=False, action="store_true", help="Skip forking (damonizing) process")
 
         # Parse Command Line Args
         (options, args) = parser.parse_args()
@@ -116,11 +72,11 @@ def main():
 
         # Initialize Config
         options.configfile = os.path.abspath(options.configfile)
+
         if os.path.exists(options.configfile):
             config = configobj.ConfigObj(options.configfile)
         else:
-            print("ERROR: Config file: %s does not exist." % (
-                options.configfile), file=sys.stderr)
+            print("ERROR: Config file: %s does not exist." % options.configfile, file=sys.stderr)
             parser.print_help(sys.stderr)
             sys.exit(1)
 
@@ -128,7 +84,7 @@ def main():
         log = setup_logging(options.configfile, options.log_stdout)
 
     # Pass the exit up stream rather then handle it as an general exception
-    except SystemExit as e:
+    except SystemExit:
         raise SystemExit
 
     except Exception as e:
@@ -147,7 +103,7 @@ def main():
 
             # Read existing pid file
             try:
-                pf = file(options.pidfile, 'r')
+                pf = open(options.pidfile, 'r')
                 pid = int(pf.read().strip())
                 pf.close()
             except (IOError, ValueError):
@@ -160,11 +116,9 @@ def main():
                     # Pid is not real
                     os.unlink(options.pidfile)
                     pid = None
-                    print("WARN: Bogus pid file was found. I deleted it.",
-                          file=sys.stderr)
+                    print("WARN: Bogus pid file was found. I deleted it.", file=sys.stderr)
                 else:
-                    print("ERROR: Pidfile exists. Server already running?",
-                          file=sys.stderr)
+                    print("ERROR: Pidfile exists. Server already running?", file=sys.stderr)
                     sys.exit(1)
 
             # Get final GIDs
@@ -185,16 +139,19 @@ def main():
             if not options.foreground and not options.collector:
                 # Write pid file
                 pid = str(os.getpid())
+
                 try:
-                    pf = file(options.pidfile, 'w+')
+                    pf = open(options.pidfile, 'w+')
                 except IOError as e:
-                    print("Failed to write PID file: %s" % (e), file=sys.stderr)
+                    print("Failed to write PID file: %s" % e, file=sys.stderr)
                     sys.exit(1)
+
                 pf.write("%s\n" % pid)
                 pf.close()
                 os.chown(options.pidfile, uid, gid)
+
                 # Log
-                log.debug("Wrote First PID file: %s" % (options.pidfile))
+                log.debug("Wrote First PID file: %s" % options.pidfile)
 
         # USER MANAGEMENT
         if not options.skip_change_user:
@@ -213,16 +170,11 @@ def main():
                     os.setuid(uid)
 
             except Exception as e:
-                print("ERROR: Failed to set UID/GID. %s" % (e),
-                      file=sys.stderr)
+                print("ERROR: Failed to set UID/GID. %s" % e, file=sys.stderr)
                 sys.exit(1)
 
             # Log
-            log.info('Changed UID: %d (%s) GID: %d (%s).' % (
-                os.getuid(),
-                config['server']['user'],
-                os.getgid(),
-                config['server']['group']))
+            log.info('Changed UID: %d (%s) GID: %d (%s).' % (os.getuid(), config['server']['user'], os.getgid(), config['server']['group']))
 
         # DAEMONIZE MANAGEMENT
         if not options.skip_fork:
@@ -235,24 +187,29 @@ def main():
                 # Fork 1
                 try:
                     pid = os.fork()
+
                     if pid > 0:
                         # Exit first paren
                         sys.exit(0)
                 except OSError as e:
-                    print("Failed to fork process." % (e), file=sys.stderr)
+                    print("Failed to fork process." % e, file=sys.stderr)
                     sys.exit(1)
+
                 # Decouple from parent environmen
                 os.setsid()
                 os.umask(0o022)
+
                 # Fork 2
                 try:
                     pid = os.fork()
+
                     if pid > 0:
                         # Exit second paren
                         sys.exit(0)
                 except OSError as e:
-                    print("Failed to fork process." % (e), file=sys.stderr)
+                    print("Failed to fork process." % e, file=sys.stderr)
                     sys.exit(1)
+
                 # Close file descriptors so that we can detach
                 sys.stdout.close()
                 sys.stderr.close()
@@ -269,26 +226,31 @@ def main():
             if not options.foreground and not options.collector:
                 # Write pid file
                 pid = str(os.getpid())
+
                 try:
-                    pf = file(options.pidfile, 'w+')
+                    pf = open(options.pidfile, 'w+')
                 except IOError as e:
-                    log.error("Failed to write child PID file: %s" % (e))
+                    log.error("Failed to write child PID file: %s" % e)
                     sys.exit(1)
+
                 pf.write("%s\n" % pid)
                 pf.close()
+
                 # Log
-                log.debug("Wrote child PID file: %s" % (options.pidfile))
+                log.debug("Wrote child PID file: %s" % options.pidfile)
 
         # Initialize Server
         server = Server(configfile=options.configfile)
 
         def shutdown_handler(signum, frame):
-            log.info("Signal Received: %d" % (signum))
+            log.info("Signal Received: %d" % signum)
+
             # Delete Pidfile
             if not options.skip_pidfile and os.path.exists(options.pidfile):
                 os.remove(options.pidfile)
+
                 # Log
-                log.debug("Removed PID file: %s" % (options.pidfile))
+                log.debug("Removed PID file: %s" % options.pidfile)
             for child in multiprocessing.active_children():
                 if 'SyncManager' not in child.name:
                     # The SyncManager process will immediately shutdown once
@@ -310,6 +272,7 @@ def main():
                     log.debug(child_debug.format(child.name, child.pid))
                     child.terminate()
                     child.join()
+
             sys.exit(0)
 
         # Set the signal handlers
@@ -319,7 +282,7 @@ def main():
         server.run()
 
     # Pass the exit up stream rather then handle it as an general exception
-    except SystemExit as e:
+    except SystemExit:
         raise SystemExit
 
     except Exception as e:
@@ -332,4 +295,5 @@ def main():
 if __name__ == "__main__":
     if setproctitle:
         setproctitle(os.path.basename(__file__))
+
     main()

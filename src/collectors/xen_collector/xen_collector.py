@@ -8,21 +8,21 @@ The XENCollector grabs usage/allocation metrics using libvirt
 
 """
 
-from diamond.collector import Collector
-
 import os
+
+import diamond.collector
+
 try:
     import libvirt
 except ImportError:
     libvirt = None
 
 
-class XENCollector(Collector):
-
+class XENCollector(diamond.collector.Collector):
     def get_default_config_help(self):
         config_help = super(XENCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -31,7 +31,7 @@ class XENCollector(Collector):
         """
         config = super(XENCollector, self).get_default_config()
         config.update({
-            'path':     'xen'
+            'path': 'xen'
         })
         return config
 
@@ -42,41 +42,50 @@ class XENCollector(Collector):
         if libvirt is None:
             self.log.error('Unable to import either libvirt')
             return {}
+
         # Open a restricted (non-root) connection to the hypervisor
         conn = libvirt.openReadOnly(None)
+
         # Get hardware info
         conninfo = conn.getInfo()
+
         # Initialize variables
         memallocated = 0
         coresallocated = 0
         totalcores = 0
-        results = {}
-        domIds = conn.listDomainsID()
-        if 0 in domIds:
+        dom_ids = conn.listDomainsID()
+
+        if 0 in dom_ids:
             # Total cores
-            domU = conn.lookupByID(0)
-            totalcores = domU.info()[3]
+            dom_u = conn.lookupByID(0)
+            totalcores = dom_u.info()[3]
+
         # Free Space
         s = os.statvfs('/')
-        freeSpace = (s.f_bavail * s.f_frsize) / 1024
+        free_space = (s.f_bavail * s.f_frsize) / 1024
+
         # Calculate allocated memory and cores
-        for i in domIds:
+        for i in dom_ids:
             # Ignore 0
             if i == 0:
                 continue
-            domU = conn.lookupByID(i)
-            dominfo = domU.info()
+
+            dom_u = conn.lookupByID(i)
+            dominfo = dom_u.info()
             memallocated += dominfo[2]
+
             if i > 0:
                 coresallocated += dominfo[3]
+
         results = {
             'InstalledMem': conninfo[1],
             'MemAllocated': memallocated / 1024,
             'MemFree': conninfo[1] - (memallocated / 1024),
             'AllocatedCores': coresallocated,
-            'DiskFree': freeSpace,
+            'DiskFree': free_space,
             'TotalCores': totalcores,
             'FreeCores': (totalcores - coresallocated)
         }
+
         for k in results.keys():
             self.publish(k, results[k], 0)

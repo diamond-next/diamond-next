@@ -10,8 +10,9 @@ The ProcessStatCollector collects metrics on process stats from
 
 """
 
-import platform
 import os
+import platform
+
 import diamond.collector
 
 # Detect the architecture of the system
@@ -26,14 +27,12 @@ else:
 
 
 class ProcessStatCollector(diamond.collector.Collector):
-
     PROC = '/proc/stat'
 
     def get_default_config_help(self):
-        config_help = super(ProcessStatCollector,
-                            self).get_default_config_help()
-        config_help.update({
-        })
+        config_help = super(ProcessStatCollector, self).get_default_config_help()
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -42,7 +41,7 @@ class ProcessStatCollector(diamond.collector.Collector):
         """
         config = super(ProcessStatCollector, self).get_default_config()
         config.update({
-            'path':     'proc'
+            'path': 'proc'
         })
         return config
 
@@ -63,9 +62,7 @@ class ProcessStatCollector(diamond.collector.Collector):
                 data = line.split()
                 metric_name = data[0]
                 metric_value = int(data[1])
-                metric_value = int(self.derivative(metric_name,
-                                                   long(metric_value),
-                                                   counter))
+                metric_value = int(self.derivative(metric_name, int(metric_value), counter))
                 self.publish(metric_name, metric_value)
 
             if line.startswith('procs_') or line.startswith('btime'):

@@ -1,22 +1,20 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
 
-from test import CollectorTestCase
-from test import get_collector_config
-from mock import patch
 import os
+from unittest.mock import patch
 
+from collectors.nagiosperfdata.nagiosperfdata import NagiosPerfdataCollector
 from diamond.collector import Collector
-from nagiosperfdata import NagiosPerfdataCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestNagiosPerfdataCollector(CollectorTestCase):
-
     def setUp(self):
         """Set up the fixtures for the test
         """
-        fixtures_dir = os.path.abspath(os.path.join(
-            os.path.dirname(__file__), 'fixtures'))
+        fixtures_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'fixtures'))
 
         config = get_collector_config('NagiosPerfdataCollector', {
             'perfdata_dir': fixtures_dir
@@ -85,21 +83,18 @@ class TestNagiosPerfdataCollector(CollectorTestCase):
         self.assertEqual(self.collector._normalize_to_unit(1, 'KB'), 1024.0)
 
     def test_parse_perfdata_should_parse_valid_perfdata(self):
-        perf = self.collector._parse_perfdata(
-            'rta=0.325ms;300.000;500.000;0; pl=0%;20;60;;')
+        perf = self.collector._parse_perfdata('rta=0.325ms;300.000;500.000;0; pl=0%;20;60;;')
         expected_result = [('rta', 0.000325), ('pl', 0.0)]
         self.assertEqual(perf, expected_result)
 
     def test_parse_perfdata_should_not_parse_invalid_perfdata(self):
-        perf = self.collector._parse_perfdata(
-            'something with spaces=0.325ms;300.000;500.000;0; pl=0%;20;60;;')
+        perf = self.collector._parse_perfdata('something with spaces=0.325ms;300.000;500.000;0; pl=0%;20;60;;')
         unexpected_result = [('something with spaces', 0.000325), ('pl', 0.0)]
         self.assertNotEqual(perf, unexpected_result)
 
     @patch('os.remove')
     @patch.object(Collector, 'publish')
-    def test_process_file_should_work_with_real_host_perfdata(
-            self, publish_mock, remove_mock):
+    def test_process_file_should_work_with_real_host_perfdata(self, publish_mock, remove_mock):
         path = self.getFixturePath('host-perfdata.0')
         self.collector._process_file(path)
         expected = {
@@ -110,8 +105,7 @@ class TestNagiosPerfdataCollector(CollectorTestCase):
 
     @patch('os.remove')
     @patch.object(Collector, 'publish')
-    def test_process_file_should_work_with_real_service_perfdata(
-            self, publish_mock, remove_mock):
+    def test_process_file_should_work_with_real_service_perfdata(self, publish_mock, remove_mock):
         path = self.getFixturePath('service-perfdata.0')
         self.collector._process_file(path)
         expected = {

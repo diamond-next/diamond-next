@@ -1,22 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.mesos.mesos import MesosCollector
 from diamond.collector import Collector
-
-from mesos import MesosCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMesosCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('MesosCollector', {})
 
@@ -31,8 +25,7 @@ class TestMesosCollector(CollectorTestCase):
     @patch.object(Collector, 'publish')
     def test_should_work_for_master_with_real_data(self, publish_mock):
         returns = self.getFixture('master_metrics_snapshot.json')
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns))
 
         urlopen_mock.start()
         self.collector.collect()
@@ -61,8 +54,7 @@ class TestMesosCollector(CollectorTestCase):
             self.getFixture('slave_monitor_statistics.json')
         ]
 
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
 
         urlopen_mock.start()
         self.collector.collect()
@@ -92,9 +84,7 @@ class TestMesosCollector(CollectorTestCase):
             'mem_percent': (0.19, 2)
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
     @patch.object(Collector, 'publish')
@@ -114,8 +104,7 @@ class TestMesosCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_should_fail_gracefully(self, publish_mock):
-        patch_urlopen = patch('urllib2.urlopen', Mock(
-                              return_value=self.getFixture('metrics_blank')))
+        patch_urlopen = patch('urllib.request.urlopen', Mock(return_value=self.getFixture('metrics_blank')))
 
         patch_urlopen.start()
         self.collector.collect()
@@ -127,10 +116,7 @@ class TestMesosCollector(CollectorTestCase):
     def test_should_compute_cpus_percent(self, publish_mock):
         self.fixture_cpu_utilisation(publish_mock)
 
-        self.assertPublished(
-            publish_mock,
-            'frameworks.marathon-0_7_6.executors.task_name.cpus_percent',
-            0.5/1.7)
+        self.assertPublished(publish_mock, 'frameworks.marathon-0_7_6.executors.task_name.cpus_percent', 0.5 / 1.7)
 
     def fixture_cpu_utilisation(self, publish_mock):
         config = get_collector_config('MesosCollector', {'master': False})
@@ -140,14 +126,12 @@ class TestMesosCollector(CollectorTestCase):
         returns = [
             self.getFixture('master_metrics_snapshot.json'),
             self.getFixture('slave_metrics_state.json'),
-            self.getFixture(
-                'slave_monitor_statistics_cpus_utilisation_next.json'),
+            self.getFixture('slave_monitor_statistics_cpus_utilisation_next.json'),
             self.getFixture('master_metrics_snapshot.json'),
             self.getFixture('slave_metrics_state.json'),
             self.getFixture('slave_monitor_statistics_cpus_utilisation.json'),
         ]
-        urlopen_mock = patch('urllib2.urlopen', Mock(
-            side_effect=lambda *args: returns.pop(0)))
+        urlopen_mock = patch('urllib.request.urlopen', Mock(side_effect=lambda *args: returns.pop(0)))
         urlopen_mock.start()
         self.collector.collect()
         publish_mock.reset_mock()
@@ -156,21 +140,17 @@ class TestMesosCollector(CollectorTestCase):
 
     def test_http(self):
         self.collector.config['host'] = 'localhost'
-        self.assertEqual('http://localhost:5050/metrics/snapshot',
-                         self.collector._get_url("metrics/snapshot"))
+        self.assertEqual('http://localhost:5050/metrics/snapshot', self.collector._get_url("metrics/snapshot"))
 
     def test_https(self):
         self.collector.config['host'] = 'https://localhost'
-        self.assertEqual('https://localhost:5050/metrics/snapshot',
-                         self.collector._get_url("metrics/snapshot"))
+        self.assertEqual('https://localhost:5050/metrics/snapshot', self.collector._get_url("metrics/snapshot"))
 
     def test_sum_statistics(self):
         metrics_1 = {'cpu': 50, 'mem': 30, 'loadavg': 1}
         metrics_2 = {'cpu': 10, 'mem': 30, 'network': 10}
-        self.assertEqual(self.collector._sum_statistics(metrics_1, metrics_2),
-                         {'mem': 60, 'loadavg': 1, 'network': 10, 'cpu': 60})
+        self.assertEqual(self.collector._sum_statistics(metrics_1, metrics_2), {'mem': 60, 'loadavg': 1, 'network': 10, 'cpu': 60})
 
 
-##########################################################################
 if __name__ == "__main__":
     unittest.main()

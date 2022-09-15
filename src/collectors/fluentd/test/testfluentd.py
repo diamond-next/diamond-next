@@ -1,21 +1,19 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
-import os
+
 import json
-from test import CollectorTestCase
+import os
+import unittest
+
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from test import unittest
 
 from fluentd import FluentdCollector
 
-
-dirname = os.path.dirname(__file__)
-fixtures_path = os.path.join(dirname, 'fixtures/')
+fixtures_path = os.path.join(os.path.dirname(__file__), 'fixtures/')
 
 
 class TestFluentdCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('FluentdCollector', {
             'interval': 10,
@@ -24,8 +22,8 @@ class TestFluentdCollector(CollectorTestCase):
                     'buffer_queue_length',
                     'buffer_total_queued_size',
                     'retry_count'
-                    ]
-                }
+                ]
+            }
         })
 
         self.collector = FluentdCollector(config, None)
@@ -36,12 +34,13 @@ class TestFluentdCollector(CollectorTestCase):
     def test_api_output_parse(self):
         f = open(os.path.join(fixtures_path, "example.stat")).read()
         stat = json.loads(f)
-        self.assertTrue(len(self.collector.parse_api_output(stat)) is 3)
+        self.assertTrue(len(self.collector.parse_api_output(stat)) == 3)
 
     def test_api_output_parse_empty(self):
         f = open(os.path.join(fixtures_path, "example_empty.stat")).read()
         stat = json.loads(f)
-        self.assertTrue(len(self.collector.parse_api_output(stat)) is 0)
+        self.assertTrue(len(self.collector.parse_api_output(stat)) == 0)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,18 +9,18 @@ The NfsdCollector collects nfsd utilization metrics using /proc/net/rpc/nfsd.
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class NfsdCollector(diamond.collector.Collector):
-
     PROC = '/proc/net/rpc/nfsd'
 
     def get_default_config_help(self):
         config_help = super(NfsdCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -29,8 +29,9 @@ class NfsdCollector(diamond.collector.Collector):
         """
         config = super(NfsdCollector, self).get_default_config()
         config.update({
-            'path':     'nfsd'
+            'path': 'nfsd'
         })
+
         return config
 
     def collect(self):
@@ -38,8 +39,8 @@ class NfsdCollector(diamond.collector.Collector):
         Collect stats
         """
         if os.access(self.PROC, os.R_OK):
-
             results = {}
+
             # Open file
             file = open(self.PROC)
 
@@ -195,9 +196,10 @@ class NfsdCollector(diamond.collector.Collector):
 
             for stat in results.keys():
                 metric_name = stat
-                metric_value = long(float(results[stat]))
+                metric_value = int(float(results[stat]))
                 metric_value = self.derivative(metric_name, metric_value)
                 self.publish(metric_name, metric_value, precision=3)
+
             return True
 
         return False

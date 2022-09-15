@@ -38,11 +38,10 @@ import diamond.collector
 
 
 class PingCollector(diamond.collector.ProcessCollector):
-
     def get_default_config_help(self):
         config_help = super(PingCollector, self).get_default_config_help()
         config_help.update({
-            'bin':         'The path to the ping binary',
+            'bin': 'The path to the ping binary',
         })
         return config_help
 
@@ -52,8 +51,8 @@ class PingCollector(diamond.collector.ProcessCollector):
         """
         config = super(PingCollector, self).get_default_config()
         config.update({
-            'path':             'ping',
-            'bin':              '/bin/ping',
+            'path': 'ping',
+            'bin': '/bin/ping',
         })
         return config
 

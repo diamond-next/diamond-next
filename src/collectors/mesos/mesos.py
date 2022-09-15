@@ -14,18 +14,15 @@ port = 5050
 ```
 
 #### Dependencies
- * urlib2
+ * urlib
 """
 
 import copy
-import diamond.collector
 import json
-import urllib2
-from urlparse import urlparse
+import urllib.parse
+import urllib.request
 
 import diamond.collector
-
-from diamond.collector import str_to_bool
 
 
 class MesosCollector(diamond.collector.Collector):
@@ -36,17 +33,16 @@ class MesosCollector(diamond.collector.Collector):
 
     def process_config(self):
         super(MesosCollector, self).process_config()
-        self.master = str_to_bool(self.config['master'])
+        self.master = diamond.collector.str_to_bool(self.config['master'])
 
     def get_default_config_help(self):
-        config_help = super(MesosCollector,
-                            self).get_default_config_help()
+        config_help = super(MesosCollector, self).get_default_config_help()
         config_help.update({
-            'host': 'Hostname, using http scheme by default. For https pass '
-                    'e.g. "https://localhost"',
+            'host': 'Hostname, using http scheme by default. For https pass e.g. "https://localhost"',
             'port': 'Port (default is 5050; set to 5051 for mesos-agent)',
             'master': 'True if host is master (default is True).'
         })
+
         return config_help
 
     def get_default_config(self):
@@ -60,41 +56,45 @@ class MesosCollector(diamond.collector.Collector):
             'path': 'mesos',
             'master': True
         })
+
         return config
 
     def collect(self):
         if json is None:
             self.log.error('Unable to import json')
             return
+
         self._collect_metrics_snapshot()
+
         if not self.master:
             self._collect_slave_state()
             self._collect_slave_statistics()
 
     def _collect_metrics_snapshot(self):
         result = self._get('metrics/snapshot')
+
         if not result:
             return
 
         for key in result:
             value = result[key]
-            self.publish(key.replace('/', '.'),
-                         value, precision=self._precision(value))
+            self.publish(key.replace('/', '.'), value, precision=self._precision(value))
 
     def _collect_slave_state(self):
         # slave(1) is generated here
         # https://github.com/apache/mesos/blob/1.1.0/src/slave/slave.cpp#L153
         # https://github.com/apache/mesos/blob/1.1.0/3rdparty/libprocess/src/process.cpp#L165
         result = self._get('slave(1)/state')
+
         if not result:
             return
 
         for framework in result['frameworks']:
             self.known_frameworks[framework['id']] = framework['name']
 
-        for key in ['failed_tasks', 'finished_tasks', 'staged_tasks',
-                    'started_tasks', 'lost_tasks']:
+        for key in ['failed_tasks', 'finished_tasks', 'staged_tasks', 'started_tasks', 'lost_tasks']:
             value = result.get(key)
+
             if value is not None:
                 self.publish(key, value, precision=self._precision(value))
 
@@ -113,6 +113,7 @@ class MesosCollector(diamond.collector.Collector):
                 cpus_time_diff_s -= prev_stats['cpus_user_time_secs']
                 cpus_time_diff_s -= prev_stats['cpus_system_time_secs']
                 ts_diff = cur_stats['timestamp'] - prev_stats['timestamp']
+
                 if ts_diff != 0:
                     cur_stats['cpus_utilisation'] = cpus_time_diff_s / ts_diff
 
@@ -125,6 +126,7 @@ class MesosCollector(diamond.collector.Collector):
             stats = cur_data['statistics']
             cpus_limit = stats.get('cpus_limit')
             cpus_utilisation = stats.get('cpus_utilisation')
+
             if cpus_utilisation and cpus_limit != 0:
                 stats['cpus_percent'] = cpus_utilisation / cpus_limit
 
@@ -136,6 +138,7 @@ class MesosCollector(diamond.collector.Collector):
             stats = cur_data['statistics']
             mem_rss_bytes = stats.get('mem_rss_bytes')
             mem_limit_bytes = stats.get('mem_limit_bytes')
+
             if mem_rss_bytes and mem_limit_bytes != 0:
                 stats['mem_percent'] = mem_rss_bytes / float(mem_limit_bytes)
 
@@ -160,8 +163,7 @@ class MesosCollector(diamond.collector.Collector):
             r[executor_id] = r.get(executor_id, {})
             r[executor_id]['framework_id'] = i['framework_id']
             r[executor_id]['statistics'] = r[executor_id].get('statistics', {})
-            r[executor_id]['statistics'] = self._sum_statistics(
-                i['statistics'], r[executor_id]['statistics'])
+            r[executor_id]['statistics'] = self._sum_statistics(i['statistics'], r[executor_id]['statistics'])
 
         self._add_cpu_usage(r)
         self._add_cpu_percent(r)
@@ -170,8 +172,7 @@ class MesosCollector(diamond.collector.Collector):
 
     def _sum_statistics(self, x, y):
         stats = set(x) | set(y)
-        summed_stats = dict([(key, x.get(key, 0) + y.get(key, 0))
-                             for key in stats])
+        summed_stats = dict([(key, x.get(key, 0) + y.get(key, 0)) for key in stats])
         return summed_stats
 
     def _collect_slave_statistics(self):
@@ -185,7 +186,7 @@ class MesosCollector(diamond.collector.Collector):
         self._publish_tasks_statistics(result_copy)
 
     def _get_url(self, path):
-        parsed = urlparse(self.config['host'])
+        parsed = urllib.parse.urlparse(self.config['host'])
         scheme = parsed.scheme or 'http'
         host = parsed.hostname or self.config['host']
         return "%s://%s:%s/%s" % (
@@ -196,8 +197,9 @@ class MesosCollector(diamond.collector.Collector):
         Execute a Mesos API call.
         """
         url = self._get_url(path)
+
         try:
-            response = urllib2.urlopen(url)
+            response = urllib.request.urlopen(url)
         except Exception as err:
             self.log.error("%s: %s", url, err)
             return False
@@ -205,8 +207,7 @@ class MesosCollector(diamond.collector.Collector):
         try:
             doc = json.load(response)
         except (TypeError, ValueError):
-            self.log.error("Unable to parse response from Mesos as a"
-                           " json object")
+            self.log.error("Unable to parse response from Mesos as a json object")
             return False
 
         return doc
@@ -217,8 +218,10 @@ class MesosCollector(diamond.collector.Collector):
         """
         value = str(value)
         decimal = value.rfind('.')
+
         if decimal == -1:
             return 0
+
         return len(value) - decimal - 1
 
     def _sanitize_metric_name(self, name):
@@ -227,8 +230,7 @@ class MesosCollector(diamond.collector.Collector):
     def _publish_tasks_statistics(self, result):
         for executor in result:
             parts = executor['executor_id'].rsplit('.', 1)
-            executor_id = '%s.%s' % (self._sanitize_metric_name(parts[0]),
-                                     parts[1])
+            executor_id = '%s.%s' % (self._sanitize_metric_name(parts[0]), parts[1])
             metrics = {executor_id: {}}
             metrics[executor_id]['framework_id'] = executor['framework_id']
             metrics[executor_id]['statistics'] = executor['statistics']
@@ -239,8 +241,9 @@ class MesosCollector(diamond.collector.Collector):
             self._publish(metrics, False)
 
     def _publish(self, result, sanitize_executor_id=True):
-        for executor_id, executor in result.iteritems():
+        for executor_id, executor in iter(result.items()):
             executor_statistics = executor['statistics']
+
             for key in executor_statistics:
                 value = executor_statistics[key]
                 framework_id = self.known_frameworks[executor['framework_id']]
@@ -251,6 +254,5 @@ class MesosCollector(diamond.collector.Collector):
                 else:
                     executor_name = executor_id
 
-                metric = 'frameworks.%s.executors.%s.%s' % (
-                    framework, executor_name, key)
+                metric = 'frameworks.%s.executors.%s.%s' % (framework, executor_name, key)
                 self.publish(metric, value, precision=self._precision(value))

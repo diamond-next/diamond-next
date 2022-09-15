@@ -8,7 +8,7 @@ Collect statistics from Flume
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json or simplejson
 
 

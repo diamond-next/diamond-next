@@ -30,25 +30,27 @@ You can also specify multiple and mixed instances::
 
 #### Dependencies
 
- * urlparse
+ * urllib
 
 """
 
-import socket
-import diamond.collector
 import os.path
-import urlparse
+import socket
+import urllib.parse
+
 import time
+
+import diamond.collector
 
 
 class OpenVPNCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(OpenVPNCollector, self).get_default_config_help()
         config_help.update({
             'instances': 'List of instances to collect stats from',
             'timeout': 'network timeout'
         })
+
         return config_help
 
     def get_default_config(self):
@@ -57,20 +59,23 @@ class OpenVPNCollector(diamond.collector.Collector):
         """
         config = super(OpenVPNCollector, self).get_default_config()
         config.update({
-            'path':      'openvpn',
+            'path': 'openvpn',
             'instances': 'file:///var/log/openvpn/status.log',
-            'timeout':   '10',
+            'timeout': '10',
         })
+
         return config
 
     def parse_url(self, uri):
         """
         Convert urlparse from a python 2.4 layout to a python 2.7 layout
         """
-        parsed = urlparse.urlparse(uri)
+        parsed = urllib.parse.urlparse(uri)
+
         if 'scheme' not in parsed:
             class Object(object):
                 pass
+
             newparsed = Object()
             newparsed.scheme = parsed[0]
             newparsed.netloc = parsed[1]
@@ -83,10 +88,11 @@ class OpenVPNCollector(diamond.collector.Collector):
             newparsed.hostname = ''
             newparsed.port = ''
             parsed = newparsed
+
         return parsed
 
     def collect(self):
-        if isinstance(self.config['instances'], basestring):
+        if isinstance(self.config['instances'], str):
             instances = [self.config['instances']]
         else:
             instances = self.config['instances']
@@ -94,6 +100,7 @@ class OpenVPNCollector(diamond.collector.Collector):
         for uri in instances:
             parsed = self.parse_url(uri)
             collect = getattr(self, 'collect_%s' % (parsed.scheme,), None)
+
             if collect:
                 collect(uri)
             else:
@@ -102,14 +109,14 @@ class OpenVPNCollector(diamond.collector.Collector):
     def collect_file(self, uri):
         parsed = self.parse_url(uri)
         filename = parsed.path
+
         if '?' in filename:
             filename, name = filename.split('?')
         else:
             name = os.path.splitext(os.path.basename(filename))[0]
 
         if not os.access(filename, os.R_OK):
-            self.log.error('OpenVPN collect failed: unable to read "%s"',
-                           filename)
+            self.log.error('OpenVPN collect failed: unable to read "%s"', filename)
             return
         else:
             self.log.info('OpenVPN parsing "%s" file: %s', name, filename)
@@ -122,12 +129,12 @@ class OpenVPNCollector(diamond.collector.Collector):
 
     def collect_tcp(self, uri):
         parsed = self.parse_url(uri)
+
         try:
             host, port = parsed.netloc.split(':')
             port = int(port)
         except ValueError:
-            self.log.error('OpenVPN expected host:port in URI, got "%s"',
-                           parsed.netloc)
+            self.log.error('OpenVPN expected host:port in URI, got "%s"', parsed.netloc)
             return
 
         if '?' in parsed.path:
@@ -144,6 +151,7 @@ class OpenVPNCollector(diamond.collector.Collector):
 
             fd = server.makefile('rb')
             line = fd.readline()
+
             if not line.startswith('>INFO:OpenVPN'):
                 self.log.debug('OpenVPN received: %s', line.rstrip())
                 self.log.error('OpenVPN protocol error')
@@ -153,9 +161,11 @@ class OpenVPNCollector(diamond.collector.Collector):
             server.send('status\r\n')
 
             lines = []
+
             while True:
                 line = fd.readline()
                 lines.append(line)
+
                 if line.strip() == 'END':
                     break
 
@@ -178,6 +188,7 @@ class OpenVPNCollector(diamond.collector.Collector):
         number_connected_clients = 0
         section = ''
         heading = []
+
         for line in lines:
             if line.strip() == 'END':
                 break
@@ -192,15 +203,13 @@ class OpenVPNCollector(diamond.collector.Collector):
                 section = 'global'
             elif ',' in line:
                 key, value = line.split(',', 1)
+
                 if key.lower() == 'updated':
                     continue
 
                 if section == 'statistics':
                     # All values here are numeric
-                    self.publish_number('.'.join([
-                        name,
-                        'global',
-                        key, ]), value)
+                    self.publish_number('.'.join([name, 'global', key]), value)
 
                 elif section == 'clients':
                     # Clients come with a heading
@@ -209,38 +218,28 @@ class OpenVPNCollector(diamond.collector.Collector):
                     else:
                         info = {}
                         number_connected_clients += 1
+
                         for k, v in zip(heading, line.strip().split(',')):
                             info[k.lower()] = v
 
-                        self.publish_number('.'.join([
-                            name,
-                            section,
-                            info['common name'].replace('.', '_'),
-                            'bytes_rx']), info['bytes received'])
-                        self.publish_number('.'.join([
-                            name,
-                            section,
-                            info['common name'].replace('.', '_'),
-                            'bytes_tx']), info['bytes sent'])
-
+                        self.publish_number('.'.join([name, section, info['common name'].replace('.', '_'), 'bytes_rx']), info['bytes received'])
+                        self.publish_number('.'.join([name, section, info['common name'].replace('.', '_'), 'bytes_tx']), info['bytes sent'])
                 elif section == 'global':
                     # All values here are numeric
-                    self.publish_number('.'.join([
-                        name,
-                        section,
-                        key, ]), value)
+                    self.publish_number('.'.join([name, section, key]), value)
 
             elif line.startswith('END'):
                 break
+
         self.publish('%s.clients.connected' % name, number_connected_clients)
 
     def publish_number(self, key, value):
         key = key.replace('/', '-').replace(' ', '_').lower()
+
         try:
-            value = long(value)
+            value = int(value)
         except ValueError:
-            self.log.error('OpenVPN expected a number for "%s", got "%s"',
-                           key, value)
+            self.log.error('OpenVPN expected a number for "%s", got "%s"', key, value)
             return
         else:
             self.publish(key, value)

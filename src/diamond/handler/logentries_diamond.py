@@ -1,31 +1,34 @@
 # coding=utf-8
+
 """
 [Logentries: Log Management & Analytics Made Easy ](https://logentries.com/).
 Send Diamond stats to your Logentries Account where you can monitor and alert
 based on data in real time.
 """
 
-from Handler import Handler
-import logging
-import urllib2
 import json
-from collections import deque
+import logging
+import collections
+import urllib.error
+import urllib.request
+
+import diamond.handler.Handler
 
 
-class LogentriesDiamondHandler(Handler):
+class LogentriesDiamondHandler(diamond.handler.Handler.Handler):
     """
       Implements the abstract Handler class
     """
-
     def __init__(self, config=None):
         """
         New instance of LogentriesDiamondHandler class
         """
 
-        Handler.__init__(self, config)
+        diamond.handler.Handler.Handler.__init__(self, config)
         self.log_token = self.config.get('log_token', None)
         self.queue_size = int(self.config['queue_size'])
-        self.queue = deque([])
+        self.queue = collections.deque([])
+
         if self.log_token is None:
             raise Exception
 
@@ -33,12 +36,10 @@ class LogentriesDiamondHandler(Handler):
         """
         Help text
         """
-        config = super(LogentriesDiamondHandler,
-                       self).get_default_config_help()
+        config = super(LogentriesDiamondHandler, self).get_default_config_help()
 
         config.update({
-            'log_token':
-                '[Your log token](https://logentries.com/doc/input-token/)',
+            'log_token': '[Your log token](https://logentries.com/doc/input-token/)',
             'queue_size': ''
         })
 
@@ -61,8 +62,8 @@ class LogentriesDiamondHandler(Handler):
         """
         Process metric by sending it to datadog api
         """
-
         self.queue.append(metric)
+
         if len(self.queue) >= self.queue_size:
             logging.debug("Queue is full, sending logs to Logentries")
             self._send()
@@ -75,9 +76,9 @@ class LogentriesDiamondHandler(Handler):
             metric = self.queue.popleft()
             topic, value, timestamp = str(metric).split()
             msg = json.dumps({"event": {topic: value}})
-            req = urllib2.Request("https://js.logentries.com/v1/logs/" +
-                                  self.log_token, msg)
+            req = urllib.request.Request("https://js.logentries.com/v1/logs/" + self.log_token, msg)
+
             try:
-                urllib2.urlopen(req)
-            except urllib2.URLError as e:
+                urllib.request.urlopen(req)
+            except urllib.error.URLError as e:
                 logging.error("Can't send log message to Logentries %s", e)

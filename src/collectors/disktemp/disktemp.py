@@ -18,24 +18,22 @@ import re
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class DiskTemperatureCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(DiskTemperatureCollector, self).process_config()
         self.devices = re.compile(self.config['devices'])
 
     def get_default_config_help(self):
-        config_help = super(DiskTemperatureCollector,
-                            self).get_default_config_help()
+        config_help = super(DiskTemperatureCollector, self).get_default_config_help()
         config_help.update({
             'devices': "device regex to collect stats on",
-            'bin':         'The path to the hddtemp binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
+            'bin': 'The path to the hddtemp binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -55,17 +53,18 @@ class DiskTemperatureCollector(diamond.collector.Collector):
     def get_temp(self, device):
         command = [self.config['bin'], '-n', device]
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             command.insert(0, self.config['sudo_cmd'])
 
         return subprocess.Popen(command, stdout=subprocess.PIPE)
 
     def match_device(self, device, path):
         m = self.devices.match(device)
+
         if m:
             key = device
-            # If the regex has a capture group for pretty printing, pick
-            # the last matched capture group
+
+            # If the regex has a capture group for pretty printing, pick the last matched capture group
             if self.devices.groups > 0:
                 key = '.'.join(filter(None, [g for g in m.groups()]))
 
@@ -84,10 +83,11 @@ class DiskTemperatureCollector(diamond.collector.Collector):
             instances.update(self.match_device(device, '/dev/'))
 
         # Support disk by id such as /dev/disk/by-id/wwn-(.*)
-        for device_id in os.listdir('/dev/disk/by-id/'):
+        for device in os.listdir('/dev/disk/by-id/'):
             instances.update(self.match_device(device, '/dev/disk/by-id/'))
 
         metrics = {}
+
         for device, p in instances.items():
             output = p.communicate()[0].strip()
 

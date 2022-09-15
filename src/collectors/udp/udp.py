@@ -9,18 +9,19 @@ The UDPCollector class collects metrics on UDP stats (surprise!)
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class UDPCollector(diamond.collector.Collector):
-
     PROC = [
         '/proc/net/snmp'
     ]
 
     def process_config(self):
         super(UDPCollector, self).process_config()
+
         if self.config['allowed_names'] is None:
             self.config['allowed_names'] = []
 
@@ -37,9 +38,8 @@ class UDPCollector(diamond.collector.Collector):
         """
         config = super(UDPCollector, self).get_default_config()
         config.update({
-            'path':          'udp',
-            'allowed_names': 'InDatagrams, NoPorts, InErrors, ' +
-                             'OutDatagrams, RcvbufErrors, SndbufErrors'
+            'path': 'udp',
+            'allowed_names': 'InDatagrams, NoPorts, InErrors, OutDatagrams, RcvbufErrors, SndbufErrors'
         })
         return config
 
@@ -73,6 +73,7 @@ class UDPCollector(diamond.collector.Collector):
                     header = line
                     data = file.readline()
                     break
+
             file.close()
 
             # No data from the file?
@@ -83,16 +84,15 @@ class UDPCollector(diamond.collector.Collector):
             header = header.split()
             data = data.split()
 
-            for i in xrange(1, len(header)):
+            for i in range(1, len(header)):
                 metrics[header[i]] = data[i]
 
         for metric_name in metrics.keys():
-            if ((len(self.config['allowed_names']) > 0 and
-                 metric_name not in self.config['allowed_names'])):
+            if len(self.config['allowed_names']) > 0 and metric_name not in self.config['allowed_names']:
                 continue
 
             value = metrics[metric_name]
-            value = self.derivative(metric_name, long(value))
+            value = self.derivative(metric_name, int(value))
 
             # Publish the metric
             self.publish(metric_name, value, 0)

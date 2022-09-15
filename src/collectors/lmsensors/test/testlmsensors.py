@@ -1,14 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
+import unittest
+from unittest.mock import patch
 
+from collectors.lmsensors.lmsensors import LMSensorsCollector
 from diamond.collector import Collector
-from lmsensors import LMSensorsCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 try:
     import sensors
@@ -18,7 +17,6 @@ except ImportError:
 
 
 class FeatureMock:
-
     def __init__(self, label, value=None):
         self.label = label
         self.value = value
@@ -31,7 +29,6 @@ class FeatureMock:
 
 
 class ChipMock:
-
     def __init__(self, label, features):
         self.label = label
         self.features = features
@@ -46,7 +43,6 @@ class ChipMock:
 
 @unittest.skipIf(sensors is None, "No PySensors module found")
 class TestLMSensorsCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('LMSensorsCollector', {})
         self.collector = LMSensorsCollector(config, None)
@@ -58,8 +54,7 @@ class TestLMSensorsCollector(CollectorTestCase):
     def test_simple_sensor(self, publish_mock):
         feature = FeatureMock('Core 0', 10)
         chip = ChipMock("coretemp-isa-0000", [feature])
-        patch_detected_chips_iter = patch('sensors.iter_detected_chips',
-                                          return_value=[chip])
+        patch_detected_chips_iter = patch('sensors.iter_detected_chips', return_value=[chip])
         patch_detected_chips_iter.start()
         self.collector.collect()
         patch_detected_chips_iter.stop()
@@ -69,8 +64,7 @@ class TestLMSensorsCollector(CollectorTestCase):
     def test_empty_sensor(self, publish_mock):
         feature = FeatureMock('Core 0')
         chip = ChipMock('coretemp-isa-0000', [feature])
-        patch_detected_chips_iter = patch('sensors.iter_detected_chips',
-                                          return_value=[chip])
+        patch_detected_chips_iter = patch('sensors.iter_detected_chips', return_value=[chip])
         patch_detected_chips_iter.start()
         self.collector.collect()
         patch_detected_chips_iter.stop()
@@ -82,8 +76,7 @@ class TestLMSensorsCollector(CollectorTestCase):
 
         feature = FeatureMock('Core 0')
         chip = ChipMock('coretemp-isa-0000', [feature])
-        patch_detected_chips_iter = patch('sensors.iter_detected_chips',
-                                          return_value=[chip])
+        patch_detected_chips_iter = patch('sensors.iter_detected_chips', return_value=[chip])
         patch_detected_chips_iter.start()
         self.collector.collect()
         patch_detected_chips_iter.stop()

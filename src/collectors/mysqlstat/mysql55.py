@@ -11,25 +11,27 @@ For now only monitors replication load
 
 #### Dependencies
 
- * MySQLdb
+ * mysqlclient
  * MySQL 5.5.3+
 
 """
 
 from __future__ import division
 
-try:
-    import MySQLdb
-    from MySQLdb import MySQLError
-except ImportError:
-    MySQLdb = None
-import diamond
-import time
 import re
+
+import time
+
+import diamond.collector
+
+try:
+    import mysqlclient
+    from mysqlclient import MySQLError
+except ImportError:
+    mysqlclient = None
 
 
 class MySQLPerfCollector(diamond.collector.Collector):
-
     def process_config(self):
         super(MySQLPerfCollector, self).process_config()
         self.db = None
@@ -118,25 +120,25 @@ class MySQLPerfCollector(diamond.collector.Collector):
         """
         config = super(MySQLPerfCollector, self).get_default_config()
         config.update({
-            'path':     'mysql',
+            'path': 'mysql',
             # Connection settings
-            'hosts':    [],
-
-            'slave':    'False',
+            'hosts': [],
+            'slave': 'False',
         })
+
         return config
 
     def connect(self, params):
-        if MySQLdb is None:
-            self.log.error('Unable to import MySQLdb')
+        if mysqlclient is None:
+            self.log.error('Unable to import mysqlclient')
             return
 
         try:
-            self.db = MySQLdb.connect(**params)
+            self.db = mysqlclient.connect(**params)
         except MySQLError as e:
-            self.log.error('MySQLPerfCollector couldnt connect to database %s',
-                           e)
+            self.log.error("MySQLPerfCollector couldn't connect to database %s", e)
             return {}
+
         self.log.debug('MySQLPerfCollector: Connected to database.')
 
     def query_list(self, query, params):
@@ -233,16 +235,20 @@ class MySQLPerfCollector(diamond.collector.Collector):
                 params['port'] = int(matches.group(4))
             except ValueError:
                 params['port'] = 3306
+
             params['db'] = matches.group(5)
             params['user'] = matches.group(1)
             params['passwd'] = matches.group(2)
 
             nickname = matches.group(6)
+
             if len(nickname):
                 nickname += '.'
 
             self.connect(params=params)
+
             if self.config['slave']:
                 self.slave_load(nickname, 'thread/sql/slave_io')
                 self.slave_load(nickname, 'thread/sql/slave_sql')
+
             self.db.close()

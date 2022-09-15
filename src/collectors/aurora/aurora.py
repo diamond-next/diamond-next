@@ -1,13 +1,11 @@
-import diamond.collector
+import urllib.request
 
-import urllib2
+import diamond.collector
 
 
 class AuroraCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(AuroraCollector,
-                            self).get_default_config_help()
+        config_help = super(AuroraCollector, self).get_default_config_help()
 
         config_help.update({
             'host': 'Scheduler Hostname',
@@ -28,11 +26,9 @@ class AuroraCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        url = "%s://%s:%s/vars" % (self.config['scheme'],
-                                   self.config['host'],
-                                   self.config['port'])
+        url = "%s://%s:%s/vars" % (self.config['scheme'], self.config['host'], self.config['port'])
 
-        response = urllib2.urlopen(url)
+        response = urllib.request.urlopen(url)
 
         for line in response.readlines():
             properties = line.split()

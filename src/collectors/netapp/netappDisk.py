@@ -19,9 +19,11 @@
 """
 
 from __future__ import print_function
-import diamond.collector
+
 import time
-from diamond.metric import Metric
+
+import diamond.collector
+import diamond.metric
 
 try:
     import xml.etree.ElementTree as ET
@@ -56,10 +58,8 @@ class netappDiskCol(object):
         self._netapp_login()
 
         # Grab our netapp XML
-        disk_xml = self.get_netapp_elem(
-            NaElement('disk-list-info'), 'disk-details')
-        storage_disk_xml = self.get_netapp_elem(
-            NaElement('storage-disk-get-iter'), 'attributes-list')
+        disk_xml = self.get_netapp_elem(NaElement('disk-list-info'), 'disk-details')
+        storage_disk_xml = self.get_netapp_elem(NaElement('storage-disk-get-iter'), 'attributes-list')
 
         # Our metric collection and publishing goes here
         self.zero_disk(disk_xml)
@@ -81,8 +81,7 @@ class netappDiskCol(object):
         c2 = {}  # Counters from time b
         disk_results = {}  # Disk busyness results %
         agr_results = {}  # Aggregate busyness results $
-        names = ['disk_busy', 'base_for_disk_busy', 'raid_name',
-                 'base_for_disk_busy', 'instance_uuid']
+        names = ['disk_busy', 'base_for_disk_busy', 'raid_name', 'base_for_disk_busy', 'instance_uuid']
         netapp_api = NaElement('perf-object-get-instances')
         netapp_api.child_add_string('objectname', 'disk')
         disk_1 = self.get_netapp_elem(netapp_api, 'instances')
@@ -93,8 +92,7 @@ class netappDiskCol(object):
             temp = {}
             for element in instance_data.findall(".//counters/counter-data"):
                 if element.find('name').text in names:
-                    temp[element.find('name').text] = element.find(
-                        'value').text
+                    temp[element.find('name').text] = element.find('value').text
 
             agr_name = temp['raid_name']
             agr_name = agr_name[agr_name.find('/', 0):agr_name.find('/', 1)]
@@ -105,8 +103,7 @@ class netappDiskCol(object):
             temp = {}
             for element in instance_data.findall(".//counters/counter-data"):
                 if element.find('name').text in names:
-                    temp[element.find('name').text] = element.find(
-                        'value').text
+                    temp[element.find('name').text] = element.find('value').text
 
             agr_name = temp['raid_name']
             agr_name = agr_name[agr_name.find('/', 0):agr_name.find('/', 1)]
@@ -163,8 +160,7 @@ class netappDiskCol(object):
                 break
 
         if not type(cp_2) is list or not type(cp_1) is list:
-            log.error("consistency point data not available for filer: %s"
-                      % self.device)
+            self.log.error("consistency point data not available for filer: %s" % self.device)
             return
 
         cp_1 = {
@@ -271,13 +267,11 @@ class netappDiskCol(object):
         netapp_data = self.server.invoke_elem(netapp_api)
 
         if netapp_data.results_status() == 'failed':
-            self.log.error(
-                'While using netapp API failed to retrieve '
-                'disk-list-info for netapp filer %s' % self.device)
+            self.log.error('While using netapp API failed to retrieve disk-list-info for netapp filer %s' % self.device)
             print(netapp_data.sprintf())
             return
-        netapp_xml = \
-            ET.fromstring(netapp_data.sprintf()).find(sub_element)
+
+        netapp_xml = ET.fromstring(netapp_data.sprintf()).find(sub_element)
 
         return netapp_xml
 
@@ -298,11 +292,12 @@ class netappDiskCol(object):
         graphite_path += '.' + self.device + '.' + type
         graphite_path += '.' + metric_name
 
-        metric = Metric(
+        metric = diamond.metric.Metric(
             graphite_path,
             metric_value,
             precision=4,
-            host=self.device)
+            host=self.device
+        )
 
         self.publish_metric(metric)
 
@@ -318,8 +313,7 @@ class netappDisk(diamond.collector.Collector):
         """
 
         if netappsdk:
-            self.log.error(
-                'Failed to import netappsdk.NaServer or netappsdk.NaElement')
+            self.log.error('Failed to import netappsdk.NaServer or netappsdk.NaElement')
             return
 
         if device in self.running:

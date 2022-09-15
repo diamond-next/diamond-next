@@ -1,18 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-################################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.mogilefs.mogilefs import MogilefsCollector
 from diamond.collector import Collector
-
-from mogilefs import MogilefsCollector
-
-################################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestMogilefsCollector(CollectorTestCase):
@@ -28,17 +23,14 @@ class TestMogilefsCollector(CollectorTestCase):
 
     @patch.object(Collector, 'publish')
     def test_stub_data(self, publish_mock):
+        mock_telnet = Mock(**{'read_until.return_value': self.getFixture('stats').getvalue()})
+        patch_telnet = patch('telnetlib.Telnet', Mock(return_value=mock_telnet))
 
-        mockTelnet = Mock(**{'read_until.return_value':
-                             self.getFixture('stats').getvalue()})
-
-        patch_Telnet = patch('telnetlib.Telnet', Mock(return_value=mockTelnet))
-
-        patch_Telnet.start()
+        patch_telnet.start()
         self.collector.collect()
-        patch_Telnet.stop()
+        patch_telnet.stop()
 
-        mockTelnet.read_until.assert_any_call('.', 3)
+        mock_telnet.read_until.assert_any_call('.', 3)
 
         metrics = {
             'uptime': 181491,
@@ -55,6 +47,6 @@ class TestMogilefsCollector(CollectorTestCase):
 
         self.assertPublishedMany(publish_mock, metrics)
 
-################################################################################
+
 if __name__ == "__main__":
     unittest.main()

@@ -1,12 +1,13 @@
-#!/usr/bin/python
-from test import CollectorTestCase, get_collector_config
-from mock import MagicMock, patch
+#!/usr/bin/python3
 
-from pgq import PgQCollector
+from unittest.mock import MagicMock, patch
+
+from collectors.pgq.pgq import PgQCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestPgQCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('PgQCollector', {})
         self.collector = PgQCollector(config, None)

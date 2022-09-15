@@ -8,7 +8,7 @@ Send metrics to signalfx
 
 #### Dependencies
 
- * urllib2
+ * urllib
 
 
 #### Configuration

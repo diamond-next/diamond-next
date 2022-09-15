@@ -10,8 +10,9 @@ kernel module.
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class ConnTrackCollector(diamond.collector.Collector):
@@ -48,14 +49,15 @@ class ConnTrackCollector(diamond.collector.Collector):
         Collect metrics
         """
         collected = {}
+        dirs = []
         files = []
 
-        if isinstance(self.config['dir'], basestring):
+        if isinstance(self.config['dir'], str):
             dirs = [d.strip() for d in self.config['dir'].split(',')]
         elif isinstance(self.config['dir'], list):
             dirs = self.config['dir']
 
-        if isinstance(self.config['files'], basestring):
+        if isinstance(self.config['files'], str):
             files = [f.strip() for f in self.config['files'].split(',')]
         elif isinstance(self.config['files'], list):
             files = self.config['files']
@@ -69,21 +71,20 @@ class ConnTrackCollector(diamond.collector.Collector):
                 else:
                     self.log.error('Unknown file for collection: %s', sfile)
                     continue
+
                 fpath = os.path.join(sdir, sfile)
+
                 if not os.path.exists(fpath):
                     continue
+
                 try:
                     with open(fpath, "r") as fhandle:
                         metric = float(fhandle.readline().rstrip("\n"))
                         collected[metric_name] = metric
                 except Exception as exception:
-                    self.log.error("Failed to collect from '%s': %s",
-                                   fpath,
-                                   exception)
+                    self.log.error("Failed to collect from '%s': %s", fpath, exception)
         if not collected:
-            self.log.error('No metric was collected, looks like '
-                           'nf_conntrack/ip_conntrack kernel module was '
-                           'not loaded')
+            self.log.error('No metric was collected, looks like nf_conntrack/ip_conntrack kernel module was not loaded')
         else:
             for key in collected.keys():
                 self.publish(key, collected[key])

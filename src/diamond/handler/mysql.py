@@ -2,10 +2,19 @@
 
 """
 Insert the collected values into a mysql table
+
+#### Dependencies
+
+ * mysqlclient
+
 """
 
-from Handler import Handler
-import MySQLdb
+from diamond.handler.Handler import Handler
+
+try:
+    import mysqlclient
+except ImportError:
+    mysqlclient = None
 
 
 class MySQLHandler(Handler):
@@ -18,6 +27,7 @@ class MySQLHandler(Handler):
         """
         Create a new instance of the MySQLHandler class
         """
+
         # Initialize Handler
         Handler.__init__(self, config)
 
@@ -41,8 +51,7 @@ class MySQLHandler(Handler):
         """
         config = super(MySQLHandler, self).get_default_config_help()
 
-        config.update({
-        })
+        config.update({})
 
         return config
 
@@ -52,8 +61,7 @@ class MySQLHandler(Handler):
         """
         config = super(MySQLHandler, self).get_default_config()
 
-        config.update({
-        })
+        config.update({})
 
         return config
 
@@ -67,6 +75,7 @@ class MySQLHandler(Handler):
         """
         Process a metric
         """
+
         # Just send the data
         self._send(str(metric))
 
@@ -75,17 +84,18 @@ class MySQLHandler(Handler):
         Insert the data
         """
         data = data.strip().split(' ')
+
         try:
             cursor = self.conn.cursor()
-            cursor.execute("INSERT INTO %s (%s, %s, %s) VALUES(%%s, %%s, %%s)"
-                           % (self.table, self.col_metric,
-                              self.col_time, self.col_value),
-                           (data[0], data[2], data[1]))
+            cursor.execute(
+                "INSERT INTO %s (%s, %s, %s) VALUES(%%s, %%s, %%s)" % (self.table, self.col_metric, self.col_time, self.col_value), (data[0], data[2], data[1])
+            )
             cursor.close()
             self.conn.commit()
         except BaseException as e:
             # Log Error
             self.log.error("MySQLHandler: Failed sending data. %s.", e)
+
             # Attempt to restablish connection
             self._connect()
 
@@ -94,11 +104,7 @@ class MySQLHandler(Handler):
         Connect to the MySQL server
         """
         self._close()
-        self.conn = MySQLdb.Connect(host=self.hostname,
-                                    port=self.port,
-                                    user=self.username,
-                                    passwd=self.password,
-                                    db=self.database)
+        self.conn = mysqlclient.Connect(host=self.hostname, port=self.port, user=self.username, passwd=self.password, db=self.database)
 
     def _close(self):
         """

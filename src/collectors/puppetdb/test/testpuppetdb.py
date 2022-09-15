@@ -1,18 +1,14 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
+import unittest
+
+from collectors.puppetdb.puppetdb import PuppetDBCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-from test import unittest
-
-from puppetdb import PuppetDBCollector
-
-##########################################################################
 
 
 class TestPuppetDBCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('PuppetDBCollector', {
             'interval': 10
@@ -23,6 +19,6 @@ class TestPuppetDBCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(PuppetDBCollector)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

@@ -19,13 +19,13 @@ The FlutendCollector monitors fluentd and data about the kinesis stream.
 
 """
 
-import diamond.collector
-import urllib2
 import json
+import urllib.request
+
+import diamond.collector
 
 
 class FluentdCollector(diamond.collector.Collector):
-
     API_PATH = '/api/plugins.json'
 
     def get_default_config_help(self):
@@ -51,7 +51,7 @@ class FluentdCollector(diamond.collector.Collector):
         params = (self.config['host'], self.config['port'], self.API_PATH)
         url = "http://%s:%s/%s" % params
 
-        res = urllib2.urlopen(url)
+        res = urllib.request.urlopen(url)
         data = json.load(res)
 
         result = self.parse_api_output(data)

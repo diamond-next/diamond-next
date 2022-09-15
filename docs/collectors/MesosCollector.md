@@ -17,7 +17,7 @@ port = 5050
 ```
 
 #### Dependencies
- * urlib2
+ * urllib
 
 #### Options
 

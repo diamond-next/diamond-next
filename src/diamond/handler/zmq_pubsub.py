@@ -4,7 +4,7 @@
 Output the collected values to a Zer0MQ pub/sub channel
 """
 
-from Handler import Handler
+from diamond.handler.Handler import Handler
 
 try:
     import zmq
@@ -12,12 +12,11 @@ except ImportError:
     zmq = None
 
 
-class zmqHandler (Handler):
+class zmqHandler(Handler):
     """
       Implements the abstract Handler class
       Sending data to a Zer0MQ pub channel
     """
-
     def __init__(self, config=None):
         """
           Create a new instance of zmqHandler class
@@ -72,6 +71,7 @@ class zmqHandler (Handler):
         """
         if not zmq:
             return
+
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.PUB)
         self.socket.bind("tcp://*:%i" % self.port)
@@ -88,5 +88,6 @@ class zmqHandler (Handler):
         """
         if not zmq:
             return
+
         # Send the data as ......
         self.socket.send("%s" % str(metric))

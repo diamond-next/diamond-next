@@ -25,14 +25,13 @@ except ImportError:
 
 
 class UsersCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         """
         Returns the default collector help text
         """
         config_help = super(UsersCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -41,14 +40,16 @@ class UsersCollector(diamond.collector.Collector):
         """
         config = super(UsersCollector, self).get_default_config()
         config.update({
-            'path':     'users',
-            'utmp':     None,
+            'path': 'users',
+            'utmp': None,
         })
+
         return config
 
     def collect(self):
         if UtmpFile is None and UtmpRecord is None:
             self.log.error('Unable to import either pyutmp or python-utmp')
+
             return False
 
         metrics = {'total': 0}

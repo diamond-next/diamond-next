@@ -7,9 +7,9 @@ Save stats in RRD files using rrdtool.
 import os
 import re
 import subprocess
-import Queue
+from queue import Empty, Queue
 
-from Handler import Handler
+from diamond.handler.Handler import Handler
 
 #
 # Constants for RRD file creation.
@@ -58,7 +58,6 @@ RRA_SPECS = [
 
 
 class RRDHandler(Handler):
-
     # NOTE: This handler is fairly loose about locking (none),
     # and the reason is because the calls are always protected
     # by locking done in the _process and _flush routines.
@@ -155,16 +154,19 @@ class RRDHandler(Handler):
         # we would like to have exceptions related to creating
         # the RRD file raised in the main thread.
         self._ensure_exists(filename, metric_name, metric.metric_type)
+
         if self._queue(filename, metric.timestamp, metric.value) >= self._batch:
             self._flush_queue(filename)
 
     def _queue(self, filename, timestamp, value):
         if filename not in self._queues:
-            queue = Queue.Queue()
+            queue = Queue()
             self._queues[filename] = queue
         else:
             queue = self._queues[filename]
+
         queue.put((timestamp, value))
+
         return queue.qsize()
 
     def flush(self):
@@ -178,6 +180,7 @@ class RRDHandler(Handler):
         # Collect all pending updates.
         updates = {}
         max_timestamp = 0
+
         while True:
             try:
                 (timestamp, value) = queue.get(block=False)
@@ -187,19 +190,21 @@ class RRDHandler(Handler):
 
                 # Remember the latest update done.
                 last_update = self._last_update.get(filename, 0)
+
                 if last_update >= timestamp:
                     # Yikes. RRDtool won't let us do this.
                     # We need to drop this update and log a warning.
-                    self.log.warning(
-                        "Dropping update to %s. Too frequent!" % filename)
+                    self.log.warning("Dropping update to %s. Too frequent!" % filename)
                     continue
+
                 max_timestamp = max(timestamp, max_timestamp)
 
                 # Add this update.
                 if timestamp not in updates:
                     updates[timestamp] = []
+
                 updates[timestamp].append(value)
-            except Queue.Empty:
+            except Empty:
                 break
 
         # Save the last update time.
@@ -211,9 +216,9 @@ class RRDHandler(Handler):
             # The timestamps must be sorted, and we each of the
             # <time> values must be unique (like a snowflake).
             data_points = map(
-                lambda (timestamp, values): "%d:%s" %
-                (timestamp, ":".join(map(str, values))),
-                sorted(updates.items()))
+                lambda timestamp_values: "%d:%s" % (timestamp_values[0], ":".join(map(str, timestamp_values[1]))),
+                sorted(updates.items())
+            )
 
             # Optimisticly update.
             # Nothing can really be done if we fail.

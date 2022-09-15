@@ -1,18 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
+from collectors.openstackswift.openstackswift import OpenstackSwiftCollector
+from diamond.testing import CollectorTestCase
 from test import get_collector_config
-
-from openstackswift import OpenstackSwiftCollector
 
 
 class TestOpenstackSwiftCollector(CollectorTestCase):
-
     def setUp(self, allowed_names=None):
         if not allowed_names:
             allowed_names = []
+
         config = get_collector_config('OpenstackSwiftCollector', {
             'allowed_names': allowed_names,
             'interval': 1

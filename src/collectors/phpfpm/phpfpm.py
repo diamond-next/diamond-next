@@ -26,22 +26,22 @@ uri = fpm-status
 
 #### Dependencies
 
- * urllib2
+ * urllib
  * json (or simeplejson)
 
 """
+
+import urllib.request
+
+import diamond.collector
 
 try:
     import json
 except ImportError:
     import simplejson as json
 
-import urllib2
-import diamond.collector
-
 
 class PhpFpmCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(PhpFpmCollector, self).get_default_config_help()
         config_help.update({
@@ -66,15 +66,12 @@ class PhpFpmCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        #
         # if there is a / in front remove it
         if self.config['uri'][0] == '/':
             self.config['uri'] = self.config['uri'][1:]
 
         try:
-            response = urllib2.urlopen("http://%s:%s/%s?json" % (
-                self.config['host'], int(self.config['port']),
-                self.config['uri']))
+            response = urllib.request.urlopen("http://%s:%s/%s?json" % (self.config['host'], int(self.config['port']), self.config['uri']))
         except Exception as e:
             self.log.error('Could not connect to php-fpm status page: %s', e)
             return {}

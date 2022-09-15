@@ -17,7 +17,6 @@ import re
 import subprocess
 
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class MountStatsCollector(diamond.collector.Collector):
@@ -60,7 +59,7 @@ class MountStatsCollector(diamond.collector.Collector):
     def process_config(self):
         super(MountStatsCollector, self).process_config()
         self.exclude_filters = self.config['exclude_filters']
-        if isinstance(self.exclude_filters, basestring):
+        if isinstance(self.exclude_filters, str):
             self.exclude_filters = [self.exclude_filters]
 
         if len(self.exclude_filters) > 0:
@@ -69,7 +68,7 @@ class MountStatsCollector(diamond.collector.Collector):
             self.exclude_reg = None
 
         self.include_filters = self.config['include_filters']
-        if isinstance(self.include_filters, basestring):
+        if isinstance(self.include_filters, str):
             self.include_filters = [self.include_filters]
 
         if len(self.include_filters) > 0:
@@ -78,8 +77,7 @@ class MountStatsCollector(diamond.collector.Collector):
             self.include_reg = None
 
     def get_default_config_help(self):
-        config_help = super(MountStatsCollector,
-                            self).get_default_config_help()
+        config_help = super(MountStatsCollector, self).get_default_config_help()
         config_help.update({
             'exclude_filters':
                 "A list of regex patterns. Any filesystem" +
@@ -112,17 +110,14 @@ class MountStatsCollector(diamond.collector.Collector):
         the statvers value returned by mountstats.
         """
 
-        if str_to_bool(self.config['use_sudo']):
+        if diamond.collector.str_to_bool(self.config['use_sudo']):
             if not os.access(self.config['sudo_cmd'], os.X_OK):
-                self.log.error("Cannot find or exec %s"
-                               % self.config['sudo_cmd'])
+                self.log.error("Cannot find or exec %s" % self.config['sudo_cmd'])
                 return None
 
             command = [self.config['sudo_cmd'], '/bin/cat', self.MOUNTSTATS]
-            p = subprocess.Popen(command,
-                                 stdout=subprocess.PIPE).communicate()[0][:-1]
+            p = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0][:-1]
             lines = p.split("\n")
-
         else:
             if not os.access(self.MOUNTSTATS, os.R_OK):
                 self.log.error("Cannot read path %s" % self.MOUNTSTATS)
@@ -133,8 +128,10 @@ class MountStatsCollector(diamond.collector.Collector):
             f.close()
 
         path = None
+
         for line in lines:
             tokens = line.split()
+
             if len(tokens) == 0:
                 continue
 
@@ -142,8 +139,10 @@ class MountStatsCollector(diamond.collector.Collector):
                 path = tokens[4]
 
                 skip = False
+
                 if self.exclude_reg:
                     skip = self.exclude_reg.match(path)
+
                 if self.include_reg:
                     skip = not self.include_reg.match(path)
 
@@ -161,29 +160,29 @@ class MountStatsCollector(diamond.collector.Collector):
             elif tokens[0] == 'events:':
                 for i in range(0, len(self.EVENTS_MAP)):
                     metric_name = "%s.events.%s" % (path, self.EVENTS_MAP[i])
-                    metric_value = long(tokens[i + 1])
+                    metric_value = int(tokens[i + 1])
                     self.publish_counter(metric_name, metric_value)
             elif tokens[0] == 'bytes:':
                 for i in range(0, len(self.BYTES_MAP)):
                     metric_name = "%s.bytes.%s" % (path, self.BYTES_MAP[i])
-                    metric_value = long(tokens[i + 1])
+                    metric_value = int(tokens[i + 1])
                     self.publish_counter(metric_name, metric_value)
             elif tokens[0] == 'xprt:':
                 proto = tokens[1]
+
                 if not self.XPRT_MAP[proto]:
                     self.log.error("Unknown protocol %s", proto)
                     continue
 
                 for i in range(0, len(self.XPRT_MAP[proto])):
-                    metric_name = "%s.xprt.%s.%s" % (path, proto,
-                                                     self.XPRT_MAP[proto][i])
-                    metric_value = long(tokens[i + 2])
+                    metric_name = "%s.xprt.%s.%s" % (path, proto, self.XPRT_MAP[proto][i])
+                    metric_value = int(tokens[i + 2])
                     self.publish_counter(metric_name, metric_value)
             elif tokens[0][:-1] in self.RPCS_MAP:
                 rpc = tokens[0][:-1]
-                ops = long(tokens[1])
-                rtt = long(tokens[7])
-                exe = long(tokens[8])
+                ops = int(tokens[1])
+                rtt = int(tokens[7])
+                exe = int(tokens[8])
 
                 metric_fmt = "%s.rpc.%s.%s"
                 ops_name = metric_fmt % (path, rpc.lower(), 'ops')

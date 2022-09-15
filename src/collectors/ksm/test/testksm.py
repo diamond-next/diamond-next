@@ -1,23 +1,17 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
 import os
+import unittest
+from unittest.mock import Mock, patch
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
-
+from collectors.ksm.ksm import KSMCollector
 from diamond.collector import Collector
-from ksm import KSMCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestKSMCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('KSMCollector', {
             'interval': 10,
@@ -45,11 +39,9 @@ class TestKSMCollector(CollectorTestCase):
             'sleep_millisecs': 20.0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

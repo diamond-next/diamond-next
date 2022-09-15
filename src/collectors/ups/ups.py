@@ -9,22 +9,23 @@ This class collects data from NUT, a UPS interface for linux.
 
 """
 
-import diamond.collector
 import os
 import subprocess
+
+import diamond.collector
 from diamond.collector import str_to_bool
 
 
 class UPSCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(UPSCollector, self).get_default_config_help()
         config_help.update({
-            'ups_name':    'The name of the ups to collect data for',
-            'bin':         'The path to the upsc binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
+            'ups_name': 'The name of the ups to collect data for',
+            'bin': 'The path to the upsc binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
         })
+
         return config_help
 
     def get_default_config(self):
@@ -34,12 +35,13 @@ class UPSCollector(diamond.collector.Collector):
 
         config = super(UPSCollector, self).get_default_config()
         config.update({
-            'path':             'ups',
-            'ups_name':         'cyberpower',
-            'bin':              '/bin/upsc',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
+            'path': 'ups',
+            'ups_name': 'cyberpower',
+            'bin': '/bin/upsc',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
         })
+
         return config
 
     def collect(self):
@@ -52,8 +54,7 @@ class UPSCollector(diamond.collector.Collector):
         if str_to_bool(self.config['use_sudo']):
             command.insert(0, self.config['sudo_cmd'])
 
-        p = subprocess.Popen(command,
-                             stdout=subprocess.PIPE).communicate()[0]
+        p = subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
 
         for ln in p.strip().splitlines():
             datapoint = ln.split(": ")

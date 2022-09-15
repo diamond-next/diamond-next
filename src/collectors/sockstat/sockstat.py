@@ -9,11 +9,11 @@ Uses /proc/net/sockstat to collect data on number of open sockets
 
 """
 
-import diamond.collector
-import re
+import collections
 import os
-from collections import defaultdict
+import re
 
+import diamond.collector
 
 _RE = re.compile('|'.join([
     r'sockets: used (?P<used>\d+)?',
@@ -27,13 +27,12 @@ _RE = re.compile('|'.join([
 
 
 class SockstatCollector(diamond.collector.Collector):
-
     PROCS = ['/proc/net/sockstat', '/proc/net/sockstat6']
 
     def get_default_config_help(self):
         config_help = super(SockstatCollector, self).get_default_config_help()
-        config_help.update({
-        })
+        config_help.update({})
+
         return config_help
 
     def get_default_config(self):
@@ -42,13 +41,14 @@ class SockstatCollector(diamond.collector.Collector):
         """
         config = super(SockstatCollector, self).get_default_config()
         config.update({
-            'path':     'sockets',
+            'path': 'sockets',
         })
+
         return config
 
     def collect(self):
+        result = collections.defaultdict(int)
 
-        result = defaultdict(int)
         for path in self.PROCS:
             if not os.access(path, os.R_OK):
                 continue
@@ -61,9 +61,9 @@ class SockstatCollector(diamond.collector.Collector):
             self.publish(key, value, metric_type='GAUGE')
 
     def collect_stat(self, data, f):
-
         for line in f:
             match = _RE.match(line)
+
             if match:
                 for key, value in match.groupdict().items():
                     if value:

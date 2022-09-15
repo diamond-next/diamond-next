@@ -2,16 +2,16 @@
 
 import logging
 import threading
-import traceback
-from configobj import ConfigObj
 import time
+import traceback
+
+from configobj import ConfigObj
 
 
 class Handler(object):
     """
     Handlers process metrics that are collected by Collectors.
     """
-
     def __init__(self, config=None, log=None):
         """
         Create a new instance of the Handler class
@@ -36,8 +36,7 @@ class Handler(object):
         self.config.merge(config)
 
         # error logging throttling
-        self.server_error_interval = float(
-            self.config['server_error_interval'])
+        self.server_error_interval = float(self.config['server_error_interval'])
         self._errors = {}
 
         # Initialize Lock
@@ -49,8 +48,7 @@ class Handler(object):
         """
         return {
             'get_default_config_help': 'get_default_config_help',
-            'server_error_interval': ('How frequently to send repeated server '
-                                      'errors'),
+            'server_error_interval': 'How frequently to send repeated server errors',
         }
 
     def get_default_config(self):
@@ -92,6 +90,7 @@ class Handler(object):
         """
         if not self.enabled:
             return
+
         try:
             try:
                 self.lock.acquire()
@@ -124,9 +123,9 @@ class Handler(object):
         :returns: the return value of `Logger.debug` or `Logger.error`
         """
         now = time.time()
+
         if msg in self._errors:
-            if ((now - self._errors[msg]) >=
-                    self.server_error_interval):
+            if (now - self._errors[msg]) >= self.server_error_interval:
                 fn = self.log.error
                 self._errors[msg] = now
             else:

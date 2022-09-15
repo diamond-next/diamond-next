@@ -5,7 +5,8 @@ Collect [dropwizard](http://dropwizard.codahale.com/) stats for the local node
 
 """
 
-import urllib2
+import urllib.error
+import urllib.request
 
 try:
     import json
@@ -16,14 +17,13 @@ import diamond.collector
 
 
 class DropwizardCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(DropwizardCollector,
-                            self).get_default_config_help()
+        config_help = super(DropwizardCollector, self).get_default_config_help()
         config_help.update({
             'host': "",
             'port': "",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -32,29 +32,31 @@ class DropwizardCollector(diamond.collector.Collector):
         """
         config = super(DropwizardCollector, self).get_default_config()
         config.update({
-            'host':     '127.0.0.1',
-            'port':     8081,
-            'path':     'dropwizard',
+            'host': '127.0.0.1',
+            'port': 8081,
+            'path': 'dropwizard',
         })
+
         return config
 
     def collect(self):
         if json is None:
             self.log.error('Unable to import json')
+
             return {}
-        url = 'http://%s:%i/metrics' % (
-            self.config['host'], int(self.config['port']))
+
+        url = 'http://%s:%i/metrics' % (self.config['host'], int(self.config['port']))
+
         try:
-            response = urllib2.urlopen(url)
-        except urllib2.HTTPError as err:
+            response = urllib.request.urlopen(url)
+        except urllib.error.HTTPError as err:
             self.log.error("%s: %s", url, err)
             return
 
         try:
             result = json.load(response)
         except (TypeError, ValueError):
-            self.log.error("Unable to parse response from elasticsearch as" +
-                           " a json object")
+            self.log.error("Unable to parse response from elasticsearch as a json object")
             return
 
         metrics = {}

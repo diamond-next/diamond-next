@@ -1,21 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.darner.darner import DarnerCollector
 from diamond.collector import Collector
-from darner import DarnerCollector
-
-###############################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestDarnerCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('DarnerCollector', {
             'interval': 10,
@@ -69,11 +64,9 @@ class TestDarnerCollector(CollectorTestCase):
             'localhost.queues.test_3_bar.open_transactions': 512,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-###############################################################################
+
 if __name__ == "__main__":
     unittest.main()

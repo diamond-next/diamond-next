@@ -23,12 +23,12 @@ The IPCollector class collects metrics on IP stats
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class IPCollector(diamond.collector.Collector):
-
     PROC = [
         '/proc/net/snmp',
     ]
@@ -40,6 +40,7 @@ class IPCollector(diamond.collector.Collector):
 
     def process_config(self):
         super(IPCollector, self).process_config()
+
         if self.config['allowed_names'] is None:
             self.config['allowed_names'] = []
 
@@ -103,15 +104,14 @@ class IPCollector(diamond.collector.Collector):
             data = data.split()
 
             # Zip up the keys and values
-            for i in xrange(1, len(header)):
+            for i in range(1, len(header)):
                 metrics[header[i]] = data[i]
 
         for metric_name in metrics.keys():
-            if ((len(self.config['allowed_names']) > 0 and
-                 metric_name not in self.config['allowed_names'])):
+            if len(self.config['allowed_names']) > 0 and metric_name not in self.config['allowed_names']:
                 continue
 
-            value = long(metrics[metric_name])
+            value = int(metrics[metric_name])
 
             # Publish the metric
             if metric_name in self.GAUGES:

@@ -1,18 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from test import run_only
-from mock import Mock
-from mock import patch
+import unittest
+from unittest.mock import Mock, patch
 
+from collectors.beanstalkd.beanstalkd import BeanstalkdCollector
 from diamond.collector import Collector
-from beanstalkd import BeanstalkdCollector
-
-##########################################################################
+from diamond.testing import CollectorTestCase
+from test import get_collector_config, run_only
 
 
 def run_only_if_beanstalkc_is_available(func):
@@ -20,12 +15,13 @@ def run_only_if_beanstalkc_is_available(func):
         import beanstalkc
     except ImportError:
         beanstalkc = None
+
     pred = lambda: beanstalkc is not None
+
     return run_only(func, pred)
 
 
 class TestBeanstalkdCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('BeanstalkdCollector', {
             'host': 'localhost',
@@ -108,9 +104,7 @@ class TestBeanstalkdCollector(CollectorTestCase):
             ]
         }
 
-        patch_get_stats = patch.object(BeanstalkdCollector,
-                                       '_get_stats',
-                                       Mock(return_value=stats))
+        patch_get_stats = patch.object(BeanstalkdCollector, '_get_stats', Mock(return_value=stats))
 
         patch_get_stats.start()
         self.collector.collect()
@@ -177,11 +171,9 @@ class TestBeanstalkdCollector(CollectorTestCase):
             'tubes.default.current-jobs-urgent': 0,
         }
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-##########################################################################
+
 if __name__ == "__main__":
     unittest.main()

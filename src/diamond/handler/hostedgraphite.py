@@ -16,12 +16,11 @@ Enable this handler
 
 """
 
-from Handler import Handler
-from graphite import GraphiteHandler
+from diamond.handler.Handler import Handler
+from diamond.handler.graphite import GraphiteHandler
 
 
 class HostedGraphiteHandler(Handler):
-
     def __init__(self, config=None):
         """
         Create a new instance of the HostedGraphiteHandler class

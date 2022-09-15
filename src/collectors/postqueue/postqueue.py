@@ -10,18 +10,17 @@ Collect the emails in the postfix queue
 """
 
 import subprocess
+
 import diamond.collector
-from diamond.collector import str_to_bool
 
 
 class PostqueueCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
         config_help = super(PostqueueCollector, self).get_default_config_help()
         config_help.update({
-            'bin':         'The path to the postqueue binary',
-            'use_sudo':    'Use sudo?',
-            'sudo_cmd':    'Path to sudo',
+            'bin': 'The path to the postqueue binary',
+            'use_sudo': 'Use sudo?',
+            'sudo_cmd': 'Path to sudo',
         })
         return config_help
 
@@ -31,10 +30,10 @@ class PostqueueCollector(diamond.collector.Collector):
         """
         config = super(PostqueueCollector, self).get_default_config()
         config.update({
-            'path':             'postqueue',
-            'bin':              '/usr/bin/postqueue',
-            'use_sudo':         False,
-            'sudo_cmd':         '/usr/bin/sudo',
+            'path': 'postqueue',
+            'bin': '/usr/bin/postqueue',
+            'use_sudo': False,
+            'sudo_cmd': '/usr/bin/sudo',
         })
         return config
 
@@ -42,11 +41,10 @@ class PostqueueCollector(diamond.collector.Collector):
         try:
             command = [self.config['bin'], '-p']
 
-            if str_to_bool(self.config['use_sudo']):
+            if diamond.collector.str_to_bool(self.config['use_sudo']):
                 command.insert(0, self.config['sudo_cmd'])
 
-            return subprocess.Popen(command,
-                                    stdout=subprocess.PIPE).communicate()[0]
+            return subprocess.Popen(command, stdout=subprocess.PIPE).communicate()[0]
         except OSError:
             return ""
 

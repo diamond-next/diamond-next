@@ -9,12 +9,12 @@ Uses /proc to collect available entropy
 
 """
 
-import diamond.collector
 import os
+
+import diamond.collector
 
 
 class EntropyStatCollector(diamond.collector.Collector):
-
     PROC = '/proc/sys/kernel/random/entropy_avail'
 
     def get_default_config(self):
@@ -23,7 +23,7 @@ class EntropyStatCollector(diamond.collector.Collector):
         """
         config = super(EntropyStatCollector, self).get_default_config()
         config.update({
-            'path':     'entropy'
+            'path': 'entropy'
         })
         return config
 

@@ -21,10 +21,10 @@ TO use a unix socket, set a host string like this
 ```
 """
 
-import diamond.collector
-import socket
 import re
-from diamond.collector import str_to_bool
+import socket
+
+import diamond.collector
 
 
 class DarnerCollector(diamond.collector.Collector):
@@ -47,6 +47,7 @@ class DarnerCollector(diamond.collector.Collector):
             'publish_queues':
                 "Publish queue stats (defaults to True)",
         })
+
         return config_help
 
     def get_default_config(self):
@@ -67,10 +68,12 @@ class DarnerCollector(diamond.collector.Collector):
             # Connection settings
             'hosts': ['localhost:22133']
         })
+
         return config
 
     def get_raw_stats(self, host, port):
         data = ''
+
         # connect
         try:
             if port is None:
@@ -79,13 +82,15 @@ class DarnerCollector(diamond.collector.Collector):
             else:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect((host, int(port)))
+
             # request stats
             sock.send('stats\n')
+
             # something big enough to get whatever is sent back
             data = sock.recv(4096)
         except socket.error:
-            self.log.exception('Failed to get stats from %s:%s',
-                               host, port)
+            self.log.exception('Failed to get stats from %s:%s', host, port)
+
         return data
 
     def get_stats(self, host, port):
@@ -99,25 +104,28 @@ class DarnerCollector(diamond.collector.Collector):
         # parse stats
         for line in data.splitlines():
             pieces = line.split(' ')
+
             if pieces[0] != 'STAT' or pieces[1] in ignored:
                 continue
+
             if re.match(r'^queue', pieces[1]):
-                queue_match = re.match(
-                    r'^queue_(.*)_(items|waiters|open_transactions)$',
-                    pieces[1])
+                queue_match = re.match(r'^queue_(.*)_(items|waiters|open_transactions)$', pieces[1])
                 queue_name = queue_match.group(1).replace('.', '_')
+
                 if queue_name not in queues:
                     queues[queue_name] = {}
+
                 queues[queue_name][queue_match.group(2)] = int(pieces[2])
             else:
                 stats[pieces[1]] = int(pieces[2])
+
         return stats, queues
 
     def collect(self):
         hosts = self.config.get('hosts')
 
         # Convert a string config value to be an array
-        if isinstance(hosts, basestring):
+        if isinstance(hosts, str):
             hosts = [hosts]
 
         for host in hosts:
@@ -132,12 +140,10 @@ class DarnerCollector(diamond.collector.Collector):
             stats, queues = self.get_stats(hostname, port)
 
             # Publish queue stats if configured
-            if str_to_bool(self.config['publish_queues']):
+            if diamond.collector.str_to_bool(self.config['publish_queues']):
                 for queue in queues:
                     for queue_stat in queues[queue]:
-                        self.publish_gauge(
-                            alias + ".queues." + queue + "." + queue_stat,
-                            queues[queue][queue_stat])
+                        self.publish_gauge(alias + ".queues." + queue + "." + queue_stat, queues[queue][queue_stat])
 
             # figure out what we're configured to get, defaulting to everything
             desired = self.config.get('publish', stats.keys())
@@ -151,10 +157,6 @@ class DarnerCollector(diamond.collector.Collector):
                         self.publish_gauge(alias + "." + stat, stats[stat])
                     else:
                         self.publish_counter(alias + "." + stat, stats[stat])
-
                 else:
-
-                    # we don't, must be something configured in publish so we
-                    # should log an error about it
-                    self.log.error("No such key '%s' available, issue 'stats' "
-                                   "for a full list", stat)
+                    # we don't, must be something configured in publish so we should log an error about it
+                    self.log.error("No such key '%s' available, issue 'stats' for a full list", stat)

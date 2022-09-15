@@ -8,7 +8,8 @@ Collects sidekiq data from Redis
  * redis
 
 """
-from itertools import izip
+
+import diamond.collector
 
 try:
     import redis
@@ -16,14 +17,10 @@ try:
 except ImportError:
     redis = None
 
-import diamond.collector
-
 
 class SidekiqCollector(diamond.collector.Collector):
-
     def get_default_config_help(self):
-        config_help = super(SidekiqCollector,
-                            self).get_default_config_help()
+        config_help = super(SidekiqCollector, self).get_default_config_help()
         config_help.update({
             'host': 'Redis hostname',
             'ports': 'Redis ports',
@@ -61,9 +58,9 @@ class SidekiqCollector(diamond.collector.Collector):
         :return: master ip and port
         """
         if sentinel_port and sentinel_name:
-            master = Sentinel([(host, sentinel_port)], socket_timeout=1)\
-                .discover_master(sentinel_name)
+            master = Sentinel([(host, sentinel_port)], socket_timeout=1).discover_master(sentinel_name)
             return master
+
         return host, port
 
     def get_redis_client(self):
@@ -86,10 +83,10 @@ class SidekiqCollector(diamond.collector.Collector):
         if sentinel_ports:
             assert len(sentinel_ports) == len(ports)
         else:
-            sentinel_ports = [None for _ in xrange(len(ports))]
+            sentinel_ports = [None for _ in range(len(ports))]
 
-        for port, sentinel_port in izip(ports, sentinel_ports):
-            for db in xrange(0, int(databases)):
+        for port, sentinel_port in zip(ports, sentinel_ports):
+            for db in range(0, int(databases)):
                 master = self.get_master(
                     host, port, sentinel_port, sentinel_name
                 )
@@ -160,11 +157,11 @@ class SidekiqCollector(diamond.collector.Collector):
         """
         metric_name_segaments = ['queue']
         cluster = self.config['cluster_prefix']
+
         if cluster:
             metric_name_segaments.append(cluster)
+
         metric_name_segaments.append(port)
         metric_name_segaments.append(str(db))
         metric_name_segaments.append(queue)
-        self.publish_gauge(
-            name='.'.join(metric_name_segaments), value=queue_length
-        )
+        self.publish_gauge(name='.'.join(metric_name_segaments), value=queue_length)

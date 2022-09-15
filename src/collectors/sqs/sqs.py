@@ -31,6 +31,7 @@ restart diamond.
 """
 
 import diamond.collector
+
 try:
     from boto import sqs
 except ImportError:
@@ -38,7 +39,6 @@ except ImportError:
 
 
 class SqsCollector(diamond.collector.Collector):
-
     def get_default_config(self):
         """
         Returns the default collector settings
@@ -50,26 +50,32 @@ class SqsCollector(diamond.collector.Collector):
         return config
 
     def collect(self):
-        attribs = ['ApproximateNumberOfMessages',
-                   'ApproximateNumberOfMessagesNotVisible',
-                   'ApproximateNumberOfMessagesDelayed',
-                   'CreatedTimestamp',
-                   'DelaySeconds',
-                   'LastModifiedTimestamp',
-                   'MaximumMessageSize',
-                   'MessageRetentionPeriod',
-                   'ReceiveMessageWaitTimeSeconds',
-                   'VisibilityTimeout']
+        attribs = [
+            'ApproximateNumberOfMessages',
+            'ApproximateNumberOfMessagesNotVisible',
+            'ApproximateNumberOfMessagesDelayed',
+            'CreatedTimestamp',
+            'DelaySeconds',
+            'LastModifiedTimestamp',
+            'MaximumMessageSize',
+            'MessageRetentionPeriod',
+            'ReceiveMessageWaitTimeSeconds',
+            'VisibilityTimeout'
+        ]
+
         if not sqs:
             self.log.error("boto module not found!")
             return
+
         for (region, region_cfg) in self.config['regions'].items():
             assert 'queues' in region_cfg
             auth_kwargs = _get_auth_kwargs(config=region_cfg)
             queues = region_cfg['queues'].split(',')
+
             for queue_name in queues:
                 conn = sqs.connect_to_region(region, **auth_kwargs)
                 queue = conn.get_queue(queue_name)
+
                 for attrib in attribs:
                     d = queue.get_attributes(attrib)
                     self.publish(
@@ -95,6 +101,7 @@ def _get_auth_kwargs(config):
     """
     if not ('access_key_id' in config and 'secret_access_key' in config):
         return {}
+
     return {
         'aws_access_key_id': config['access_key_id'],
         'aws_secret_access_key': config['secret_access_key'],

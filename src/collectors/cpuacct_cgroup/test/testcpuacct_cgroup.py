@@ -1,23 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-##########################################################################
+
+import io
 import os
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import patch
+import unittest
+from unittest.mock import patch
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+from collectors.cpuacct_cgroup.cpuacct_cgroup import CpuAcctCgroupCollector
 from diamond.collector import Collector
-from cpuacct_cgroup import CpuAcctCgroupCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 
 class TestCpuAcctCgroupCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('CpuAcctCgroupCollector', {
             'interval': 10
@@ -28,12 +23,12 @@ class TestCpuAcctCgroupCollector(CollectorTestCase):
     def test_import(self):
         self.assertTrue(CpuAcctCgroupCollector)
 
-    @patch('__builtin__.open')
+    @patch('builtins.open')
     @patch.object(Collector, 'publish')
     def test_should_open_all_cpuacct_stat(self, publish_mock, open_mock):
         return
         self.collector.config['path'] = self.getFixtureDirPath()
-        open_mock.side_effect = lambda x: StringIO('')
+        open_mock.side_effect = lambda x: io.StringIO('')
         self.collector.collect()
 
         # All the fixtures we should be opening
@@ -60,6 +55,7 @@ class TestCpuAcctCgroupCollector(CollectorTestCase):
             'system.user': 3781253,
             'system.system': 4784004,
         })
+
 
 if __name__ == "__main__":
     unittest.main()

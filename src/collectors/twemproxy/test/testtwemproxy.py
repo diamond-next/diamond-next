@@ -1,27 +1,22 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # coding=utf-8
-###############################################################################
 
-from test import CollectorTestCase
-from test import get_collector_config
-from test import unittest
-from mock import Mock
-from mock import patch
+import unittest
+from os import path
+from unittest.mock import Mock, patch
 
+from collectors.twemproxy.twemproxy import TwemproxyCollector
 from diamond.collector import Collector
-from twemproxy import TwemproxyCollector
+from diamond.testing import CollectorTestCase
+from test import get_collector_config
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from os import path
-###############################################################################
-
 
 class TestTwemproxyCollector(CollectorTestCase):
-
     def setUp(self):
         config = get_collector_config('TwemproxyCollector', {
             'interval': 60,
@@ -38,14 +33,14 @@ class TestTwemproxyCollector(CollectorTestCase):
         patch_raw_stats1 = patch.object(
             TwemproxyCollector,
             'get_raw_stats',
-            Mock(return_value=json.loads(self.getFixture(
-                'stats1').getvalue())))
+            Mock(return_value=json.loads(self.getFixture('stats1').getvalue()))
+        )
 
         patch_raw_stats2 = patch.object(
             TwemproxyCollector,
             'get_raw_stats',
-            Mock(return_value=json.loads(self.getFixture(
-                'stats2').getvalue())))
+            Mock(return_value=json.loads(self.getFixture('stats2').getvalue()))
+        )
 
         patch_raw_stats1.start()
         self.collector.collect()
@@ -57,15 +52,12 @@ class TestTwemproxyCollector(CollectorTestCase):
         self.collector.collect()
         patch_raw_stats2.stop()
 
-        with open(path.join(path.dirname(__file__),
-                            'metrics.json'), 'rb') as fp:
+        with open(path.join(path.dirname(__file__), 'metrics.json'), 'rb') as fp:
             metrics = json.load(fp)
 
-        self.setDocExample(collector=self.collector.__class__.__name__,
-                           metrics=metrics,
-                           defaultpath=self.collector.config['path'])
+        self.setDocExample(collector=self.collector.__class__.__name__, metrics=metrics, defaultpath=self.collector.config['path'])
         self.assertPublishedMany(publish_mock, metrics)
 
-###############################################################################
+
 if __name__ == "__main__":
     unittest.main()
