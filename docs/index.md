@@ -1,6 +1,6 @@
 # Status
 
-Currently `master` branch is under audit, the latest stable version is 4.0.916 same as the last known release of Diamond. Python 3 support.
+Currently `master` branch is under audit, the latest stable version is 4.0.516 same as the last known release of Diamond. 4.0.916 with Python 3 support, te be released as 5.0.0 and follow semver.
 
   
 # Diamond-next
