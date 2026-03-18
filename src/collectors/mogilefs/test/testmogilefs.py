@@ -24,7 +24,7 @@ class TestMogilefsCollector(CollectorTestCase):
         mock_telnet = Mock(
             **{"read_until.return_value": self.getFixture("stats").getvalue()}
         )
-        patch_telnet = patch("telnetlib.Telnet", Mock(return_value=mock_telnet))
+        patch_telnet = patch("collectors.mogilefs.mogilefs._TelnetSocket", Mock(return_value=mock_telnet))
 
         patch_telnet.start()
         self.collector.collect()

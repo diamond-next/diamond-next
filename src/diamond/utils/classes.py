@@ -7,8 +7,9 @@ import logging
 import os
 import traceback
 
+import importlib.metadata
+
 import configobj
-import pkg_resources
 import sys
 
 from diamond.collector import Collector
@@ -169,7 +170,9 @@ def load_collectors_from_paths(paths):
 
                 try:
                     # Import the module
-                    mod = spec.loader.load_module(modname)
+                    mod = importlib.util.module_from_spec(spec)
+                    sys.modules[modname] = mod
+                    spec.loader.exec_module(mod)
                 except (KeyboardInterrupt, SystemExit) as err:
                     logger.error(
                         "System or keyboard interrupt while loading module %s" % modname
@@ -200,7 +203,7 @@ def load_collectors_from_entry_point(path):
     """
     collectors = {}
 
-    for ep in pkg_resources.iter_entry_points(path):
+    for ep in importlib.metadata.entry_points(group=path):
         try:
             mod = ep.load()
         except Exception:

@@ -32,7 +32,7 @@ class TestAerospike27Collector(CollectorTestCase):
             }
         )
 
-        patch_Telnet = patch("telnetlib.Telnet", Mock(return_value=mockTelnet))
+        patch_Telnet = patch("collectors.aerospike.aerospike._TelnetSocket", Mock(return_value=mockTelnet))
 
         patch_Telnet.start()
         self.bootStrap(
@@ -94,7 +94,7 @@ class TestAerospike27Collector(CollectorTestCase):
             }
         )
 
-        patch_Telnet = patch("telnetlib.Telnet", Mock(return_value=mockTelnet))
+        patch_Telnet = patch("collectors.aerospike.aerospike._TelnetSocket", Mock(return_value=mockTelnet))
 
         patch_Telnet.start()
         self.bootStrap(
@@ -147,7 +147,7 @@ class TestAerospike27Collector(CollectorTestCase):
             }
         )
 
-        patch_Telnet = patch("telnetlib.Telnet", Mock(return_value=mockTelnet))
+        patch_Telnet = patch("collectors.aerospike.aerospike._TelnetSocket", Mock(return_value=mockTelnet))
 
         patch_Telnet.start()
         self.bootStrap(
@@ -196,7 +196,7 @@ class TestAerospike27Collector(CollectorTestCase):
             }
         )
 
-        patch_Telnet = patch("telnetlib.Telnet", Mock(return_value=mockTelnet))
+        patch_Telnet = patch("collectors.aerospike.aerospike._TelnetSocket", Mock(return_value=mockTelnet))
 
         patch_Telnet.start()
         self.bootStrap(
@@ -259,7 +259,7 @@ class TestAerospike27Collector(CollectorTestCase):
             }
         )
 
-        patch_Telnet = patch("telnetlib.Telnet", Mock(return_value=mockTelnet))
+        patch_Telnet = patch("collectors.aerospike.aerospike._TelnetSocket", Mock(return_value=mockTelnet))
 
         patch_Telnet.start()
         self.bootStrap(

@@ -6,16 +6,54 @@ Collect statistics from Aerospike
 #### Dependencies
 
  * socket
- * telnetlib
  * re
 """
 
-import distutils.version
 import re
 import socket
-import telnetlib
 
 import diamond.collector
+
+
+class _TelnetSocket:
+    """
+    Minimal socket wrapper providing the telnet-like interface used by
+    AerospikeCollector (replaces the removed telnetlib.Telnet).
+    """
+
+    def __init__(self, host, port):
+        self._sock = socket.create_connection((host, port))
+        self._buf = b""
+
+    def write(self, data):
+        if isinstance(data, str):
+            data = data.encode("ascii")
+        self._sock.sendall(data)
+
+    def read_until(self, terminator, timeout=None):
+        if isinstance(terminator, str):
+            terminator = terminator.encode("ascii")
+        if timeout is not None:
+            self._sock.settimeout(timeout)
+        try:
+            while terminator not in self._buf:
+                chunk = self._sock.recv(4096)
+                if not chunk:
+                    break
+                self._buf += chunk
+        except socket.timeout:
+            pass
+        idx = self._buf.find(terminator)
+        if idx >= 0:
+            result = self._buf[: idx + len(terminator)]
+            self._buf = self._buf[idx + len(terminator) :]
+        else:
+            result = self._buf
+            self._buf = b""
+        return result.decode("ascii", errors="replace")
+
+    def close(self):
+        self._sock.close()
 
 
 class AerospikeCollector(diamond.collector.Collector):
@@ -228,7 +266,7 @@ class AerospikeCollector(diamond.collector.Collector):
         self.log.debug(
             "Connecting to %s:%s" % (self.config["req_host"], self.config["req_port"])
         )
-        t = telnetlib.Telnet(self.config["req_host"], self.config["req_port"])
+        t = _TelnetSocket(self.config["req_host"], int(self.config["req_port"]))
 
         try:
             # Detect the version of aerospike for later
@@ -236,9 +274,8 @@ class AerospikeCollector(diamond.collector.Collector):
             t.write("version\n")
             version = t.read_until("\n", 1)
 
-            if distutils.version.LooseVersion(
-                version
-            ) >= distutils.version.LooseVersion("3.9"):
+            version_parts = tuple(int(x) for x in re.findall(r"\d+", version))
+            if version_parts >= (3, 9):
                 self.config["dialect"] = 39
             else:
                 self.config["dialect"] = 27

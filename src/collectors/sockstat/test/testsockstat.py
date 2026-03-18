@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import unittest
-from collections import Iterator
+from collections.abc import Iterator
 from unittest.mock import Mock, call, patch
 
 from collectors.sockstat.sockstat import SockstatCollector
@@ -28,7 +28,7 @@ class TestSockstatCollector(CollectorTestCase):
             def close(self):
                 pass
 
-            def next(self):
+            def __next__(self):
                 raise StopIteration
 
         open_mock.return_value = Klass()

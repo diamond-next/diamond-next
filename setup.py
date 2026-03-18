@@ -26,7 +26,7 @@ if os.environ.get("USE_SETUPTOOLS"):
 
     setup_kwargs = dict(zip_safe=0)
 else:
-    from distutils.core import setup
+    from setuptools import setup
 
     setup_kwargs = dict()
 
@@ -147,7 +147,7 @@ setup(
     packages=["diamond", "diamond.handler", "diamond.utils"],
     scripts=["bin/diamond", "bin/diamond-setup"],
     data_files=data_files,
-    python_requires=">=3.8",
+    python_requires=">=3.9",
     install_requires=["configobj", "psutil"],
     classifiers=[
         "Programming Language :: Python",
