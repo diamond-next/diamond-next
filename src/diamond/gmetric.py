@@ -40,7 +40,64 @@
 from __future__ import print_function
 
 import socket
-from xdrlib import Packer, Unpacker
+import struct
+
+
+class Packer:
+    """XDR data packer (replaces xdrlib.Packer removed in Python 3.13)."""
+
+    def __init__(self):
+        self._buf = b""
+
+    def pack_int(self, v):
+        self._buf += struct.pack(">i", v)
+
+    def pack_uint(self, v):
+        self._buf += struct.pack(">I", v)
+
+    def pack_string(self, s):
+        if isinstance(s, str):
+            s = s.encode("utf-8")
+        n = len(s)
+        self._buf += struct.pack(">I", n)
+        self._buf += s
+        pad = (4 - n % 4) % 4
+        self._buf += b"\x00" * pad
+
+    def get_buffer(self):
+        return self._buf
+
+
+class Unpacker:
+    """XDR data unpacker (replaces xdrlib.Unpacker removed in Python 3.13)."""
+
+    def __init__(self, data):
+        self._buf = data
+        self._pos = 0
+
+    def unpack_int(self):
+        v = struct.unpack(">i", self._buf[self._pos : self._pos + 4])[0]
+        self._pos += 4
+        return v
+
+    def unpack_uint(self):
+        v = struct.unpack(">I", self._buf[self._pos : self._pos + 4])[0]
+        self._pos += 4
+        return v
+
+    def unpack_string(self):
+        n = struct.unpack(">I", self._buf[self._pos : self._pos + 4])[0]
+        self._pos += 4
+        s = self._buf[self._pos : self._pos + n]
+        self._pos += n
+        pad = (4 - n % 4) % 4
+        self._pos += pad
+        return s
+
+    def done(self):
+        if self._pos != len(self._buf):
+            raise ValueError("Unpacker: unprocessed data remains")
+
 
 slope_str2int = {"zero": 0, "positive": 1, "negative": 2, "both": 3, "unspecified": 4}
 

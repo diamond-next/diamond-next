@@ -26,7 +26,7 @@ if os.environ.get("USE_SETUPTOOLS"):
 
     setup_kwargs = dict(zip_safe=0)
 else:
-    from distutils.core import setup
+    from setuptools import setup
 
     setup_kwargs = dict()
 
